@@ -16,6 +16,7 @@ import type {
   AspectRatio,
 } from '@/types/nodes';
 import { SHOT_PRESET_LABELS } from '@/types/nodes';
+import { useSettingsStore } from '@/stores/settingsStore';
 
 interface AssembledPrompt {
   prompt: string;
@@ -154,15 +155,16 @@ export function assemblePrompt(
   promptParts.push(...parts.styles);
   promptParts.push(...parts.edits);
 
-  // Extract parameters with defaults
+  // Extract parameters with defaults from settings store
   const resolvedParams = parameters as ParametersNodeData | null;
+  const settingsDefaults = useSettingsStore.getState().defaults;
 
   return {
     prompt: promptParts.join(' '),
     negativePrompt: negatives.map((n) => n.content).join(', '),
     parameters: {
-      model: resolvedParams?.model || 'mock',
-      aspectRatio: resolvedParams?.aspectRatio || '1:1',
+      model: resolvedParams?.model || settingsDefaults.model,
+      aspectRatio: resolvedParams?.aspectRatio || settingsDefaults.aspectRatio,
       seed: resolvedParams?.seed,
     },
     parts,
