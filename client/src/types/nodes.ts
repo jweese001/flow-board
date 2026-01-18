@@ -142,6 +142,29 @@ export interface OutputNodeData extends BaseNodeData {
   error?: string;
 }
 
+// ===== LAYOUT NODE =====
+
+export type PageLayout =
+  | 'full'           // Single full-page panel
+  | '2-up-h'         // 2 panels horizontal
+  | '2-up-v'         // 2 panels vertical
+  | '3-up-left'      // 1 large left, 2 stacked right
+  | '3-up-right'     // 2 stacked left, 1 large right
+  | '3-up-top'       // 1 large top, 2 below
+  | '3-up-bottom'    // 2 above, 1 large bottom
+  | '4-up'           // 2x2 grid
+  | '6-up'           // 2x3 grid
+  | 'manga-3'        // Manga-style irregular 3 panel
+  | 'manga-4'        // Manga-style irregular 4 panel
+  | 'inset';         // Large panel with small inset
+
+export interface PageNodeData extends BaseNodeData {
+  layout: PageLayout;
+  gutter: number;        // Gap between panels in pixels
+  backgroundColor: string;
+  panelImages: (string | null)[]; // Array of image URLs for each slot
+}
+
 // ===== NODE TYPE UNION =====
 
 export type NodeType =
@@ -157,7 +180,8 @@ export type NodeType =
   | 'parameters'
   | 'edit'
   | 'reference'
-  | 'output';
+  | 'output'
+  | 'page';
 
 export type AppNodeData =
   | CharacterNodeData
@@ -172,7 +196,8 @@ export type AppNodeData =
   | ParametersNodeData
   | EditNodeData
   | ReferenceNodeData
-  | OutputNodeData;
+  | OutputNodeData
+  | PageNodeData;
 
 // Use BuiltInNode pattern for React Flow compatibility
 export type CharacterNode = Node<CharacterNodeData, 'character'>;
@@ -188,6 +213,7 @@ export type ParametersNode = Node<ParametersNodeData, 'parameters'>;
 export type EditNode = Node<EditNodeData, 'edit'>;
 export type ReferenceNode = Node<ReferenceNodeData, 'reference'>;
 export type OutputNode = Node<OutputNodeData, 'output'>;
+export type PageNode = Node<PageNodeData, 'page'>;
 
 export type AppNode =
   | CharacterNode
@@ -202,7 +228,8 @@ export type AppNode =
   | ParametersNode
   | EditNode
   | ReferenceNode
-  | OutputNode;
+  | OutputNode
+  | PageNode;
 
 // ===== NODE COLORS =====
 
@@ -218,8 +245,9 @@ export const NODE_COLORS: Record<NodeType, string> = {
   negative: '#f43f5e',
   parameters: '#14b8a6',
   edit: '#6b7280',
-  reference: '#8b5cf6', // Violet for reference images
+  reference: '#8b5cf6',
   output: '#ef4444',
+  page: '#0ea5e9', // Sky blue for page layout
 };
 
 // ===== NODE ICONS =====
@@ -238,4 +266,37 @@ export const NODE_LABELS: Record<NodeType, string> = {
   edit: 'Edit',
   reference: 'Reference',
   output: 'Output',
+  page: 'Page',
+};
+
+// Layout preset labels for UI
+export const PAGE_LAYOUT_LABELS: Record<PageLayout, string> = {
+  'full': 'Full Page',
+  '2-up-h': '2-Up Horizontal',
+  '2-up-v': '2-Up Vertical',
+  '3-up-left': '3-Up (Large Left)',
+  '3-up-right': '3-Up (Large Right)',
+  '3-up-top': '3-Up (Large Top)',
+  '3-up-bottom': '3-Up (Large Bottom)',
+  '4-up': '4-Up Grid',
+  '6-up': '6-Up Grid',
+  'manga-3': 'Manga 3-Panel',
+  'manga-4': 'Manga 4-Panel',
+  'inset': 'Inset Panel',
+};
+
+// Number of panel slots for each layout
+export const PAGE_LAYOUT_SLOTS: Record<PageLayout, number> = {
+  'full': 1,
+  '2-up-h': 2,
+  '2-up-v': 2,
+  '3-up-left': 3,
+  '3-up-right': 3,
+  '3-up-top': 3,
+  '3-up-bottom': 3,
+  '4-up': 4,
+  '6-up': 6,
+  'manga-3': 3,
+  'manga-4': 4,
+  'inset': 2,
 };

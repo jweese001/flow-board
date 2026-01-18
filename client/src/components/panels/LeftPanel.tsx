@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useFlowStore, generateNodeId } from '@/stores/flowStore';
 import { useUIStore } from '@/stores/uiStore';
-import { NODE_COLORS, NODE_LABELS, SHOT_PRESET_LABELS, type NodeType } from '@/types/nodes';
+import { NODE_COLORS, NODE_LABELS, SHOT_PRESET_LABELS, PAGE_LAYOUT_LABELS, type NodeType, type PageLayout } from '@/types/nodes';
 import {
   UserIcon,
   HomeIcon,
@@ -24,6 +24,7 @@ import {
   PencilIcon,
   HistoryIcon,
   PhotoIcon,
+  LayoutIcon,
 } from '@/components/ui/Icons';
 import { ProjectSection } from './ProjectSection';
 import { SettingsSection } from './SettingsSection';
@@ -105,6 +106,12 @@ const NODE_CONFIGS: NodeTypeConfig[] = [
     type: 'output',
     icon: <ImageIcon size={14} />,
     defaultData: { label: 'Output', promptPreview: '', status: 'idle' },
+  },
+  // Layout Node
+  {
+    type: 'page',
+    icon: <LayoutIcon size={14} />,
+    defaultData: { label: 'Page', layout: '4-up', gutter: 8, backgroundColor: '#ffffff', panelImages: [] },
   },
 ];
 
@@ -554,6 +561,35 @@ function renderNodeFields(
       return (
         <div className="text-sm text-muted leading-relaxed">
           Connect nodes to build your prompt. Click Generate on the node to create an image.
+        </div>
+      );
+
+    case 'page':
+      return (
+        <div className="space-y-4">
+          <FieldSelect
+            label="Layout"
+            value={data.layout || '4-up'}
+            options={Object.entries(PAGE_LAYOUT_LABELS).map(([value, label]) => ({
+              value,
+              label,
+            }))}
+            onChange={(v) => onChange('layout', v as PageLayout)}
+          />
+          <FieldSlider
+            label="Gutter (px)"
+            value={data.gutter ?? 8}
+            min={0}
+            max={32}
+            step={2}
+            onChange={(v) => onChange('gutter', v)}
+          />
+          <FieldInput
+            label="Background Color"
+            value={data.backgroundColor || '#ffffff'}
+            onChange={(v) => onChange('backgroundColor', v)}
+            placeholder="#ffffff"
+          />
         </div>
       );
 

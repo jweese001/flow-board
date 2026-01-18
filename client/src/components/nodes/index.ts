@@ -12,6 +12,7 @@ import { ParametersNode } from './ParametersNode';
 import { EditNode } from './EditNode';
 import { ReferenceNode } from './ReferenceNode';
 import { OutputNode } from './OutputNode';
+import { PageNode } from './PageNode';
 
 // Registry of all custom node types for React Flow
 export const nodeTypes: NodeTypes = {
@@ -31,8 +32,10 @@ export const nodeTypes: NodeTypes = {
   parameters: ParametersNode,
   edit: EditNode,
   reference: ReferenceNode,
-  // Terminal Node
+  // Terminal Nodes
   output: OutputNode,
+  // Layout Nodes
+  page: PageNode,
 };
 
 // Re-export individual nodes
@@ -49,4 +52,5 @@ export { ParametersNode } from './ParametersNode';
 export { EditNode } from './EditNode';
 export { ReferenceNode } from './ReferenceNode';
 export { OutputNode } from './OutputNode';
+export { PageNode } from './PageNode';
 export { BaseNode, NodeField } from './BaseNode';
