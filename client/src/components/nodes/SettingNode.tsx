@@ -1,9 +1,25 @@
-import type { NodeProps } from '@xyflow/react';
+import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { SettingNode as SettingNodeType } from '@/types/nodes';
+import { NODE_COLORS } from '@/types/nodes';
 import { BaseNode, NodeField } from './BaseNode';
 import { HomeIcon } from '../ui/Icons';
 
 export function SettingNode({ id, data, selected }: NodeProps<SettingNodeType>) {
+  // Reference handle on left for connecting Reference nodes
+  const referenceHandle = (
+    <Handle
+      type="target"
+      position={Position.Left}
+      id="reference"
+      style={{
+        background: NODE_COLORS.reference,
+        borderColor: NODE_COLORS.reference,
+        borderWidth: 2,
+      }}
+      title="Connect reference image"
+    />
+  );
+
   return (
     <BaseNode
       nodeId={id}
@@ -12,6 +28,7 @@ export function SettingNode({ id, data, selected }: NodeProps<SettingNodeType>) 
       selected={selected}
       showTargetHandle={false}
       icon={<HomeIcon size={14} />}
+      additionalHandles={referenceHandle}
     >
       <NodeField label="Description">
         <div className="line-clamp-3">{data.description}</div>

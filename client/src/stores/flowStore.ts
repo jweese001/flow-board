@@ -11,10 +11,16 @@ import {
 } from '@xyflow/react';
 import type { AppNode, AppNodeData, NodeType } from '@/types/nodes';
 
+interface ClipboardData {
+  nodes: AppNode[];
+  edges: Edge[];
+}
+
 interface FlowState {
   nodes: AppNode[];
   edges: Edge[];
   isDirty: boolean;
+  clipboard: ClipboardData | null;
 
   // Actions
   onNodesChange: (changes: NodeChange<AppNode>[]) => void;
@@ -26,6 +32,8 @@ interface FlowState {
   setNodes: (nodes: AppNode[]) => void;
   setEdges: (edges: Edge[]) => void;
   setDirty: (dirty: boolean) => void;
+  copyNodes: (nodeIds: string[]) => void;
+  pasteNodes: () => void;
 }
 
 // Helper to generate unique IDs
@@ -107,11 +115,15 @@ const initialEdges: Edge[] = [
   { id: 'e-style-output', source: 'style-1', target: 'output-1' },
 ];
 
+// Counter for generating unique paste IDs
+let pasteCounter = 0;
+
 export const useFlowStore = create<FlowState>()(
-  immer((set) => ({
+  immer((set, get) => ({
     nodes: initialNodes,
     edges: initialEdges,
     isDirty: false,
+    clipboard: null,
 
     onNodesChange: (changes) => {
       set((state) => {
@@ -129,10 +141,34 @@ export const useFlowStore = create<FlowState>()(
 
     onConnect: (connection) => {
       set((state) => {
+        const sourceNode = state.nodes.find((n) => n.id === connection.source);
+        const targetNode = state.nodes.find((n) => n.id === connection.target);
+
+        let targetHandle = connection.targetHandle;
+
+        // Auto-route parameters and negative nodes to the config handle on output nodes
+        if (
+          sourceNode &&
+          targetNode &&
+          (sourceNode.type === 'parameters' || sourceNode.type === 'negative') &&
+          targetNode.type === 'output'
+        ) {
+          targetHandle = 'config';
+        }
+
+        // Auto-route reference nodes and output nodes to the reference handle
+        if ((sourceNode?.type === 'reference' || sourceNode?.type === 'output') && targetNode) {
+          const assetTypes = ['character', 'setting', 'prop', 'style', 'output'];
+          if (assetTypes.includes(targetNode.type as string)) {
+            targetHandle = 'reference';
+          }
+        }
+
         state.edges = addEdge(
           {
             ...connection,
-            id: `e-${connection.source}-${connection.target}`,
+            targetHandle,
+            id: `e-${connection.source}-${connection.target}-${targetHandle || 'default'}`,
           },
           state.edges
         );
@@ -182,6 +218,72 @@ export const useFlowStore = create<FlowState>()(
     setDirty: (dirty) => {
       set((state) => {
         state.isDirty = dirty;
+      });
+    },
+
+    copyNodes: (nodeIds) => {
+      set((state) => {
+        if (nodeIds.length === 0) return;
+
+        // Get the selected nodes
+        const selectedNodes = state.nodes.filter((n) => nodeIds.includes(n.id));
+
+        // Get edges that connect selected nodes to each other
+        const selectedNodeIdSet = new Set(nodeIds);
+        const selectedEdges = state.edges.filter(
+          (e) => selectedNodeIdSet.has(e.source) && selectedNodeIdSet.has(e.target)
+        );
+
+        // Deep clone to avoid reference issues
+        state.clipboard = {
+          nodes: JSON.parse(JSON.stringify(selectedNodes)),
+          edges: JSON.parse(JSON.stringify(selectedEdges)),
+        };
+      });
+    },
+
+    pasteNodes: () => {
+      const { clipboard } = get();
+      if (!clipboard || clipboard.nodes.length === 0) return;
+
+      pasteCounter++;
+      const offset = 50 * pasteCounter;
+
+      // Create a mapping from old IDs to new IDs
+      const idMap = new Map<string, string>();
+      clipboard.nodes.forEach((node) => {
+        const newId = `${node.type}-paste-${pasteCounter}-${node.id}`;
+        idMap.set(node.id, newId);
+      });
+
+      // Create new nodes with new IDs and offset positions
+      const newNodes: AppNode[] = clipboard.nodes.map((node) => ({
+        ...JSON.parse(JSON.stringify(node)),
+        id: idMap.get(node.id)!,
+        position: {
+          x: node.position.x + offset,
+          y: node.position.y + offset,
+        },
+        selected: true, // Select the pasted nodes
+      }));
+
+      // Create new edges with updated source/target IDs
+      const newEdges: Edge[] = clipboard.edges.map((edge) => ({
+        ...JSON.parse(JSON.stringify(edge)),
+        id: `e-paste-${pasteCounter}-${edge.id}`,
+        source: idMap.get(edge.source)!,
+        target: idMap.get(edge.target)!,
+      }));
+
+      set((state) => {
+        // Deselect all existing nodes
+        state.nodes.forEach((n) => {
+          n.selected = false;
+        });
+        // Add new nodes and edges
+        state.nodes.push(...newNodes);
+        state.edges.push(...newEdges);
+        state.isDirty = true;
       });
     },
   }))

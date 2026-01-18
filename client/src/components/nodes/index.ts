@@ -10,6 +10,7 @@ import { ActionNode } from './ActionNode';
 import { NegativeNode } from './NegativeNode';
 import { ParametersNode } from './ParametersNode';
 import { EditNode } from './EditNode';
+import { ReferenceNode } from './ReferenceNode';
 import { OutputNode } from './OutputNode';
 
 // Registry of all custom node types for React Flow
@@ -29,6 +30,7 @@ export const nodeTypes: NodeTypes = {
   negative: NegativeNode,
   parameters: ParametersNode,
   edit: EditNode,
+  reference: ReferenceNode,
   // Terminal Node
   output: OutputNode,
 };
@@ -45,5 +47,6 @@ export { ActionNode } from './ActionNode';
 export { NegativeNode } from './NegativeNode';
 export { ParametersNode } from './ParametersNode';
 export { EditNode } from './EditNode';
+export { ReferenceNode } from './ReferenceNode';
 export { OutputNode } from './OutputNode';
 export { BaseNode, NodeField } from './BaseNode';

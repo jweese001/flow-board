@@ -44,7 +44,7 @@ export const useSettingsStore = create<SettingsState>()(
         set(DEFAULT_SETTINGS),
     }),
     {
-      name: 'promptflow:settings',
+      name: 'flowboard:settings',
       partialize: (state) => ({
         apiKeys: state.apiKeys,
         defaults: state.defaults,

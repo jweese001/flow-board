@@ -3,9 +3,9 @@ import type { AppSettings } from '@/types/settings';
 import { DEFAULT_SETTINGS } from '@/types/settings';
 
 const STORAGE_KEYS = {
-  PROJECTS: 'promptflow:projects',
-  CURRENT_PROJECT_ID: 'promptflow:currentProjectId',
-  SETTINGS: 'promptflow:settings',
+  PROJECTS: 'flowboard:projects',
+  CURRENT_PROJECT_ID: 'flowboard:currentProjectId',
+  SETTINGS: 'flowboard:settings',
 } as const;
 
 const PROJECT_VERSION = '1.0.0';
@@ -121,7 +121,7 @@ export function downloadProjectAsFile(project: Project): void {
 
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${project.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.promptflow.json`;
+  a.download = `${project.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.flowboard.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

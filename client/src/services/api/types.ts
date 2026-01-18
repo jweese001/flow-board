@@ -1,15 +1,32 @@
-import type { ModelType, AspectRatio } from '@/types/nodes';
+import type { ModelType, AspectRatio, ImageResolution, ReferenceImageType } from '@/types/nodes';
+
+export interface ReferenceImageInput {
+  imageUrl: string; // Base64 data URL
+  imageType: ReferenceImageType;
+  name?: string;
+  description?: string;
+}
 
 export interface GenerationRequest {
   prompt: string;
   negativePrompt?: string;
+  referenceImages?: ReferenceImageInput[];
   model: ModelType;
   aspectRatio: AspectRatio;
+  resolution?: ImageResolution;
+  seed?: number;
+  temperature?: number;
+  numberOfImages?: number;
+}
+
+export interface GeneratedImage {
+  imageUrl: string;
   seed?: number;
 }
 
 export interface GenerationResponse {
-  imageUrl: string;
+  imageUrl: string; // Primary image (first in array)
+  images: GeneratedImage[]; // All generated images
   revisedPrompt?: string;
   seed?: number;
 }

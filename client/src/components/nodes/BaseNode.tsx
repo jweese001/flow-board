@@ -14,6 +14,7 @@ interface BaseNodeProps {
   showSourceHandle?: boolean;
   showTargetHandle?: boolean;
   icon: ReactNode;
+  additionalHandles?: ReactNode;
 }
 
 export function BaseNode({
@@ -25,6 +26,7 @@ export function BaseNode({
   showSourceHandle = true,
   showTargetHandle = true,
   icon,
+  additionalHandles,
 }: BaseNodeProps) {
   const color = NODE_COLORS[nodeType];
   const label = NODE_LABELS[nodeType];
@@ -148,6 +150,9 @@ export function BaseNode({
           }}
         />
       )}
+
+      {/* Additional custom handles */}
+      {additionalHandles}
     </div>
   );
 }

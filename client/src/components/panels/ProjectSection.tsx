@@ -150,7 +150,7 @@ export function ProjectSection() {
       <input
         ref={fileInputRef}
         type="file"
-        accept=".json,.promptflow.json"
+        accept=".json,.flowboard.json"
         onChange={handleFileChange}
         className="hidden"
       />

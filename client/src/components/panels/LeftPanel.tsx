@@ -22,9 +22,12 @@ import {
   ShirtIcon,
   UsersIcon,
   PencilIcon,
+  HistoryIcon,
+  PhotoIcon,
 } from '@/components/ui/Icons';
 import { ProjectSection } from './ProjectSection';
 import { SettingsSection } from './SettingsSection';
+import { HistorySection } from './HistorySection';
 
 interface NodeTypeConfig {
   type: NodeType;
@@ -91,6 +94,11 @@ const NODE_CONFIGS: NodeTypeConfig[] = [
     type: 'edit',
     icon: <PencilIcon size={14} />,
     defaultData: { label: 'Edit', refinement: 'Make the colors more vibrant...' },
+  },
+  {
+    type: 'reference',
+    icon: <PhotoIcon size={14} />,
+    defaultData: { label: 'Reference', name: 'Reference Image', imageType: 'character', imageUrl: undefined },
   },
   // Terminal Node
   {
@@ -178,7 +186,7 @@ export function LeftPanel() {
         className="flex items-center justify-between px-5 py-3"
         style={{ borderBottom: '1px solid var(--color-border-subtle)' }}
       >
-        <span className="text-sm font-semibold text-secondary">PromptFlow</span>
+        <span className="text-sm font-semibold text-secondary">FlowBoard</span>
         <button
           onClick={() => setIsCollapsed(true)}
           className="w-8 h-8 rounded-lg flex items-center justify-center text-muted hover:text-primary hover:bg-bg-hover transition-colors"
@@ -267,6 +275,16 @@ export function LeftPanel() {
             </div>
           </AccordionSection>
         )}
+
+        {/* History Section */}
+        <AccordionSection
+          title="History"
+          isExpanded={expandedSections.has('history')}
+          onToggle={() => toggleSection('history')}
+          icon={<HistoryIcon size={14} />}
+        >
+          <HistorySection />
+        </AccordionSection>
 
         {/* Settings Section */}
         <AccordionSection
@@ -434,8 +452,8 @@ function renderNodeFields(
             value={data.model || 'mock'}
             options={[
               { value: 'mock', label: 'Mock (No API)' },
-              { value: 'gemini-pro', label: 'Gemini Pro' },
-              { value: 'gemini-flash', label: 'Gemini Flash' },
+              { value: 'gemini-pro', label: 'Gemini 3 Pro' },
+              { value: 'gemini-flash', label: 'Gemini 2.5 Flash' },
               { value: 'flux-schnell', label: 'Flux Schnell' },
               { value: 'flux-dev', label: 'Flux Dev' },
               { value: 'turbo', label: 'Turbo' },
@@ -455,11 +473,40 @@ function renderNodeFields(
             ]}
             onChange={(v) => onChange('aspectRatio', v)}
           />
+          <FieldSelect
+            label="Resolution"
+            value={data.resolution || '1K'}
+            options={[
+              { value: '1K', label: '1K (1024px)' },
+              { value: '2K', label: '2K (2048px)' },
+              { value: '4K', label: '4K (4096px)' },
+            ]}
+            onChange={(v) => onChange('resolution', v)}
+          />
+          <FieldSlider
+            label="Temperature"
+            value={data.temperature ?? 1.0}
+            min={0}
+            max={2}
+            step={0.1}
+            onChange={(v) => onChange('temperature', v)}
+          />
           <FieldInput
             label="Seed (optional)"
             value={data.seed?.toString() || ''}
             onChange={(v) => onChange('seed', v ? parseInt(v, 10) : '')}
             placeholder="Random seed for reproducibility"
+          />
+          <FieldSelect
+            label="Number of Images"
+            value={String(data.numberOfImages || 1)}
+            options={[
+              { value: '1', label: '1 image' },
+              { value: '2', label: '2 images' },
+              { value: '3', label: '3 images' },
+              { value: '4', label: '4 images' },
+            ]}
+            onChange={(v) => onChange('numberOfImages', parseInt(v, 10))}
           />
         </div>
       );
@@ -473,6 +520,34 @@ function renderNodeFields(
           placeholder="Make the colors more vibrant..."
           rows={4}
         />
+      );
+
+    case 'reference':
+      return (
+        <div className="space-y-4">
+          <FieldInput
+            label="Name"
+            value={data.name || ''}
+            onChange={(v) => onChange('name', v)}
+          />
+          <FieldSelect
+            label="Reference Type"
+            value={data.imageType || 'character'}
+            options={[
+              { value: 'character', label: 'Character Reference' },
+              { value: 'object', label: 'Object Reference' },
+              { value: 'style', label: 'Style Reference' },
+            ]}
+            onChange={(v) => onChange('imageType', v)}
+          />
+          <FieldTextarea
+            label="Description (optional)"
+            value={data.description || ''}
+            onChange={(v) => onChange('description', v)}
+            placeholder="Describe what this reference shows..."
+            rows={2}
+          />
+        </div>
       );
 
     case 'output':
@@ -590,6 +665,79 @@ function FieldSelect({ label, value, options, onChange }: FieldSelectProps) {
           </option>
         ))}
       </select>
+    </div>
+  );
+}
+
+interface FieldSliderProps {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (value: number) => void;
+}
+
+function FieldSlider({ label, value, min, max, step, onChange }: FieldSliderProps) {
+  const percentage = ((value - min) / (max - min)) * 100;
+
+  return (
+    <div>
+      <div
+        className="flex items-center justify-between"
+        style={{ marginBottom: '8px', marginLeft: '4px', marginRight: '4px' }}
+      >
+        <label className="text-xs font-semibold uppercase tracking-wide text-muted">
+          {label}
+        </label>
+        <span className="text-xs font-mono text-secondary">{value.toFixed(1)}</span>
+      </div>
+      <div
+        className="relative h-8 flex items-center"
+        style={{ marginLeft: '4px', marginRight: '4px' }}
+      >
+        {/* Track background */}
+        <div
+          className="absolute w-full h-2 rounded-full"
+          style={{ background: 'var(--color-bg-elevated)' }}
+        />
+        {/* Filled track */}
+        <div
+          className="absolute h-2 rounded-full"
+          style={{
+            background: 'var(--color-node-parameters)',
+            width: `${percentage}%`,
+          }}
+        />
+        {/* Invisible range input for interaction */}
+        <input
+          type="range"
+          value={value}
+          min={min}
+          max={max}
+          step={step}
+          onChange={(e) => onChange(parseFloat(e.target.value))}
+          className="absolute w-full h-8 opacity-0 cursor-pointer"
+          style={{ zIndex: 2 }}
+        />
+        {/* Visual thumb */}
+        <div
+          className="absolute w-4 h-4 rounded-full border-2 pointer-events-none"
+          style={{
+            background: 'var(--color-bg-panel)',
+            borderColor: 'var(--color-node-parameters)',
+            left: `calc(${percentage}% - 8px)`,
+            boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+          }}
+        />
+      </div>
+      <div
+        className="flex justify-between text-[10px] text-muted mt-1"
+        style={{ marginLeft: '4px', marginRight: '4px' }}
+      >
+        <span>Precise</span>
+        <span>Creative</span>
+      </div>
     </div>
   );
 }

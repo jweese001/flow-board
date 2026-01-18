@@ -100,24 +100,44 @@ export type ModelType =
   | 'turbo'            // fal.ai Turbo (very fast)
   | 'sdxl-turbo';      // fal.ai SDXL Turbo
 export type AspectRatio = '1:1' | '16:9' | '9:16' | '2:3' | '3:2';
+export type ImageResolution = '1K' | '2K' | '4K';
 
 export interface ParametersNodeData extends BaseNodeData {
   model: ModelType;
   aspectRatio: AspectRatio;
+  resolution?: ImageResolution;
   seed?: number;
+  temperature?: number; // 0.0 - 2.0, controls creativity
+  numberOfImages?: number; // 1-4, batch generation
 }
 
 export interface EditNodeData extends BaseNodeData {
   refinement: string;
 }
 
+export type ReferenceImageType = 'character' | 'object' | 'style';
+
+export interface ReferenceNodeData extends BaseNodeData {
+  name: string;
+  imageUrl?: string; // Base64 data URL or uploaded image URL
+  imageType: ReferenceImageType; // For Gemini's reference image categories
+  description?: string; // Optional description of what's in the reference
+}
+
 // ===== TERMINAL NODE =====
 
 export type OutputStatus = 'idle' | 'generating' | 'complete' | 'error';
 
+export interface GeneratedImageData {
+  imageUrl: string;
+  seed?: number;
+}
+
 export interface OutputNodeData extends BaseNodeData {
   promptPreview: string;
   generatedImageUrl?: string;
+  generatedImages?: GeneratedImageData[];
+  selectedImageIndex?: number;
   status: OutputStatus;
   error?: string;
 }
@@ -136,6 +156,7 @@ export type NodeType =
   | 'negative'
   | 'parameters'
   | 'edit'
+  | 'reference'
   | 'output';
 
 export type AppNodeData =
@@ -150,6 +171,7 @@ export type AppNodeData =
   | NegativeNodeData
   | ParametersNodeData
   | EditNodeData
+  | ReferenceNodeData
   | OutputNodeData;
 
 // Use BuiltInNode pattern for React Flow compatibility
@@ -164,6 +186,7 @@ export type ActionNode = Node<ActionNodeData, 'action'>;
 export type NegativeNode = Node<NegativeNodeData, 'negative'>;
 export type ParametersNode = Node<ParametersNodeData, 'parameters'>;
 export type EditNode = Node<EditNodeData, 'edit'>;
+export type ReferenceNode = Node<ReferenceNodeData, 'reference'>;
 export type OutputNode = Node<OutputNodeData, 'output'>;
 
 export type AppNode =
@@ -178,6 +201,7 @@ export type AppNode =
   | NegativeNode
   | ParametersNode
   | EditNode
+  | ReferenceNode
   | OutputNode;
 
 // ===== NODE COLORS =====
@@ -194,6 +218,7 @@ export const NODE_COLORS: Record<NodeType, string> = {
   negative: '#f43f5e',
   parameters: '#14b8a6',
   edit: '#6b7280',
+  reference: '#8b5cf6', // Violet for reference images
   output: '#ef4444',
 };
 
@@ -211,5 +236,6 @@ export const NODE_LABELS: Record<NodeType, string> = {
   negative: 'Negative',
   parameters: 'Parameters',
   edit: 'Edit',
+  reference: 'Reference',
   output: 'Output',
 };

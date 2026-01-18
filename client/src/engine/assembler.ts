@@ -12,19 +12,34 @@ import type {
   NegativeNodeData,
   ParametersNodeData,
   EditNodeData,
+  ReferenceNodeData,
+  OutputNodeData,
+  ReferenceImageType,
   ModelType,
   AspectRatio,
+  ImageResolution,
 } from '@/types/nodes';
 import { SHOT_PRESET_LABELS } from '@/types/nodes';
 import { useSettingsStore } from '@/stores/settingsStore';
 
+export interface ReferenceImage {
+  imageUrl: string;
+  imageType: ReferenceImageType;
+  name?: string;
+  description?: string;
+}
+
 interface AssembledPrompt {
   prompt: string;
   negativePrompt: string;
+  referenceImages: ReferenceImage[];
   parameters: {
     model: ModelType;
     aspectRatio: AspectRatio;
+    resolution?: ImageResolution;
     seed?: number;
+    temperature?: number;
+    numberOfImages?: number;
   };
   parts: {
     shot?: string;
@@ -42,6 +57,10 @@ interface AssembledPrompt {
 /**
  * Traverses the graph upstream from an output node and assembles
  * all connected node data into a formatted prompt string.
+ *
+ * The Output node has two input handles:
+ * - "config" (top): For Parameters and Negative nodes
+ * - default (left): For all prompt content nodes
  */
 export function assemblePrompt(
   outputNodeId: string,
@@ -50,28 +69,68 @@ export function assemblePrompt(
 ): AssembledPrompt {
   const visited = new Set<string>();
 
-  // Collected elements
-  const characters: CharacterNodeData[] = [];
-  const settings: SettingNodeData[] = [];
-  const props: PropNodeData[] = [];
-  const styles: StyleNodeData[] = [];
+  // Collected elements (with node IDs for reference tracking)
+  const characters: Array<{ id: string; data: CharacterNodeData }> = [];
+  const settings: Array<{ id: string; data: SettingNodeData }> = [];
+  const props: Array<{ id: string; data: PropNodeData }> = [];
+  const styles: Array<{ id: string; data: StyleNodeData }> = [];
   const extras: ExtrasNodeData[] = [];
   const outfits: OutfitNodeData[] = [];
   const actions: ActionNodeData[] = [];
   const edits: EditNodeData[] = [];
   const negatives: NegativeNodeData[] = [];
+  const standaloneReferences: ReferenceNodeData[] = [];
   let shot: ShotNodeData | null = null;
   let parameters: ParametersNodeData | null = null;
 
-  // Build adjacency list for upstream traversal
+  // Build map of reference nodes connected to asset nodes (via "reference" handle)
+  const referenceToAsset = new Map<string, string>(); // referenceNodeId -> assetNodeId
+  for (const edge of edges) {
+    if (edge.targetHandle === 'reference') {
+      referenceToAsset.set(edge.source, edge.target);
+    }
+  }
+
+  // Build adjacency list for upstream traversal (for prompt content)
   const upstreamMap = new Map<string, string[]>();
   for (const edge of edges) {
+    // Skip config and reference edges - they don't need standard traversal
+    if (edge.targetHandle === 'config' || edge.targetHandle === 'reference') continue;
+
     const targets = upstreamMap.get(edge.target) || [];
     targets.push(edge.source);
     upstreamMap.set(edge.target, targets);
   }
 
-  // Recursive traversal function
+  // First, collect config nodes (Parameters, Negative) connected to config handle
+  for (const edge of edges) {
+    if (edge.target === outputNodeId && edge.targetHandle === 'config') {
+      const node = nodes.find((n) => n.id === edge.source);
+      if (!node) continue;
+
+      if (node.type === 'parameters') {
+        parameters = node.data as ParametersNodeData;
+      } else if (node.type === 'negative') {
+        negatives.push(node.data as NegativeNodeData);
+      }
+    }
+  }
+
+  // Collect Reference nodes connected directly to Output's reference handle
+  const directOutputReferences: ReferenceNodeData[] = [];
+  for (const edge of edges) {
+    if (edge.target === outputNodeId && edge.targetHandle === 'reference') {
+      const node = nodes.find((n) => n.id === edge.source);
+      if (node?.type === 'reference') {
+        const refData = node.data as ReferenceNodeData;
+        if (refData.imageUrl) {
+          directOutputReferences.push(refData);
+        }
+      }
+    }
+  }
+
+  // Recursive traversal function for prompt content
   function traverse(nodeId: string) {
     if (visited.has(nodeId)) return;
     visited.add(nodeId);
@@ -79,19 +138,19 @@ export function assemblePrompt(
     const node = nodes.find((n) => n.id === nodeId);
     if (!node) return;
 
-    // Collect data based on node type
+    // Collect data based on node type (only prompt content nodes)
     switch (node.type) {
       case 'character':
-        characters.push(node.data as CharacterNodeData);
+        characters.push({ id: node.id, data: node.data as CharacterNodeData });
         break;
       case 'setting':
-        settings.push(node.data as SettingNodeData);
+        settings.push({ id: node.id, data: node.data as SettingNodeData });
         break;
       case 'prop':
-        props.push(node.data as PropNodeData);
+        props.push({ id: node.id, data: node.data as PropNodeData });
         break;
       case 'style':
-        styles.push(node.data as StyleNodeData);
+        styles.push({ id: node.id, data: node.data as StyleNodeData });
         break;
       case 'extras':
         extras.push(node.data as ExtrasNodeData);
@@ -105,14 +164,27 @@ export function assemblePrompt(
       case 'shot':
         shot = node.data as ShotNodeData;
         break;
-      case 'negative':
-        negatives.push(node.data as NegativeNodeData);
-        break;
-      case 'parameters':
-        parameters = node.data as ParametersNodeData;
-        break;
       case 'edit':
         edits.push(node.data as EditNodeData);
+        break;
+      case 'reference':
+        // Only add as standalone if not connected to an asset node
+        const refData = node.data as ReferenceNodeData;
+        if (refData.imageUrl && !referenceToAsset.has(node.id)) {
+          standaloneReferences.push(refData);
+        }
+        break;
+      // Parameters and Negative are now handled via config handle
+      // But also support legacy connections (direct to left handle)
+      case 'negative':
+        if (!negatives.some(n => n.content === (node.data as NegativeNodeData).content)) {
+          negatives.push(node.data as NegativeNodeData);
+        }
+        break;
+      case 'parameters':
+        if (!parameters) {
+          parameters = node.data as ParametersNodeData;
+        }
         break;
     }
 
@@ -123,19 +195,19 @@ export function assemblePrompt(
     }
   }
 
-  // Start traversal from output node
+  // Start traversal from output node (for prompt content)
   traverse(outputNodeId);
 
   // Format the prompt parts
   const parts: AssembledPrompt['parts'] = {
     shot: shot ? formatShot(shot) : undefined,
-    characters: characters.map(formatCharacter),
-    props: props.map(formatProp),
-    settings: settings.map(formatSetting),
+    characters: characters.map((c) => formatCharacter(c.data)),
+    props: props.map((p) => formatProp(p.data)),
+    settings: settings.map((s) => formatSetting(s.data)),
     extras: extras.map(formatExtras),
     outfits: outfits.map(formatOutfit),
     actions: actions.map(formatAction),
-    styles: styles.map(formatStyle),
+    styles: styles.map((s) => formatStyle(s.data)),
     edits: edits.map(formatEdit),
   };
 
@@ -159,13 +231,115 @@ export function assemblePrompt(
   const resolvedParams = parameters as ParametersNodeData | null;
   const settingsDefaults = useSettingsStore.getState().defaults;
 
+  // Collect reference images from all sources
+  const referenceImages: ReferenceImage[] = [];
+
+  // Helper to find reference image connected to an asset node (from Reference or Output node)
+  const getConnectedReferenceImage = (assetNodeId: string): { imageUrl: string; name?: string } | null => {
+    for (const [sourceId, targetId] of referenceToAsset.entries()) {
+      if (targetId === assetNodeId) {
+        const sourceNode = nodes.find((n) => n.id === sourceId);
+
+        // Reference node as source
+        if (sourceNode?.type === 'reference') {
+          const refData = sourceNode.data as ReferenceNodeData;
+          if (refData.imageUrl) {
+            return { imageUrl: refData.imageUrl, name: refData.name };
+          }
+        }
+
+        // Output node as source (use its generated image)
+        if (sourceNode?.type === 'output') {
+          const outputData = sourceNode.data as OutputNodeData;
+          if (outputData.generatedImageUrl) {
+            return { imageUrl: outputData.generatedImageUrl, name: 'Previous generation' };
+          }
+        }
+      }
+    }
+    return null;
+  };
+
+  // Add reference images from connected Reference/Output nodes (with contextual descriptions)
+  for (const char of characters) {
+    const ref = getConnectedReferenceImage(char.id);
+    if (ref) {
+      referenceImages.push({
+        imageUrl: ref.imageUrl,
+        imageType: 'character',
+        name: char.data.name,
+        description: `Reference for character: ${char.data.name}. ${char.data.description}`,
+      });
+    }
+  }
+
+  for (const setting of settings) {
+    const ref = getConnectedReferenceImage(setting.id);
+    if (ref) {
+      referenceImages.push({
+        imageUrl: ref.imageUrl,
+        imageType: 'object',
+        name: setting.data.name,
+        description: `Reference for setting: ${setting.data.name}. ${setting.data.description}`,
+      });
+    }
+  }
+
+  for (const prop of props) {
+    const ref = getConnectedReferenceImage(prop.id);
+    if (ref) {
+      referenceImages.push({
+        imageUrl: ref.imageUrl,
+        imageType: 'object',
+        name: prop.data.name,
+        description: `Reference for prop: ${prop.data.name}. ${prop.data.description}`,
+      });
+    }
+  }
+
+  for (const style of styles) {
+    const ref = getConnectedReferenceImage(style.id);
+    if (ref) {
+      referenceImages.push({
+        imageUrl: ref.imageUrl,
+        imageType: 'style',
+        name: style.data.name,
+        description: `Style reference: ${style.data.name}. ${style.data.description}`,
+      });
+    }
+  }
+
+  // Add standalone reference node images (not connected to any asset)
+  for (const ref of standaloneReferences) {
+    referenceImages.push({
+      imageUrl: ref.imageUrl!,
+      imageType: ref.imageType,
+      name: ref.name,
+      description: ref.description,
+    });
+  }
+
+  // Add reference images connected directly to Output node
+  for (const ref of directOutputReferences) {
+    referenceImages.push({
+      imageUrl: ref.imageUrl!,
+      imageType: ref.imageType,
+      name: ref.name,
+      description: ref.description,
+    });
+  }
+
   return {
     prompt: promptParts.join(' '),
     negativePrompt: negatives.map((n) => n.content).join(', '),
+    referenceImages,
     parameters: {
       model: resolvedParams?.model || settingsDefaults.model,
       aspectRatio: resolvedParams?.aspectRatio || settingsDefaults.aspectRatio,
+      resolution: resolvedParams?.resolution,
       seed: resolvedParams?.seed,
+      temperature: resolvedParams?.temperature,
+      numberOfImages: resolvedParams?.numberOfImages,
     },
     parts,
   };

@@ -1,3 +1,4 @@
+import { useEffect, useCallback, useRef } from 'react';
 import {
   ReactFlow,
   Background,
@@ -15,16 +16,49 @@ import { NODE_COLORS } from '@/types/nodes';
 import type { NodeType } from '@/types/nodes';
 
 export function Canvas() {
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect } = useFlowStore();
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, copyNodes, pasteNodes } = useFlowStore();
   const { selectNode } = useUIStore();
+  const selectedNodeIds = useRef<string[]>([]);
 
-  const handleSelectionChange: OnSelectionChangeFunc = ({ nodes: selectedNodes }) => {
+  const handleSelectionChange: OnSelectionChangeFunc = useCallback(({ nodes: selectedNodes }) => {
+    // Track selected node IDs for copy/paste
+    selectedNodeIds.current = selectedNodes.map((n) => n.id);
+
     if (selectedNodes.length === 1) {
       selectNode(selectedNodes[0].id);
     } else {
       selectNode(null);
     }
-  };
+  }, [selectNode]);
+
+  // Keyboard shortcuts for copy/paste
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Check if we're in an input field
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+        return;
+      }
+
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const modifier = isMac ? e.metaKey : e.ctrlKey;
+
+      if (modifier && e.key === 'c') {
+        e.preventDefault();
+        if (selectedNodeIds.current.length > 0) {
+          copyNodes(selectedNodeIds.current);
+        }
+      }
+
+      if (modifier && e.key === 'v') {
+        e.preventDefault();
+        pasteNodes();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [copyNodes, pasteNodes]);
 
   return (
     <div className="flex-1 h-full">
@@ -42,6 +76,9 @@ export function Canvas() {
           type: 'bezier',
           style: { strokeWidth: 2 },
         }}
+        selectionOnDrag
+        panOnDrag={[1, 2]} // Middle mouse and right mouse for panning
+        selectNodesOnDrag={false}
         proOptions={{ hideAttribution: true }}
       >
         <Background

@@ -1,4 +1,4 @@
-import type { Provider, GenerationRequest, GenerationResponse } from '../types';
+import type { Provider, GenerationRequest, GenerationResponse, GeneratedImage } from '../types';
 
 export const mockProvider: Provider = {
   name: 'mock',
@@ -9,15 +9,22 @@ export const mockProvider: Provider = {
 
     // Generate a placeholder image URL based on aspect ratio
     const dimensions = getImageDimensions(request.aspectRatio);
-    const seed = request.seed || Math.floor(Math.random() * 10000);
+    const baseSeed = request.seed || Math.floor(Math.random() * 10000);
+    const count = request.numberOfImages || 1;
 
-    // Use picsum.photos for random placeholder images
-    const imageUrl = `https://picsum.photos/seed/${seed}/${dimensions.width}/${dimensions.height}`;
+    // Generate multiple images if requested
+    const images: GeneratedImage[] = [];
+    for (let i = 0; i < count; i++) {
+      const seed = baseSeed + i;
+      const imageUrl = `https://picsum.photos/seed/${seed}/${dimensions.width}/${dimensions.height}`;
+      images.push({ imageUrl, seed });
+    }
 
     return {
-      imageUrl,
+      imageUrl: images[0].imageUrl,
+      images,
       revisedPrompt: request.prompt,
-      seed,
+      seed: baseSeed,
     };
   },
 
