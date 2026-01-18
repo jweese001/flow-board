@@ -1,0 +1,203 @@
+@import "tailwindcss";
+
+/* ============================================
+   DESIGN TOKENS (CSS Custom Properties)
+   ============================================ */
+
+@theme {
+  /* ----- BACKGROUND COLORS ----- */
+  --color-bg-darkest: #0a0b0f;
+  --color-bg-dark: #12141a;
+  --color-bg-panel: #181a22;
+  --color-bg-elevated: #1e212b;
+  --color-bg-hover: #252836;
+
+  /* ----- TEXT COLORS ----- */
+  --color-text-primary: #e8eaed;
+  --color-text-secondary: #9ca3af;
+  --color-text-muted: #6b7280;
+  --color-text-placeholder: #4b5563;
+
+  /* ----- BORDER COLORS ----- */
+  --color-border-subtle: rgba(255, 255, 255, 0.06);
+  --color-border-medium: rgba(255, 255, 255, 0.1);
+  --color-border-strong: rgba(255, 255, 255, 0.15);
+
+  /* ----- NODE COLORS ----- */
+  --color-node-character: #3b82f6;
+  --color-node-setting: #10b981;
+  --color-node-prop: #f59e0b;
+  --color-node-style: #a855f7;
+  --color-node-extras: #64748b;
+  --color-node-shot: #ec4899;
+  --color-node-outfit: #06b6d4;
+  --color-node-action: #f97316;
+  --color-node-negative: #f43f5e;
+  --color-node-params: #14b8a6;
+  --color-node-edit: #6b7280;
+  --color-node-output: #ef4444;
+
+  /* ----- ACCENT COLORS ----- */
+  --color-accent-primary: #6366f1;
+  --color-success: #22c55e;
+  --color-warning: #eab308;
+  --color-error: #ef4444;
+
+  /* ----- TYPOGRAPHY ----- */
+  --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* ----- SIZING ----- */
+  --sidebar-width: 260px;
+  --panel-width: 320px;
+  --topbar-height: 52px;
+  --node-width: 220px;
+  --node-width-lg: 280px;
+
+  /* ----- SHADOWS ----- */
+  --shadow-node: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.1);
+  --shadow-panel: 0 0 40px rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-display);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  background: var(--color-bg-dark);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   SCROLLBAR STYLES
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-bg-hover);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* ============================================
+   REACT FLOW OVERRIDES
+   ============================================ */
+
+.react-flow {
+  background: var(--color-bg-darkest) !important;
+}
+
+.react-flow__background {
+  background: var(--color-bg-darkest) !important;
+}
+
+.react-flow__minimap {
+  background: var(--color-bg-panel) !important;
+  border: 1px solid var(--color-border-medium) !important;
+  border-radius: 8px !important;
+}
+
+.react-flow__controls {
+  background: var(--color-bg-panel) !important;
+  border: 1px solid var(--color-border-medium) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-panel) !important;
+}
+
+.react-flow__controls-button {
+  background: var(--color-bg-panel) !important;
+  border-color: var(--color-border-subtle) !important;
+  color: var(--color-text-secondary) !important;
+}
+
+.react-flow__controls-button:hover {
+  background: var(--color-bg-hover) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.react-flow__edge-path {
+  stroke-width: 2;
+}
+
+.react-flow__handle {
+  width: 12px !important;
+  height: 12px !important;
+  background: var(--color-bg-panel) !important;
+  border-width: 2px !important;
+}
+
+.react-flow__node {
+  background: transparent !important;
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+.text-primary {
+  color: var(--color-text-primary);
+}
+
+.text-secondary {
+  color: var(--color-text-secondary);
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.animate-pulse-slow {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}

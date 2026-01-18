@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PromptFlow Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Core palette - deep industrial with neon accents */
+      --bg-darkest: #0a0b0f;
+      --bg-dark: #12141a;
+      --bg-panel: #181a22;
+      --bg-elevated: #1e212b;
+      --bg-hover: #252836;
+
+      /* Text hierarchy */
+      --text-primary: #e8eaed;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+
+      /* Node type colors - vivid, saturated */
+      --node-character: #3b82f6;
+      --node-character-glow: rgba(59, 130, 246, 0.4);
+      --node-setting: #10b981;
+      --node-setting-glow: rgba(16, 185, 129, 0.4);
+      --node-style: #a855f7;
+      --node-style-glow: rgba(168, 85, 247, 0.4);
+      --node-action: #f59e0b;
+      --node-action-glow: rgba(245, 158, 11, 0.4);
+      --node-output: #ef4444;
+      --node-output-glow: rgba(239, 68, 68, 0.4);
+      --node-negative: #ec4899;
+      --node-negative-glow: rgba(236, 72, 153, 0.4);
+      --node-params: #06b6d4;
+      --node-params-glow: rgba(6, 182, 212, 0.4);
+
+      /* Accents */
+      --accent-primary: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.3);
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-medium: rgba(255, 255, 255, 0.1);
+
+      /* Grid */
+      --grid-color: rgba(255, 255, 255, 0.03);
+      --grid-color-major: rgba(255, 255, 255, 0.06);
+
+      /* Shadows */
+      --shadow-node: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.1);
+      --shadow-panel: 0 0 40px rgba(0, 0, 0, 0.5);
+
+      /* Sizing */
+      --sidebar-width: 260px;
+      --panel-width: 320px;
+      --topbar-height: 52px;
+      --node-width: 220px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Outfit', -apple-system, sans-serif;
+      background: var(--bg-darkest);
+      color: var(--text-primary);
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    /* Noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    /* ===== TOP BAR ===== */
+    .topbar {
+      height: var(--topbar-height);
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      position: relative;
+      z-index: 100;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--accent-primary), #a855f7);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-icon svg {
+      width: 16px;
+      height: 16px;
+      stroke: white;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .divider {
+      width: 1px;
+      height: 24px;
+      background: var(--border-medium);
+    }
+
+    .project-name {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: var(--bg-elevated);
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .project-name:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .project-name span {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .topbar-center {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 4px;
+    }
+
+    .zoom-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: var(--bg-elevated);
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .zoom-btn {
+      width: 24px;
+      height: 24px;
+      background: var(--bg-hover);
+      border: none;
+      border-radius: 4px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+
+    .zoom-btn:hover {
+      background: var(--accent-primary);
+      color: white;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+    }
+
+    .btn-ghost:hover {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border-medium);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-subtle);
+    }
+
+    .btn-primary {
+      background: var(--accent-primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #5558e3;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    /* ===== MAIN LAYOUT ===== */
+    .main {
+      display: flex;
+      height: calc(100vh - var(--topbar-height));
+    }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .sidebar-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--bg-elevated);
+      border-radius: 6px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .search-box svg {
+      width: 14px;
+      height: 14px;
+      stroke: var(--text-muted);
+    }
+
+    .search-box input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      color: var(--text-primary);
+    }
+
+    .search-box input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .sidebar-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+    }
+
+    .asset-group {
+      margin-bottom: 20px;
+    }
+
+    .asset-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 4px;
+      cursor: pointer;
+    }
+
+    .asset-group-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .asset-group-title .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .asset-group-title .count {
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+
+    .asset-group-add {
+      width: 20px;
+      height: 20px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: all 0.15s ease;
+    }
+
+    .asset-group:hover .asset-group-add {
+      opacity: 1;
+    }
+
+    .asset-group-add:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .asset-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .asset-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      cursor: grab;
+      transition: all 0.15s ease;
+    }
+
+    .asset-item:hover {
+      background: var(--bg-elevated);
+    }
+
+    .asset-item.active {
+      background: var(--bg-hover);
+    }
+
+    .asset-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .asset-icon.character {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--node-character);
+    }
+
+    .asset-icon.setting {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--node-setting);
+    }
+
+    .asset-icon.style {
+      background: rgba(168, 85, 247, 0.15);
+      color: var(--node-style);
+    }
+
+    .asset-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .asset-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .asset-preview {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ===== CANVAS ===== */
+    .canvas-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-darkest);
+    }
+
+    .canvas {
+      position: absolute;
+      inset: 0;
+      /* Grid background */
+      background-image:
+        linear-gradient(var(--grid-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
+        linear-gradient(var(--grid-color-major) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-color-major) 1px, transparent 1px);
+      background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
+      background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px;
+    }
+
+    /* Subtle radial gradient overlay */
+    .canvas::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 0%, var(--bg-darkest) 80%);
+      pointer-events: none;
+    }
+
+    /* ===== SVG CONNECTIONS ===== */
+    .connections {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .connection {
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+    }
+
+    .connection.character { stroke: var(--node-character); }
+    .connection.setting { stroke: var(--node-setting); }
+    .connection.style { stroke: var(--node-style); }
+    .connection.action { stroke: var(--node-action); }
+    .connection.params { stroke: var(--node-params); }
+
+    .connection-glow {
+      fill: none;
+      stroke-width: 8;
+      stroke-linecap: round;
+      opacity: 0.3;
+      filter: blur(4px);
+    }
+
+    /* Animated flow dots */
+    @keyframes flowDot {
+      0% { offset-distance: 0%; opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { offset-distance: 100%; opacity: 0; }
+    }
+
+    .flow-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      position: absolute;
+      offset-rotate: 0deg;
+      animation: flowDot 2s linear infinite;
+    }
+
+    /* ===== NODES ===== */
+    .node {
+      position: absolute;
+      width: var(--node-width);
+      background: var(--bg-panel);
+      border-radius: 10px;
+      border: 1px solid var(--border-medium);
+      box-shadow: var(--shadow-node);
+      cursor: grab;
+      transition: box-shadow 0.2s ease, transform 0.1s ease;
+      z-index: 10;
+    }
+
+    .node:hover {
+      z-index: 20;
+    }
+
+    .node.selected {
+      z-index: 30;
+    }
+
+    .node-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      border-radius: 10px 10px 0 0;
+    }
+
+    .node-type-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .node-type-icon svg {
+      width: 14px;
+      height: 14px;
+      stroke-width: 2;
+    }
+
+    .node-title {
+      flex: 1;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .node-menu {
+      width: 20px;
+      height: 20px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: all 0.15s ease;
+    }
+
+    .node:hover .node-menu {
+      opacity: 1;
+    }
+
+    .node-menu:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .node-body {
+      padding: 12px 14px;
+    }
+
+    .node-field {
+      margin-bottom: 10px;
+    }
+
+    .node-field:last-child {
+      margin-bottom: 0;
+    }
+
+    .node-field-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .node-field-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+      background: var(--bg-elevated);
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .node-field-value.truncate {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Node handles (connection points) */
+    .node-handle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--bg-panel);
+      border: 2px solid;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 5;
+    }
+
+    .node-handle.input {
+      left: -6px;
+    }
+
+    .node-handle.output {
+      right: -6px;
+    }
+
+    /* Node type specific styles */
+    .node.character .node-header { background: rgba(59, 130, 246, 0.08); }
+    .node.character .node-type-icon { background: rgba(59, 130, 246, 0.2); color: var(--node-character); }
+    .node.character .node-handle { border-color: var(--node-character); }
+    .node.character.selected { border-color: var(--node-character); box-shadow: var(--shadow-node), 0 0 30px var(--node-character-glow); }
+
+    .node.setting .node-header { background: rgba(16, 185, 129, 0.08); }
+    .node.setting .node-type-icon { background: rgba(16, 185, 129, 0.2); color: var(--node-setting); }
+    .node.setting .node-handle { border-color: var(--node-setting); }
+    .node.setting.selected { border-color: var(--node-setting); box-shadow: var(--shadow-node), 0 0 30px var(--node-setting-glow); }
+
+    .node.style .node-header { background: rgba(168, 85, 247, 0.08); }
+    .node.style .node-type-icon { background: rgba(168, 85, 247, 0.2); color: var(--node-style); }
+    .node.style .node-handle { border-color: var(--node-style); }
+    .node.style.selected { border-color: var(--node-style); box-shadow: var(--shadow-node), 0 0 30px var(--node-style-glow); }
+
+    .node.action .node-header { background: rgba(245, 158, 11, 0.08); }
+    .node.action .node-type-icon { background: rgba(245, 158, 11, 0.2); color: var(--node-action); }
+    .node.action .node-handle { border-color: var(--node-action); }
+    .node.action.selected { border-color: var(--node-action); box-shadow: var(--shadow-node), 0 0 30px var(--node-action-glow); }
+
+    .node.params .node-header { background: rgba(6, 182, 212, 0.08); }
+    .node.params .node-type-icon { background: rgba(6, 182, 212, 0.2); color: var(--node-params); }
+    .node.params .node-handle { border-color: var(--node-params); }
+    .node.params.selected { border-color: var(--node-params); box-shadow: var(--shadow-node), 0 0 30px var(--node-params-glow); }
+
+    .node.output .node-header { background: rgba(239, 68, 68, 0.08); }
+    .node.output .node-type-icon { background: rgba(239, 68, 68, 0.2); color: var(--node-output); }
+    .node.output .node-handle { border-color: var(--node-output); }
+    .node.output.selected { border-color: var(--node-output); box-shadow: var(--shadow-node), 0 0 30px var(--node-output-glow); }
+
+    /* Output node specific */
+    .node.output {
+      width: 280px;
+    }
+
+    .output-preview {
+      background: var(--bg-elevated);
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .output-preview-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .output-preview-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      max-height: 80px;
+      overflow-y: auto;
+    }
+
+    .output-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .output-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 6px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .output-btn.generate {
+      background: linear-gradient(135deg, var(--node-output), #dc2626);
+      color: white;
+    }
+
+    .output-btn.generate:hover {
+      box-shadow: 0 0 20px var(--node-output-glow);
+      transform: translateY(-1px);
+    }
+
+    .output-btn.edit {
+      background: var(--bg-hover);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-medium);
+    }
+
+    .output-btn.edit:hover {
+      background: var(--bg-panel);
+      color: var(--text-primary);
+    }
+
+    /* ===== PROPERTIES PANEL ===== */
+    .properties-panel {
+      width: var(--panel-width);
+      background: var(--bg-panel);
+      border-left: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-panel);
+    }
+
+    .panel-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .panel-node-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .panel-node-icon.action {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--node-action);
+    }
+
+    .panel-header-info {
+      flex: 1;
+    }
+
+    .panel-node-type {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--node-action);
+    }
+
+    .panel-node-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .panel-close {
+      width: 28px;
+      height: 28px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+
+    .panel-close:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .panel-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .panel-section {
+      margin-bottom: 24px;
+    }
+
+    .panel-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .panel-field {
+      margin-bottom: 16px;
+    }
+
+    .panel-field:last-child {
+      margin-bottom: 0;
+    }
+
+    .panel-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-label .hint {
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+
+    .panel-input {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.15s ease;
+    }
+
+    .panel-input:focus {
+      border-color: var(--node-action);
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+    }
+
+    .panel-textarea {
+      width: 100%;
+      padding: 12px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text-primary);
+      outline: none;
+      resize: vertical;
+      min-height: 120px;
+      transition: all 0.15s ease;
+    }
+
+    .panel-textarea:focus {
+      border-color: var(--node-action);
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+    }
+
+    .panel-textarea::placeholder {
+      color: var(--text-muted);
+    }
+
+    .char-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      text-align: right;
+      margin-top: 6px;
+    }
+
+    .panel-connections {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .panel-connection {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--bg-elevated);
+      border-radius: 6px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .panel-connection-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .panel-connection-dot.character { background: var(--node-character); }
+    .panel-connection-dot.setting { background: var(--node-setting); }
+
+    .panel-connection-info {
+      flex: 1;
+    }
+
+    .panel-connection-type {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .panel-connection-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .panel-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      gap: 8px;
+    }
+
+    .panel-footer .btn {
+      flex: 1;
+      justify-content: center;
+    }
+
+    /* ===== MINIMAP ===== */
+    .minimap {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 180px;
+      height: 120px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-medium);
+      border-radius: 8px;
+      overflow: hidden;
+      z-index: 50;
+      opacity: 0.9;
+    }
+
+    .minimap-viewport {
+      position: absolute;
+      border: 1px solid var(--accent-primary);
+      background: rgba(99, 102, 241, 0.1);
+      border-radius: 2px;
+    }
+
+    .minimap-node {
+      position: absolute;
+      border-radius: 2px;
+    }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--bg-hover);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1200px) {
+      .properties-panel {
+        display: none;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .sidebar {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        PromptFlow Studio
+      </div>
+      <div class="divider"></div>
+      <div class="project-name">
+        Project: <span>Neon Shadows #1</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="topbar-center">
+      <div class="zoom-control">
+        <button class="zoom-btn">−</button>
+        <span>100%</span>
+        <button class="zoom-btn">+</button>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <button class="btn btn-ghost">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        History
+      </button>
+      <button class="btn btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+        </svg>
+        Export
+      </button>
+      <button class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 13l4 4L19 7"/>
+        </svg>
+        Save
+      </button>
+    </div>
+  </header>
+
+  <main class="main">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">Asset Library</div>
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="M21 21l-4.35-4.35"/>
+          </svg>
+          <input type="text" placeholder="Search assets...">
+        </div>
+      </div>
+
+      <div class="sidebar-content">
+        <!-- Characters -->
+        <div class="asset-group">
+          <div class="asset-group-header">
+            <div class="asset-group-title">
+              <span class="dot" style="background: var(--node-character)"></span>
+              Characters
+              <span class="count">3</span>
+            </div>
+            <button class="asset-group-add">+</button>
+          </div>
+          <div class="asset-list">
+            <div class="asset-item active">
+              <div class="asset-icon character">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+              <div class="asset-info">
+                <div class="asset-name">Mira Chen</div>
+                <div class="asset-preview">Tall woman, short black hair...</div>
+              </div>
+            </div>
+            <div class="asset-item">
+              <div class="asset-icon character">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+              <div class="asset-info">
+                <div class="asset-name">K-7</div>
+                <div class="asset-preview">Humanoid robot, dented chrome...</div>
+              </div>
+            </div>
+            <div class="asset-item">
+              <div class="asset-icon character">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+              <div class="asset-info">
+                <div class="asset-name">The Broker</div>
+                <div class="asset-preview">Shadowy figure, expensive suit...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings -->
+        <div class="asset-group">
+          <div class="asset-group-header">
+            <div class="asset-group-title">
+              <span class="dot" style="background: var(--node-setting)"></span>
+              Settings
+              <span class="count">2</span>
+            </div>
+            <button class="asset-group-add">+</button>
+          </div>
+          <div class="asset-list">
+            <div class="asset-item">
+              <div class="asset-icon setting">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                </svg>
+              </div>
+              <div class="asset-info">
+                <div class="asset-name">The Undercity</div>
+                <div class="asset-preview">Crowded underground market...</div>
+              </div>
+            </div>
+            <div class="asset-item">
+              <div class="asset-icon setting">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                </svg>
+              </div>
+              <div class="asset-info">
+                <div class="asset-name">Mira's Office</div>
+                <div class="asset-preview">Cluttered desk, rain on window...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Styles -->
+        <div class="asset-group">
+          <div class="asset-group-header">
+            <div class="asset-group-title">
+              <span class="dot" style="background: var(--node-style)"></span>
+              Styles
+              <span class="count">2</span>
+            </div>
+            <button class="asset-group-add">+</button>
+          </div>
+          <div class="asset-list">
+            <div class="asset-item">
+              <div class="asset-icon style">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                  <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+                </svg>
+              </div>
+              <div class="asset-info">
+                <div class="asset-name">Noir</div>
+                <div class="asset-preview">High contrast, heavy inks...</div>
+              </div>
+            </div>
+            <div class="asset-item">
+              <div class="asset-icon style">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                  <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+                </svg>
+              </div>
+              <div class="asset-info">
+                <div class="asset-name">Flashback</div>
+                <div class="asset-preview">Desaturated, soft edges...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Negatives -->
+        <div class="asset-group">
+          <div class="asset-group-header">
+            <div class="asset-group-title">
+              <span class="dot" style="background: var(--node-negative)"></span>
+              Negatives
+              <span class="count">1</span>
+            </div>
+            <button class="asset-group-add">+</button>
+          </div>
+          <div class="asset-list">
+            <div class="asset-item">
+              <div class="asset-icon" style="background: rgba(236, 72, 153, 0.15); color: var(--node-negative);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M4.93 4.93l14.14 14.14"/>
+                </svg>
+              </div>
+              <div class="asset-info">
+                <div class="asset-name">Quality Fixes</div>
+                <div class="asset-preview">Blurry, low quality, extra limbs...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Canvas -->
+    <div class="canvas-container">
+      <div class="canvas">
+        <!-- SVG Connections -->
+        <svg class="connections" width="100%" height="100%">
+          <defs>
+            <linearGradient id="grad-character" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:var(--node-character);stop-opacity:1" />
+              <stop offset="100%" style="stop-color:var(--node-action);stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="grad-setting" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:var(--node-setting);stop-opacity:1" />
+              <stop offset="100%" style="stop-color:var(--node-action);stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="grad-action" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:var(--node-action);stop-opacity:1" />
+              <stop offset="100%" style="stop-color:var(--node-output);stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="grad-style" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:var(--node-style);stop-opacity:1" />
+              <stop offset="100%" style="stop-color:var(--node-output);stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="grad-params" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:var(--node-params);stop-opacity:1" />
+              <stop offset="100%" style="stop-color:var(--node-output);stop-opacity:1" />
+            </linearGradient>
+          </defs>
+
+          <!-- Character to Action -->
+          <path class="connection-glow" d="M 270 140 C 340 140, 340 260, 410 260" stroke="url(#grad-character)"/>
+          <path class="connection" d="M 270 140 C 340 140, 340 260, 410 260" stroke="url(#grad-character)"/>
+
+          <!-- Setting to Action -->
+          <path class="connection-glow" d="M 270 340 C 340 340, 340 280, 410 280" stroke="url(#grad-setting)"/>
+          <path class="connection" d="M 270 340 C 340 340, 340 280, 410 280" stroke="url(#grad-setting)"/>
+
+          <!-- Action to Output -->
+          <path class="connection-glow" d="M 630 270 C 700 270, 720 200, 790 200" stroke="url(#grad-action)"/>
+          <path class="connection" d="M 630 270 C 700 270, 720 200, 790 200" stroke="url(#grad-action)"/>
+
+          <!-- Style to Output -->
+          <path class="connection-glow" d="M 270 520 C 500 520, 600 260, 790 260" stroke="url(#grad-style)"/>
+          <path class="connection" d="M 270 520 C 500 520, 600 260, 790 260" stroke="url(#grad-style)"/>
+
+          <!-- Params to Output -->
+          <path class="connection-glow" d="M 630 460 C 700 460, 720 300, 790 300" stroke="url(#grad-params)"/>
+          <path class="connection" d="M 630 460 C 700 460, 720 300, 790 300" stroke="url(#grad-params)"/>
+        </svg>
+
+        <!-- Character Node: Mira Chen -->
+        <div class="node character" style="left: 50px; top: 80px;">
+          <div class="node-handle output"></div>
+          <div class="node-header">
+            <div class="node-type-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <div class="node-title">Mira Chen</div>
+            <button class="node-menu">⋮</button>
+          </div>
+          <div class="node-body">
+            <div class="node-field">
+              <div class="node-field-label">Description</div>
+              <div class="node-field-value">Tall woman, short black hair, cybernetic left eye, worn leather jacket</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Setting Node: Undercity -->
+        <div class="node setting" style="left: 50px; top: 280px;">
+          <div class="node-handle output"></div>
+          <div class="node-header">
+            <div class="node-type-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+              </svg>
+            </div>
+            <div class="node-title">The Undercity</div>
+            <button class="node-menu">⋮</button>
+          </div>
+          <div class="node-body">
+            <div class="node-field">
+              <div class="node-field-label">Description</div>
+              <div class="node-field-value">Crowded underground market, neon signs, steam vents, perpetual rain</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Style Node: Noir -->
+        <div class="node style" style="left: 50px; top: 460px;">
+          <div class="node-handle output"></div>
+          <div class="node-header">
+            <div class="node-type-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+              </svg>
+            </div>
+            <div class="node-title">Noir Style</div>
+            <button class="node-menu">⋮</button>
+          </div>
+          <div class="node-body">
+            <div class="node-field">
+              <div class="node-field-label">Description</div>
+              <div class="node-field-value">High contrast, heavy black inks, muted colors with neon accents</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Node -->
+        <div class="node action selected" style="left: 410px; top: 200px;">
+          <div class="node-handle input"></div>
+          <div class="node-handle output"></div>
+          <div class="node-header">
+            <div class="node-type-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z"/>
+                <path d="M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                <path d="M9.5 14c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5S8 21.33 8 20.5v-5c0-.83.67-1.5 1.5-1.5z"/>
+                <path d="M3.5 14H5v1.5c0 .83-.67 1.5-1.5 1.5S2 16.33 2 15.5 2.67 14 3.5 14z"/>
+                <path d="M14 14.5c0-.83.67-1.5 1.5-1.5h5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-5c-.83 0-1.5-.67-1.5-1.5z"/>
+                <path d="M15.5 19H14v1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z"/>
+                <path d="M10 9.5C10 8.67 9.33 8 8.5 8h-5C2.67 8 2 8.67 2 9.5S2.67 11 3.5 11h5c.83 0 1.5-.67 1.5-1.5z"/>
+                <path d="M8.5 5H10V3.5C10 2.67 9.33 2 8.5 2S7 2.67 7 3.5 7.67 5 8.5 5z"/>
+              </svg>
+            </div>
+            <div class="node-title">Scene Action</div>
+            <button class="node-menu">⋮</button>
+          </div>
+          <div class="node-body">
+            <div class="node-field">
+              <div class="node-field-label">Action</div>
+              <div class="node-field-value">Mira walks through the crowded market, her cybernetic eye scanning the crowd. Rain drips from her jacket.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Parameters Node -->
+        <div class="node params" style="left: 410px; top: 400px;">
+          <div class="node-handle output"></div>
+          <div class="node-header">
+            <div class="node-type-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+              </svg>
+            </div>
+            <div class="node-title">Parameters</div>
+            <button class="node-menu">⋮</button>
+          </div>
+          <div class="node-body">
+            <div class="node-field">
+              <div class="node-field-label">Model</div>
+              <div class="node-field-value truncate">SDXL 1.0</div>
+            </div>
+            <div class="node-field">
+              <div class="node-field-label">Aspect Ratio</div>
+              <div class="node-field-value truncate">16:9</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Output Node -->
+        <div class="node output" style="left: 790px; top: 120px;">
+          <div class="node-handle input"></div>
+          <div class="node-header">
+            <div class="node-type-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <path d="M21 15l-5-5L5 21"/>
+              </svg>
+            </div>
+            <div class="node-title">Output</div>
+            <button class="node-menu">⋮</button>
+          </div>
+          <div class="node-body">
+            <div class="output-preview">
+              <div class="output-preview-label">Assembled Prompt</div>
+              <div class="output-preview-text">Mira Chen, tall woman, short black hair, cybernetic left eye, worn leather jacket. Mira walks through the crowded market, her cybernetic eye scanning the crowd. Setting: Undercity, crowded underground market, neon signs, steam vents. Style: noir comic art, high contrast, heavy inks, muted colors with neon accents.</div>
+            </div>
+            <div class="output-actions">
+              <button class="output-btn edit">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Edit
+              </button>
+              <button class="output-btn generate">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+                Generate
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Minimap -->
+      <div class="minimap">
+        <div class="minimap-viewport" style="left: 10px; top: 8px; width: 80px; height: 50px;"></div>
+        <div class="minimap-node" style="left: 15px; top: 15px; width: 30px; height: 12px; background: var(--node-character);"></div>
+        <div class="minimap-node" style="left: 15px; top: 35px; width: 30px; height: 12px; background: var(--node-setting);"></div>
+        <div class="minimap-node" style="left: 15px; top: 55px; width: 30px; height: 12px; background: var(--node-style);"></div>
+        <div class="minimap-node" style="left: 60px; top: 30px; width: 30px; height: 12px; background: var(--node-action);"></div>
+        <div class="minimap-node" style="left: 60px; top: 50px; width: 30px; height: 12px; background: var(--node-params);"></div>
+        <div class="minimap-node" style="left: 110px; top: 25px; width: 40px; height: 20px; background: var(--node-output);"></div>
+      </div>
+    </div>
+
+    <!-- Properties Panel -->
+    <aside class="properties-panel">
+      <div class="panel-header">
+        <div class="panel-node-icon action">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z"/>
+            <path d="M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+          </svg>
+        </div>
+        <div class="panel-header-info">
+          <div class="panel-node-type">Action Node</div>
+          <div class="panel-node-name">Scene Action</div>
+        </div>
+        <button class="panel-close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="panel-content">
+        <div class="panel-section">
+          <div class="panel-section-title">Content</div>
+          <div class="panel-field">
+            <label class="panel-label">
+              Action Description
+              <span class="hint">What's happening?</span>
+            </label>
+            <textarea class="panel-textarea" placeholder="Describe the scene action...">Mira walks through the crowded market, her cybernetic eye scanning the crowd. Rain drips from her jacket.</textarea>
+            <div class="char-count">127 / 500</div>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-section-title">Connected Inputs</div>
+          <div class="panel-connections">
+            <div class="panel-connection">
+              <div class="panel-connection-dot character"></div>
+              <div class="panel-connection-info">
+                <div class="panel-connection-type">Character</div>
+                <div class="panel-connection-name">Mira Chen</div>
+              </div>
+            </div>
+            <div class="panel-connection">
+              <div class="panel-connection-dot setting"></div>
+              <div class="panel-connection-info">
+                <div class="panel-connection-type">Setting</div>
+                <div class="panel-connection-name">The Undercity</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-section-title">Node Settings</div>
+          <div class="panel-field">
+            <label class="panel-label">Label</label>
+            <input type="text" class="panel-input" value="Scene Action">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-footer">
+        <button class="btn btn-secondary">Duplicate</button>
+        <button class="btn btn-ghost" style="color: var(--node-output);">Delete</button>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    // Simple interactivity for the mockup
+    document.querySelectorAll('.node').forEach(node => {
+      node.addEventListener('click', function(e) {
+        document.querySelectorAll('.node').forEach(n => n.classList.remove('selected'));
+        this.classList.add('selected');
+      });
+    });
+
+    document.querySelectorAll('.asset-item').forEach(item => {
+      item.addEventListener('click', function(e) {
+        document.querySelectorAll('.asset-item').forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    // Zoom controls
+    let zoom = 100;
+    document.querySelectorAll('.zoom-btn').forEach((btn, i) => {
+      btn.addEventListener('click', function() {
+        zoom = i === 0 ? Math.max(50, zoom - 10) : Math.min(150, zoom + 10);
+        document.querySelector('.zoom-control span').textContent = zoom + '%';
+      });
+    });
+  </script>
+</body>
+</html>
