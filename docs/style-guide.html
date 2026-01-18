@@ -3,120 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PromptFlow Studio — Style Guide</title>
+  <title>PromptFlow — Style Guide</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     /* ============================================
        CSS CUSTOM PROPERTIES (DESIGN TOKENS)
+       Matches Tailwind v4 @theme block in index.css
        ============================================ */
     :root {
       /* ----- BACKGROUND COLORS ----- */
-      --bg-darkest: #0a0b0f;      /* Canvas background */
-      --bg-dark: #12141a;          /* App background */
-      --bg-panel: #181a22;         /* Sidebar, panels */
-      --bg-elevated: #1e212b;      /* Cards, inputs */
-      --bg-hover: #252836;         /* Hover states */
+      --color-bg-darkest: #0a0b0f;
+      --color-bg-dark: #12141a;
+      --color-bg-panel: #181a22;
+      --color-bg-elevated: #1e212b;
+      --color-bg-hover: #252836;
 
       /* ----- TEXT COLORS ----- */
-      --text-primary: #e8eaed;     /* Primary text */
-      --text-secondary: #9ca3af;   /* Secondary text */
-      --text-muted: #6b7280;       /* Muted/disabled */
-      --text-placeholder: #4b5563; /* Placeholder text */
+      --color-text-primary: #e8eaed;
+      --color-text-secondary: #9ca3af;
+      --color-text-muted: #6b7280;
+      --color-text-placeholder: #4b5563;
 
       /* ----- BORDER COLORS ----- */
-      --border-subtle: rgba(255, 255, 255, 0.06);
-      --border-medium: rgba(255, 255, 255, 0.1);
-      --border-strong: rgba(255, 255, 255, 0.15);
+      --color-border-subtle: rgba(255, 255, 255, 0.06);
+      --color-border-medium: rgba(255, 255, 255, 0.1);
+      --color-border-strong: rgba(255, 255, 255, 0.15);
 
       /* ----- NODE COLORS ----- */
-      /* Asset Nodes */
-      --node-character: #3b82f6;        /* Blue */
-      --node-character-bg: rgba(59, 130, 246, 0.08);
-      --node-character-glow: rgba(59, 130, 246, 0.4);
-
-      --node-setting: #10b981;          /* Green */
-      --node-setting-bg: rgba(16, 185, 129, 0.08);
-      --node-setting-glow: rgba(16, 185, 129, 0.4);
-
-      --node-prop: #f59e0b;             /* Amber */
-      --node-prop-bg: rgba(245, 158, 11, 0.08);
-      --node-prop-glow: rgba(245, 158, 11, 0.4);
-
-      --node-style: #a855f7;            /* Purple */
-      --node-style-bg: rgba(168, 85, 247, 0.08);
-      --node-style-glow: rgba(168, 85, 247, 0.4);
-
-      --node-extras: #64748b;           /* Slate */
-      --node-extras-bg: rgba(100, 116, 139, 0.08);
-      --node-extras-glow: rgba(100, 116, 139, 0.4);
-
-      /* Modifier Nodes */
-      --node-shot: #ec4899;             /* Pink */
-      --node-shot-bg: rgba(236, 72, 153, 0.08);
-      --node-shot-glow: rgba(236, 72, 153, 0.4);
-
-      --node-outfit: #06b6d4;           /* Cyan */
-      --node-outfit-bg: rgba(6, 182, 212, 0.08);
-      --node-outfit-glow: rgba(6, 182, 212, 0.4);
-
-      /* Scene Node */
-      --node-action: #f97316;           /* Orange */
-      --node-action-bg: rgba(249, 115, 22, 0.08);
-      --node-action-glow: rgba(249, 115, 22, 0.4);
-
-      /* Technical Nodes */
-      --node-negative: #f43f5e;         /* Rose */
-      --node-negative-bg: rgba(244, 63, 94, 0.08);
-      --node-negative-glow: rgba(244, 63, 94, 0.4);
-
-      --node-params: #14b8a6;           /* Teal */
-      --node-params-bg: rgba(20, 184, 166, 0.08);
-      --node-params-glow: rgba(20, 184, 166, 0.4);
-
-      --node-edit: #6b7280;             /* Gray */
-      --node-edit-bg: rgba(107, 114, 128, 0.08);
-      --node-edit-glow: rgba(107, 114, 128, 0.4);
-
-      /* Terminal Node */
-      --node-output: #ef4444;           /* Red */
-      --node-output-bg: rgba(239, 68, 68, 0.08);
-      --node-output-glow: rgba(239, 68, 68, 0.4);
+      --color-node-character: #3b82f6;
+      --color-node-setting: #10b981;
+      --color-node-prop: #f59e0b;
+      --color-node-style: #a855f7;
+      --color-node-extras: #64748b;
+      --color-node-shot: #ec4899;
+      --color-node-outfit: #06b6d4;
+      --color-node-action: #f97316;
+      --color-node-negative: #f43f5e;
+      --color-node-params: #14b8a6;
+      --color-node-edit: #6b7280;
+      --color-node-output: #ef4444;
 
       /* ----- ACCENT COLORS ----- */
-      --accent-primary: #6366f1;        /* Indigo - primary actions */
-      --accent-glow: rgba(99, 102, 241, 0.3);
-      --success: #22c55e;
-      --warning: #eab308;
-      --error: #ef4444;
+      --color-accent-primary: #6366f1;
+      --color-success: #22c55e;
+      --color-warning: #eab308;
+      --color-error: #ef4444;
 
       /* ----- TYPOGRAPHY ----- */
       --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-      --text-xs: 10px;
-      --text-sm: 12px;
-      --text-base: 13px;
-      --text-lg: 14px;
-      --text-xl: 16px;
-      --text-2xl: 20px;
-      --text-3xl: 24px;
+      /* ----- SIZING ----- */
+      --sidebar-width: 280px;
+      --panel-width: 320px;
+      --topbar-height: 52px;
+      --node-width: 220px;
+      --node-width-lg: 280px;
 
-      --font-light: 300;
-      --font-normal: 400;
-      --font-medium: 500;
-      --font-semibold: 600;
-      --font-bold: 700;
-
-      --leading-tight: 1.25;
-      --leading-normal: 1.5;
-      --leading-relaxed: 1.6;
-
-      --tracking-tight: -0.02em;
-      --tracking-normal: 0;
-      --tracking-wide: 0.05em;
-      --tracking-wider: 0.08em;
+      /* ----- SHADOWS ----- */
+      --shadow-node: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.1);
+      --shadow-panel: 0 0 40px rgba(0, 0, 0, 0.5);
 
       /* ----- SPACING ----- */
       --space-1: 4px;
@@ -126,44 +74,17 @@
       --space-5: 20px;
       --space-6: 24px;
       --space-8: 32px;
-      --space-10: 40px;
-      --space-12: 48px;
-
-      /* ----- SIZING ----- */
-      --sidebar-width: 260px;
-      --panel-width: 320px;
-      --topbar-height: 52px;
-      --node-width: 220px;
-      --node-width-lg: 280px;
 
       /* ----- RADIUS ----- */
       --radius-sm: 4px;
       --radius-md: 6px;
       --radius-lg: 8px;
       --radius-xl: 10px;
-      --radius-full: 9999px;
-
-      /* ----- SHADOWS ----- */
-      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-      --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
-      --shadow-node: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.1);
-      --shadow-panel: 0 0 40px rgba(0, 0, 0, 0.5);
 
       /* ----- TRANSITIONS ----- */
       --transition-fast: 0.1s ease;
       --transition-base: 0.15s ease;
       --transition-slow: 0.25s ease;
-
-      /* ----- Z-INDEX ----- */
-      --z-canvas: 1;
-      --z-node: 10;
-      --z-node-hover: 20;
-      --z-node-selected: 30;
-      --z-minimap: 50;
-      --z-panel: 100;
-      --z-modal: 200;
-      --z-tooltip: 300;
     }
 
     /* ============================================
@@ -177,10 +98,10 @@
 
     body {
       font-family: var(--font-display);
-      font-size: var(--text-base);
-      line-height: var(--leading-normal);
-      color: var(--text-primary);
-      background: var(--bg-dark);
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--color-text-primary);
+      background: var(--color-bg-dark);
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
@@ -195,34 +116,34 @@
     }
 
     .style-guide h1 {
-      font-size: var(--text-3xl);
-      font-weight: var(--font-bold);
-      letter-spacing: var(--tracking-tight);
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
       margin-bottom: var(--space-2);
     }
 
     .style-guide .subtitle {
-      color: var(--text-secondary);
-      font-size: var(--text-lg);
+      color: var(--color-text-secondary);
+      font-size: 14px;
       margin-bottom: var(--space-8);
     }
 
     .section {
-      margin-bottom: var(--space-12);
+      margin-bottom: 48px;
     }
 
     .section-title {
-      font-size: var(--text-xl);
-      font-weight: var(--font-semibold);
-      color: var(--text-primary);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-text-primary);
       margin-bottom: var(--space-4);
       padding-bottom: var(--space-2);
-      border-bottom: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--color-border-subtle);
     }
 
     .section-desc {
-      color: var(--text-secondary);
-      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      font-size: 12px;
       margin-bottom: var(--space-4);
     }
 
@@ -231,11 +152,11 @@
     }
 
     .subsection-title {
-      font-size: var(--text-sm);
-      font-weight: var(--font-semibold);
-      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--color-text-muted);
       text-transform: uppercase;
-      letter-spacing: var(--tracking-wider);
+      letter-spacing: 0.08em;
       margin-bottom: var(--space-3);
     }
 
@@ -249,10 +170,10 @@
     }
 
     .color-swatch {
-      background: var(--bg-panel);
+      background: var(--color-bg-panel);
       border-radius: var(--radius-lg);
       overflow: hidden;
-      border: 1px solid var(--border-subtle);
+      border: 1px solid var(--color-border-subtle);
     }
 
     .color-swatch-preview {
@@ -264,15 +185,15 @@
     }
 
     .color-swatch-name {
-      font-size: var(--text-sm);
-      font-weight: var(--font-medium);
+      font-size: 12px;
+      font-weight: 500;
       margin-bottom: var(--space-1);
     }
 
     .color-swatch-value {
       font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      color: var(--text-muted);
+      font-size: 10px;
+      color: var(--color-text-muted);
     }
 
     /* ============================================
@@ -285,10 +206,10 @@
     }
 
     .node-color-swatch {
-      background: var(--bg-panel);
+      background: var(--color-bg-panel);
       border-radius: var(--radius-lg);
       overflow: hidden;
-      border: 1px solid var(--border-subtle);
+      border: 1px solid var(--color-border-subtle);
       text-align: center;
     }
 
@@ -297,25 +218,25 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: var(--text-xl);
+      font-size: 16px;
     }
 
     .node-color-info {
       padding: var(--space-2) var(--space-3);
-      background: var(--bg-elevated);
+      background: var(--color-bg-elevated);
     }
 
     .node-color-name {
-      font-size: var(--text-xs);
-      font-weight: var(--font-semibold);
+      font-size: 10px;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
+      letter-spacing: 0.05em;
     }
 
     .node-color-hex {
       font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      color: var(--text-muted);
+      font-size: 10px;
+      color: var(--color-text-muted);
     }
 
     /* ============================================
@@ -323,21 +244,18 @@
        ============================================ */
     .type-sample {
       padding: var(--space-4);
-      background: var(--bg-panel);
+      background: var(--color-bg-panel);
       border-radius: var(--radius-lg);
       margin-bottom: var(--space-3);
-      border: 1px solid var(--border-subtle);
+      border: 1px solid var(--color-border-subtle);
     }
 
     .type-sample-label {
       font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      color: var(--text-muted);
+      font-size: 10px;
+      color: var(--color-text-muted);
       margin-bottom: var(--space-2);
     }
-
-    .type-display { font-family: var(--font-display); }
-    .type-mono { font-family: var(--font-mono); }
 
     /* ============================================
        SPACING VISUALIZATION
@@ -355,15 +273,15 @@
     }
 
     .spacing-box {
-      background: var(--accent-primary);
+      background: var(--color-accent-primary);
       border-radius: var(--radius-sm);
     }
 
     .spacing-label {
       font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      color: var(--text-muted);
-      min-width: 80px;
+      font-size: 10px;
+      color: var(--color-text-muted);
+      min-width: 100px;
     }
 
     /* ============================================
@@ -385,8 +303,8 @@
       gap: var(--space-2);
       padding: var(--space-2) var(--space-4);
       font-family: var(--font-display);
-      font-size: var(--text-base);
-      font-weight: var(--font-medium);
+      font-size: 12px;
+      font-weight: 600;
       border-radius: var(--radius-md);
       border: none;
       cursor: pointer;
@@ -394,136 +312,138 @@
     }
 
     .btn-primary {
-      background: var(--accent-primary);
+      background: linear-gradient(135deg, var(--color-accent-primary), #5558e3);
       color: white;
     }
     .btn-primary:hover {
-      background: #5558e3;
-      box-shadow: 0 0 20px var(--accent-glow);
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
     }
 
     .btn-secondary {
-      background: var(--bg-elevated);
-      color: var(--text-primary);
-      border: 1px solid var(--border-medium);
+      background: var(--color-bg-elevated);
+      color: var(--color-text-primary);
+      border: 1px solid var(--color-border-medium);
     }
     .btn-secondary:hover {
-      background: var(--bg-hover);
+      background: var(--color-bg-hover);
     }
 
     .btn-ghost {
       background: transparent;
-      color: var(--text-secondary);
+      color: var(--color-text-secondary);
     }
     .btn-ghost:hover {
-      background: var(--bg-elevated);
-      color: var(--text-primary);
+      background: var(--color-bg-elevated);
+      color: var(--color-text-primary);
     }
 
     .btn-danger {
-      background: var(--error);
+      background: linear-gradient(135deg, var(--color-node-output), #dc2626);
       color: white;
     }
     .btn-danger:hover {
-      background: #dc2626;
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
     }
 
     .btn-sm {
       padding: var(--space-1) var(--space-3);
-      font-size: var(--text-sm);
-    }
-
-    .btn-lg {
-      padding: var(--space-3) var(--space-5);
-      font-size: var(--text-lg);
+      font-size: 11px;
     }
 
     /* Inputs */
     .input {
       width: 100%;
       max-width: 280px;
-      padding: var(--space-2) var(--space-3);
-      background: var(--bg-elevated);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-md);
-      font-family: var(--font-display);
-      font-size: var(--text-base);
-      color: var(--text-primary);
+      padding: 12px 16px;
+      background: var(--color-bg-elevated);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-lg);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--color-text-primary);
       outline: none;
       transition: all var(--transition-base);
     }
 
     .input:focus {
-      border-color: var(--accent-primary);
-      box-shadow: 0 0 0 3px var(--accent-glow);
+      border-color: var(--color-accent-primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
     }
 
     .input::placeholder {
-      color: var(--text-placeholder);
+      color: var(--color-text-muted);
     }
 
-    .input-error {
-      border-color: var(--error);
-    }
-    .input-error:focus {
-      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
-    }
-
-    /* Textarea */
-    .textarea {
-      width: 100%;
-      max-width: 400px;
-      min-height: 100px;
-      padding: var(--space-3);
-      background: var(--bg-elevated);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-md);
-      font-family: var(--font-mono);
-      font-size: var(--text-sm);
-      line-height: var(--leading-relaxed);
-      color: var(--text-primary);
-      outline: none;
-      resize: vertical;
-      transition: all var(--transition-base);
-    }
-
-    .textarea:focus {
-      border-color: var(--accent-primary);
-      box-shadow: 0 0 0 3px var(--accent-glow);
-    }
-
-    /* Select */
-    .select {
-      padding: var(--space-2) var(--space-3);
-      padding-right: var(--space-8);
-      background: var(--bg-elevated);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-md);
-      font-family: var(--font-display);
-      font-size: var(--text-base);
-      color: var(--text-primary);
-      outline: none;
-      cursor: pointer;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-    }
-
-    .select:focus {
-      border-color: var(--accent-primary);
-      box-shadow: 0 0 0 3px var(--accent-glow);
+    .input-success {
+      border-color: rgba(52, 211, 153, 0.4);
     }
 
     /* Labels */
     .label {
       display: block;
-      font-size: var(--text-xs);
-      font-weight: var(--font-semibold);
+      font-size: 10px;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      color: var(--color-text-muted);
       margin-bottom: var(--space-2);
+    }
+
+    /* Select */
+    .select {
+      width: 100%;
+      max-width: 280px;
+      padding: 12px 44px 12px 16px;
+      background: var(--color-bg-elevated);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-lg);
+      font-family: var(--font-display);
+      font-size: 13px;
+      color: var(--color-text-primary);
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+    }
+
+    .select:focus {
+      border-color: var(--color-accent-primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+
+    /* Toggle Switch */
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      border-radius: 12px;
+      background: var(--color-bg-elevated);
+      border: 1px solid var(--color-border-subtle);
+      cursor: pointer;
+      transition: all var(--transition-base);
+    }
+
+    .toggle.active {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border: none;
+    }
+
+    .toggle-knob {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      transition: transform var(--transition-base);
+    }
+
+    .toggle.active .toggle-knob {
+      transform: translateX(20px);
     }
 
     /* ============================================
@@ -537,9 +457,9 @@
 
     .node {
       width: var(--node-width);
-      background: var(--bg-panel);
+      background: var(--color-bg-panel);
       border-radius: var(--radius-xl);
-      border: 1px solid var(--border-medium);
+      border: 1px solid var(--color-border-medium);
       box-shadow: var(--shadow-node);
       overflow: hidden;
     }
@@ -558,18 +478,23 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: var(--text-sm);
+      font-size: 12px;
     }
 
     .node-title {
       flex: 1;
-      font-size: var(--text-sm);
-      font-weight: var(--font-semibold);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .node-name {
+      font-size: 11px;
+      color: var(--color-text-secondary);
     }
 
     .node-body {
       padding: var(--space-3);
-      border-top: 1px solid var(--border-subtle);
+      border-top: 1px solid var(--color-border-subtle);
     }
 
     .node-field {
@@ -581,73 +506,85 @@
     }
 
     .node-field-label {
-      font-size: var(--text-xs);
-      font-weight: var(--font-semibold);
+      font-size: 10px;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
       margin-bottom: var(--space-1);
     }
 
     .node-field-value {
       font-family: var(--font-mono);
       font-size: 11px;
-      line-height: var(--leading-relaxed);
-      color: var(--text-secondary);
-      background: var(--bg-elevated);
+      line-height: 1.6;
+      color: var(--color-text-secondary);
+      background: var(--color-bg-elevated);
       padding: var(--space-2);
       border-radius: var(--radius-sm);
-      border: 1px solid var(--border-subtle);
+      border: 1px solid var(--color-border-subtle);
     }
 
     /* Node type variations */
-    .node-character .node-header { background: var(--node-character-bg); }
-    .node-character .node-icon { background: rgba(59, 130, 246, 0.2); color: var(--node-character); }
-    .node-character.selected { border-color: var(--node-character); box-shadow: var(--shadow-node), 0 0 30px var(--node-character-glow); }
+    .node-character .node-header { background: rgba(59, 130, 246, 0.08); }
+    .node-character .node-icon { background: rgba(59, 130, 246, 0.2); color: var(--color-node-character); }
+    .node-character .node-title { color: var(--color-node-character); }
+    .node-character.selected { border-color: var(--color-node-character); box-shadow: var(--shadow-node), 0 0 30px rgba(59, 130, 246, 0.4); }
 
-    .node-setting .node-header { background: var(--node-setting-bg); }
-    .node-setting .node-icon { background: rgba(16, 185, 129, 0.2); color: var(--node-setting); }
-    .node-setting.selected { border-color: var(--node-setting); box-shadow: var(--shadow-node), 0 0 30px var(--node-setting-glow); }
+    .node-setting .node-header { background: rgba(16, 185, 129, 0.08); }
+    .node-setting .node-icon { background: rgba(16, 185, 129, 0.2); color: var(--color-node-setting); }
+    .node-setting .node-title { color: var(--color-node-setting); }
+    .node-setting.selected { border-color: var(--color-node-setting); box-shadow: var(--shadow-node), 0 0 30px rgba(16, 185, 129, 0.4); }
 
-    .node-prop .node-header { background: var(--node-prop-bg); }
-    .node-prop .node-icon { background: rgba(245, 158, 11, 0.2); color: var(--node-prop); }
-    .node-prop.selected { border-color: var(--node-prop); box-shadow: var(--shadow-node), 0 0 30px var(--node-prop-glow); }
+    .node-prop .node-header { background: rgba(245, 158, 11, 0.08); }
+    .node-prop .node-icon { background: rgba(245, 158, 11, 0.2); color: var(--color-node-prop); }
+    .node-prop .node-title { color: var(--color-node-prop); }
+    .node-prop.selected { border-color: var(--color-node-prop); box-shadow: var(--shadow-node), 0 0 30px rgba(245, 158, 11, 0.4); }
 
-    .node-style .node-header { background: var(--node-style-bg); }
-    .node-style .node-icon { background: rgba(168, 85, 247, 0.2); color: var(--node-style); }
-    .node-style.selected { border-color: var(--node-style); box-shadow: var(--shadow-node), 0 0 30px var(--node-style-glow); }
+    .node-style .node-header { background: rgba(168, 85, 247, 0.08); }
+    .node-style .node-icon { background: rgba(168, 85, 247, 0.2); color: var(--color-node-style); }
+    .node-style .node-title { color: var(--color-node-style); }
+    .node-style.selected { border-color: var(--color-node-style); box-shadow: var(--shadow-node), 0 0 30px rgba(168, 85, 247, 0.4); }
 
-    .node-extras .node-header { background: var(--node-extras-bg); }
-    .node-extras .node-icon { background: rgba(100, 116, 139, 0.2); color: var(--node-extras); }
-    .node-extras.selected { border-color: var(--node-extras); box-shadow: var(--shadow-node), 0 0 30px var(--node-extras-glow); }
+    .node-extras .node-header { background: rgba(100, 116, 139, 0.08); }
+    .node-extras .node-icon { background: rgba(100, 116, 139, 0.2); color: var(--color-node-extras); }
+    .node-extras .node-title { color: var(--color-node-extras); }
+    .node-extras.selected { border-color: var(--color-node-extras); box-shadow: var(--shadow-node), 0 0 30px rgba(100, 116, 139, 0.4); }
 
-    .node-shot .node-header { background: var(--node-shot-bg); }
-    .node-shot .node-icon { background: rgba(236, 72, 153, 0.2); color: var(--node-shot); }
-    .node-shot.selected { border-color: var(--node-shot); box-shadow: var(--shadow-node), 0 0 30px var(--node-shot-glow); }
+    .node-shot .node-header { background: rgba(236, 72, 153, 0.08); }
+    .node-shot .node-icon { background: rgba(236, 72, 153, 0.2); color: var(--color-node-shot); }
+    .node-shot .node-title { color: var(--color-node-shot); }
+    .node-shot.selected { border-color: var(--color-node-shot); box-shadow: var(--shadow-node), 0 0 30px rgba(236, 72, 153, 0.4); }
 
-    .node-outfit .node-header { background: var(--node-outfit-bg); }
-    .node-outfit .node-icon { background: rgba(6, 182, 212, 0.2); color: var(--node-outfit); }
-    .node-outfit.selected { border-color: var(--node-outfit); box-shadow: var(--shadow-node), 0 0 30px var(--node-outfit-glow); }
+    .node-outfit .node-header { background: rgba(6, 182, 212, 0.08); }
+    .node-outfit .node-icon { background: rgba(6, 182, 212, 0.2); color: var(--color-node-outfit); }
+    .node-outfit .node-title { color: var(--color-node-outfit); }
+    .node-outfit.selected { border-color: var(--color-node-outfit); box-shadow: var(--shadow-node), 0 0 30px rgba(6, 182, 212, 0.4); }
 
-    .node-action .node-header { background: var(--node-action-bg); }
-    .node-action .node-icon { background: rgba(249, 115, 22, 0.2); color: var(--node-action); }
-    .node-action.selected { border-color: var(--node-action); box-shadow: var(--shadow-node), 0 0 30px var(--node-action-glow); }
+    .node-action .node-header { background: rgba(249, 115, 22, 0.08); }
+    .node-action .node-icon { background: rgba(249, 115, 22, 0.2); color: var(--color-node-action); }
+    .node-action .node-title { color: var(--color-node-action); }
+    .node-action.selected { border-color: var(--color-node-action); box-shadow: var(--shadow-node), 0 0 30px rgba(249, 115, 22, 0.4); }
 
-    .node-negative .node-header { background: var(--node-negative-bg); }
-    .node-negative .node-icon { background: rgba(244, 63, 94, 0.2); color: var(--node-negative); }
-    .node-negative.selected { border-color: var(--node-negative); box-shadow: var(--shadow-node), 0 0 30px var(--node-negative-glow); }
+    .node-negative .node-header { background: rgba(244, 63, 94, 0.08); }
+    .node-negative .node-icon { background: rgba(244, 63, 94, 0.2); color: var(--color-node-negative); }
+    .node-negative .node-title { color: var(--color-node-negative); }
+    .node-negative.selected { border-color: var(--color-node-negative); box-shadow: var(--shadow-node), 0 0 30px rgba(244, 63, 94, 0.4); }
 
-    .node-params .node-header { background: var(--node-params-bg); }
-    .node-params .node-icon { background: rgba(20, 184, 166, 0.2); color: var(--node-params); }
-    .node-params.selected { border-color: var(--node-params); box-shadow: var(--shadow-node), 0 0 30px var(--node-params-glow); }
+    .node-params .node-header { background: rgba(20, 184, 166, 0.08); }
+    .node-params .node-icon { background: rgba(20, 184, 166, 0.2); color: var(--color-node-params); }
+    .node-params .node-title { color: var(--color-node-params); }
+    .node-params.selected { border-color: var(--color-node-params); box-shadow: var(--shadow-node), 0 0 30px rgba(20, 184, 166, 0.4); }
 
-    .node-edit .node-header { background: var(--node-edit-bg); }
-    .node-edit .node-icon { background: rgba(107, 114, 128, 0.2); color: var(--node-edit); }
-    .node-edit.selected { border-color: var(--node-edit); box-shadow: var(--shadow-node), 0 0 30px var(--node-edit-glow); }
+    .node-edit .node-header { background: rgba(107, 114, 128, 0.08); }
+    .node-edit .node-icon { background: rgba(107, 114, 128, 0.2); color: var(--color-node-edit); }
+    .node-edit .node-title { color: var(--color-node-edit); }
+    .node-edit.selected { border-color: var(--color-node-edit); box-shadow: var(--shadow-node), 0 0 30px rgba(107, 114, 128, 0.4); }
 
-    .node-output .node-header { background: var(--node-output-bg); }
-    .node-output .node-icon { background: rgba(239, 68, 68, 0.2); color: var(--node-output); }
-    .node-output.selected { border-color: var(--node-output); box-shadow: var(--shadow-node), 0 0 30px var(--node-output-glow); }
+    .node-output .node-header { background: rgba(239, 68, 68, 0.08); }
+    .node-output .node-icon { background: rgba(239, 68, 68, 0.2); color: var(--color-node-output); }
+    .node-output .node-title { color: var(--color-node-output); }
+    .node-output.selected { border-color: var(--color-node-output); box-shadow: var(--shadow-node), 0 0 30px rgba(239, 68, 68, 0.4); }
 
     /* ============================================
        NODE STATES
@@ -668,95 +605,122 @@
     }
 
     .node.error {
-      border-color: var(--error) !important;
+      border-color: var(--color-error) !important;
       box-shadow: var(--shadow-node), 0 0 20px rgba(239, 68, 68, 0.3) !important;
     }
 
     /* ============================================
-       CONNECTION STYLES
+       PANEL STYLES
        ============================================ */
-    .connections-demo {
-      background: var(--bg-darkest);
+    .panel-demo {
+      background: var(--color-bg-panel);
       border-radius: var(--radius-lg);
-      padding: var(--space-6);
-      position: relative;
-      height: 200px;
+      border: 1px solid var(--color-border-medium);
+      max-width: 280px;
+      overflow: hidden;
     }
 
-    .connections-demo svg {
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+
+    .panel-title {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .panel-body {
+      padding: var(--space-4);
+    }
+
+    .accordion-item {
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+
+    .accordion-trigger {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
       width: 100%;
-      height: 100%;
+      padding: var(--space-3) var(--space-4);
+      background: transparent;
+      border: none;
+      color: var(--color-text-secondary);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition-base);
     }
 
-    .connection {
-      fill: none;
-      stroke-width: 2;
-      stroke-linecap: round;
+    .accordion-trigger:hover {
+      background: var(--color-bg-hover);
+      color: var(--color-text-primary);
     }
 
-    .connection-glow {
-      fill: none;
-      stroke-width: 8;
-      stroke-linecap: round;
-      opacity: 0.3;
-      filter: blur(4px);
+    .accordion-trigger.active {
+      color: var(--color-text-primary);
+    }
+
+    .accordion-content {
+      padding: 0 var(--space-4) var(--space-4);
     }
 
     /* ============================================
-       ICONS
+       STATUS INDICATORS
        ============================================ */
-    .icon-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-4);
-    }
-
-    .icon-item {
-      display: flex;
-      flex-direction: column;
+    .status-badge {
+      display: inline-flex;
       align-items: center;
-      gap: var(--space-2);
-      padding: var(--space-3);
-      background: var(--bg-panel);
-      border-radius: var(--radius-md);
-      min-width: 80px;
+      gap: var(--space-1);
+      font-size: 11px;
+      font-weight: 500;
     }
 
-    .icon-item svg {
-      width: 24px;
-      height: 24px;
-      stroke: var(--text-primary);
-      stroke-width: 2;
-      fill: none;
+    .status-badge.success {
+      color: #34d399;
     }
 
-    .icon-item span {
-      font-size: var(--text-xs);
-      color: var(--text-muted);
+    .status-badge.warning {
+      color: var(--color-warning);
+    }
+
+    .status-badge.error {
+      color: var(--color-error);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
     }
 
     /* ============================================
        CODE BLOCKS
        ============================================ */
     .code-block {
-      background: var(--bg-darkest);
+      background: var(--color-bg-darkest);
       border-radius: var(--radius-md);
       padding: var(--space-4);
       overflow-x: auto;
-      border: 1px solid var(--border-subtle);
+      border: 1px solid var(--color-border-subtle);
     }
 
     .code-block code {
       font-family: var(--font-mono);
-      font-size: var(--text-sm);
-      color: var(--text-secondary);
-      line-height: var(--leading-relaxed);
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      line-height: 1.6;
     }
 
-    .code-block .comment { color: var(--text-muted); }
-    .code-block .property { color: var(--node-character); }
-    .code-block .value { color: var(--node-setting); }
-    .code-block .string { color: var(--node-action); }
+    .code-block .comment { color: var(--color-text-muted); }
+    .code-block .property { color: var(--color-node-character); }
+    .code-block .value { color: var(--color-node-setting); }
+    .code-block .string { color: var(--color-node-action); }
 
     /* ============================================
        UTILITY CLASSES
@@ -769,12 +733,13 @@
     .gap-4 { gap: var(--space-4); }
     .mt-4 { margin-top: var(--space-4); }
     .mb-2 { margin-bottom: var(--space-2); }
+    .mb-3 { margin-bottom: var(--space-3); }
   </style>
 </head>
 <body>
   <div class="style-guide">
-    <h1>PromptFlow Studio</h1>
-    <p class="subtitle">Design System & Style Guide</p>
+    <h1>PromptFlow</h1>
+    <p class="subtitle">Design System & Style Guide — Visual node-based prompt builder for AI image generation</p>
 
     <!-- ============================================
          COLORS
@@ -788,36 +753,36 @@
           <div class="color-swatch">
             <div class="color-swatch-preview" style="background: #0a0b0f;"></div>
             <div class="color-swatch-info">
-              <div class="color-swatch-name">Darkest</div>
-              <div class="color-swatch-value">--bg-darkest: #0a0b0f</div>
+              <div class="color-swatch-name">Darkest (Canvas)</div>
+              <div class="color-swatch-value">--color-bg-darkest: #0a0b0f</div>
             </div>
           </div>
           <div class="color-swatch">
             <div class="color-swatch-preview" style="background: #12141a;"></div>
             <div class="color-swatch-info">
-              <div class="color-swatch-name">Dark</div>
-              <div class="color-swatch-value">--bg-dark: #12141a</div>
+              <div class="color-swatch-name">Dark (App BG)</div>
+              <div class="color-swatch-value">--color-bg-dark: #12141a</div>
             </div>
           </div>
           <div class="color-swatch">
             <div class="color-swatch-preview" style="background: #181a22;"></div>
             <div class="color-swatch-info">
               <div class="color-swatch-name">Panel</div>
-              <div class="color-swatch-value">--bg-panel: #181a22</div>
+              <div class="color-swatch-value">--color-bg-panel: #181a22</div>
             </div>
           </div>
           <div class="color-swatch">
             <div class="color-swatch-preview" style="background: #1e212b;"></div>
             <div class="color-swatch-info">
               <div class="color-swatch-name">Elevated</div>
-              <div class="color-swatch-value">--bg-elevated: #1e212b</div>
+              <div class="color-swatch-value">--color-bg-elevated: #1e212b</div>
             </div>
           </div>
           <div class="color-swatch">
             <div class="color-swatch-preview" style="background: #252836;"></div>
             <div class="color-swatch-info">
               <div class="color-swatch-name">Hover</div>
-              <div class="color-swatch-value">--bg-hover: #252836</div>
+              <div class="color-swatch-value">--color-bg-hover: #252836</div>
             </div>
           </div>
         </div>
@@ -830,159 +795,166 @@
             <div class="color-swatch-preview" style="background: #e8eaed;"></div>
             <div class="color-swatch-info">
               <div class="color-swatch-name">Primary</div>
-              <div class="color-swatch-value">--text-primary: #e8eaed</div>
+              <div class="color-swatch-value">--color-text-primary: #e8eaed</div>
             </div>
           </div>
           <div class="color-swatch">
             <div class="color-swatch-preview" style="background: #9ca3af;"></div>
             <div class="color-swatch-info">
               <div class="color-swatch-name">Secondary</div>
-              <div class="color-swatch-value">--text-secondary: #9ca3af</div>
+              <div class="color-swatch-value">--color-text-secondary: #9ca3af</div>
             </div>
           </div>
           <div class="color-swatch">
             <div class="color-swatch-preview" style="background: #6b7280;"></div>
             <div class="color-swatch-info">
               <div class="color-swatch-name">Muted</div>
-              <div class="color-swatch-value">--text-muted: #6b7280</div>
+              <div class="color-swatch-value">--color-text-muted: #6b7280</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-swatch-preview" style="background: #4b5563;"></div>
+            <div class="color-swatch-info">
+              <div class="color-swatch-name">Placeholder</div>
+              <div class="color-swatch-value">--color-text-placeholder: #4b5563</div>
             </div>
           </div>
         </div>
       </div>
 
       <div class="subsection">
-        <h3 class="subsection-title">Node Colors</h3>
+        <h3 class="subsection-title">Node Colors (12 Types)</h3>
         <p class="section-desc">Each node type has a distinct color for quick visual identification.</p>
         <div class="node-color-grid">
           <div class="node-color-swatch">
-            <div class="node-color-preview" style="background: var(--node-character);">
+            <div class="node-color-preview" style="background: var(--color-node-character);">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                 <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
               </svg>
             </div>
             <div class="node-color-info">
-              <div class="node-color-name" style="color: var(--node-character);">Character</div>
+              <div class="node-color-name" style="color: var(--color-node-character);">Character</div>
               <div class="node-color-hex">#3b82f6</div>
             </div>
           </div>
           <div class="node-color-swatch">
-            <div class="node-color-preview" style="background: var(--node-setting);">
+            <div class="node-color-preview" style="background: var(--color-node-setting);">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                 <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
               </svg>
             </div>
             <div class="node-color-info">
-              <div class="node-color-name" style="color: var(--node-setting);">Setting</div>
+              <div class="node-color-name" style="color: var(--color-node-setting);">Setting</div>
               <div class="node-color-hex">#10b981</div>
             </div>
           </div>
           <div class="node-color-swatch">
-            <div class="node-color-preview" style="background: var(--node-prop);">
+            <div class="node-color-preview" style="background: var(--color-node-prop);">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                 <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
               </svg>
             </div>
             <div class="node-color-info">
-              <div class="node-color-name" style="color: var(--node-prop);">Prop</div>
+              <div class="node-color-name" style="color: var(--color-node-prop);">Prop</div>
               <div class="node-color-hex">#f59e0b</div>
             </div>
           </div>
           <div class="node-color-swatch">
-            <div class="node-color-preview" style="background: var(--node-style);">
+            <div class="node-color-preview" style="background: var(--color-node-style);">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                 <path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
               </svg>
             </div>
             <div class="node-color-info">
-              <div class="node-color-name" style="color: var(--node-style);">Style</div>
+              <div class="node-color-name" style="color: var(--color-node-style);">Style</div>
               <div class="node-color-hex">#a855f7</div>
             </div>
           </div>
           <div class="node-color-swatch">
-            <div class="node-color-preview" style="background: var(--node-extras);">
+            <div class="node-color-preview" style="background: var(--color-node-extras);">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                 <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
               </svg>
             </div>
             <div class="node-color-info">
-              <div class="node-color-name" style="color: var(--node-extras);">Extras</div>
+              <div class="node-color-name" style="color: var(--color-node-extras);">Extras</div>
               <div class="node-color-hex">#64748b</div>
             </div>
           </div>
           <div class="node-color-swatch">
-            <div class="node-color-preview" style="background: var(--node-shot);">
+            <div class="node-color-preview" style="background: var(--color-node-shot);">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                 <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>
               </svg>
             </div>
             <div class="node-color-info">
-              <div class="node-color-name" style="color: var(--node-shot);">Shot</div>
+              <div class="node-color-name" style="color: var(--color-node-shot);">Shot</div>
               <div class="node-color-hex">#ec4899</div>
             </div>
           </div>
           <div class="node-color-swatch">
-            <div class="node-color-preview" style="background: var(--node-outfit);">
+            <div class="node-color-preview" style="background: var(--color-node-outfit);">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                 <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"/>
               </svg>
             </div>
             <div class="node-color-info">
-              <div class="node-color-name" style="color: var(--node-outfit);">Outfit</div>
+              <div class="node-color-name" style="color: var(--color-node-outfit);">Outfit</div>
               <div class="node-color-hex">#06b6d4</div>
             </div>
           </div>
           <div class="node-color-swatch">
-            <div class="node-color-preview" style="background: var(--node-action);">
+            <div class="node-color-preview" style="background: var(--color-node-action);">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
               </svg>
             </div>
             <div class="node-color-info">
-              <div class="node-color-name" style="color: var(--node-action);">Action</div>
+              <div class="node-color-name" style="color: var(--color-node-action);">Action</div>
               <div class="node-color-hex">#f97316</div>
             </div>
           </div>
           <div class="node-color-swatch">
-            <div class="node-color-preview" style="background: var(--node-negative);">
+            <div class="node-color-preview" style="background: var(--color-node-negative);">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                 <circle cx="12" cy="12" r="10"/><path d="M4.93 4.93l14.14 14.14"/>
               </svg>
             </div>
             <div class="node-color-info">
-              <div class="node-color-name" style="color: var(--node-negative);">Negative</div>
+              <div class="node-color-name" style="color: var(--color-node-negative);">Negative</div>
               <div class="node-color-hex">#f43f5e</div>
             </div>
           </div>
           <div class="node-color-swatch">
-            <div class="node-color-preview" style="background: var(--node-params);">
+            <div class="node-color-preview" style="background: var(--color-node-params);">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+                <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>
               </svg>
             </div>
             <div class="node-color-info">
-              <div class="node-color-name" style="color: var(--node-params);">Parameters</div>
+              <div class="node-color-name" style="color: var(--color-node-params);">Parameters</div>
               <div class="node-color-hex">#14b8a6</div>
             </div>
           </div>
           <div class="node-color-swatch">
-            <div class="node-color-preview" style="background: var(--node-edit);">
+            <div class="node-color-preview" style="background: var(--color-node-edit);">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                <path d="M17 3a2.85 2.85 0 114 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="M15 5l4 4"/>
               </svg>
             </div>
             <div class="node-color-info">
-              <div class="node-color-name" style="color: var(--node-edit);">Edit</div>
+              <div class="node-color-name" style="color: var(--color-node-edit);">Edit</div>
               <div class="node-color-hex">#6b7280</div>
             </div>
           </div>
           <div class="node-color-swatch">
-            <div class="node-color-preview" style="background: var(--node-output);">
+            <div class="node-color-preview" style="background: var(--color-node-output);">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
               </svg>
             </div>
             <div class="node-color-info">
-              <div class="node-color-name" style="color: var(--node-output);">Output</div>
+              <div class="node-color-name" style="color: var(--color-node-output);">Output</div>
               <div class="node-color-hex">#ef4444</div>
             </div>
           </div>
@@ -996,28 +968,28 @@
             <div class="color-swatch-preview" style="background: #6366f1;"></div>
             <div class="color-swatch-info">
               <div class="color-swatch-name">Primary Accent</div>
-              <div class="color-swatch-value">--accent-primary: #6366f1</div>
+              <div class="color-swatch-value">--color-accent-primary: #6366f1</div>
             </div>
           </div>
           <div class="color-swatch">
             <div class="color-swatch-preview" style="background: #22c55e;"></div>
             <div class="color-swatch-info">
               <div class="color-swatch-name">Success</div>
-              <div class="color-swatch-value">--success: #22c55e</div>
+              <div class="color-swatch-value">--color-success: #22c55e</div>
             </div>
           </div>
           <div class="color-swatch">
             <div class="color-swatch-preview" style="background: #eab308;"></div>
             <div class="color-swatch-info">
               <div class="color-swatch-name">Warning</div>
-              <div class="color-swatch-value">--warning: #eab308</div>
+              <div class="color-swatch-value">--color-warning: #eab308</div>
             </div>
           </div>
           <div class="color-swatch">
             <div class="color-swatch-preview" style="background: #ef4444;"></div>
             <div class="color-swatch-info">
               <div class="color-swatch-name">Error</div>
-              <div class="color-swatch-value">--error: #ef4444</div>
+              <div class="color-swatch-value">--color-error: #ef4444</div>
             </div>
           </div>
         </div>
@@ -1034,103 +1006,41 @@
         <h3 class="subsection-title">Font Families</h3>
         <div class="type-sample">
           <div class="type-sample-label">--font-display: 'Outfit'</div>
-          <p class="type-display" style="font-size: 24px;">The quick brown fox jumps over the lazy dog</p>
-          <p class="type-display" style="font-size: 14px; color: var(--text-secondary); margin-top: 8px;">Used for UI text, headings, labels, and body copy</p>
+          <p style="font-size: 24px; font-weight: 600;">The quick brown fox jumps over the lazy dog</p>
+          <p style="font-size: 13px; color: var(--color-text-secondary); margin-top: 8px;">Used for UI text, headings, labels, and body copy</p>
         </div>
         <div class="type-sample">
           <div class="type-sample-label">--font-mono: 'JetBrains Mono'</div>
-          <p class="type-mono" style="font-size: 14px;">const prompt = assembleNodes(workflow);</p>
-          <p class="type-display" style="font-size: 14px; color: var(--text-secondary); margin-top: 8px;">Used for code, node content, technical values</p>
+          <p style="font-family: var(--font-mono); font-size: 13px;">const prompt = assembleNodes(workflow);</p>
+          <p style="font-size: 13px; color: var(--color-text-secondary); margin-top: 8px;">Used for code, node content, API keys, technical values</p>
         </div>
       </div>
 
       <div class="subsection">
         <h3 class="subsection-title">Type Scale</h3>
         <div class="type-sample">
-          <div class="type-sample-label">--text-3xl: 24px</div>
-          <p style="font-size: 24px; font-weight: 700;">Page Title</p>
+          <div class="type-sample-label">28px — Page Title</div>
+          <p style="font-size: 28px; font-weight: 700;">PromptFlow</p>
         </div>
         <div class="type-sample">
-          <div class="type-sample-label">--text-2xl: 20px</div>
-          <p style="font-size: 20px; font-weight: 600;">Section Title</p>
+          <div class="type-sample-label">16px — Section Title</div>
+          <p style="font-size: 16px; font-weight: 600;">Settings</p>
         </div>
         <div class="type-sample">
-          <div class="type-sample-label">--text-xl: 16px</div>
-          <p style="font-size: 16px; font-weight: 600;">Subsection Title</p>
-        </div>
-        <div class="type-sample">
-          <div class="type-sample-label">--text-lg: 14px</div>
-          <p style="font-size: 14px;">Large body text</p>
-        </div>
-        <div class="type-sample">
-          <div class="type-sample-label">--text-base: 13px (default)</div>
+          <div class="type-sample-label">13px — Body Text (default)</div>
           <p style="font-size: 13px;">Standard body text and UI labels</p>
         </div>
         <div class="type-sample">
-          <div class="type-sample-label">--text-sm: 12px</div>
-          <p style="font-size: 12px;">Small text, node titles, secondary labels</p>
+          <div class="type-sample-label">12px — Node Title, Small Text</div>
+          <p style="font-size: 12px; font-weight: 600;">CHARACTER — Mira Chen</p>
         </div>
         <div class="type-sample">
-          <div class="type-sample-label">--text-xs: 10px</div>
-          <p style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Field labels, category headers</p>
+          <div class="type-sample-label">11px — Node Content</div>
+          <p style="font-family: var(--font-mono); font-size: 11px;">Tall woman, short black hair, cybernetic left eye</p>
         </div>
-      </div>
-
-      <div class="subsection">
-        <h3 class="subsection-title">Font Weights</h3>
-        <div class="component-row">
-          <span style="font-weight: 300;">Light (300)</span>
-          <span style="font-weight: 400;">Normal (400)</span>
-          <span style="font-weight: 500;">Medium (500)</span>
-          <span style="font-weight: 600;">Semibold (600)</span>
-          <span style="font-weight: 700;">Bold (700)</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============================================
-         SPACING
-         ============================================ -->
-    <section class="section">
-      <h2 class="section-title">Spacing</h2>
-      <p class="section-desc">Consistent spacing scale used throughout the application.</p>
-
-      <div class="spacing-grid">
-        <div class="spacing-item">
-          <div class="spacing-box" style="width: 4px; height: 24px;"></div>
-          <span class="spacing-label">--space-1: 4px</span>
-        </div>
-        <div class="spacing-item">
-          <div class="spacing-box" style="width: 8px; height: 24px;"></div>
-          <span class="spacing-label">--space-2: 8px</span>
-        </div>
-        <div class="spacing-item">
-          <div class="spacing-box" style="width: 12px; height: 24px;"></div>
-          <span class="spacing-label">--space-3: 12px</span>
-        </div>
-        <div class="spacing-item">
-          <div class="spacing-box" style="width: 16px; height: 24px;"></div>
-          <span class="spacing-label">--space-4: 16px</span>
-        </div>
-        <div class="spacing-item">
-          <div class="spacing-box" style="width: 20px; height: 24px;"></div>
-          <span class="spacing-label">--space-5: 20px</span>
-        </div>
-        <div class="spacing-item">
-          <div class="spacing-box" style="width: 24px; height: 24px;"></div>
-          <span class="spacing-label">--space-6: 24px</span>
-        </div>
-        <div class="spacing-item">
-          <div class="spacing-box" style="width: 32px; height: 24px;"></div>
-          <span class="spacing-label">--space-8: 32px</span>
-        </div>
-        <div class="spacing-item">
-          <div class="spacing-box" style="width: 40px; height: 24px;"></div>
-          <span class="spacing-label">--space-10: 40px</span>
-        </div>
-        <div class="spacing-item">
-          <div class="spacing-box" style="width: 48px; height: 24px;"></div>
-          <span class="spacing-label">--space-12: 48px</span>
+        <div class="type-sample">
+          <div class="type-sample-label">10px — Field Labels (uppercase)</div>
+          <p style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); font-weight: 600;">Description</p>
         </div>
       </div>
     </section>
@@ -1150,14 +1060,13 @@
           <button class="btn btn-danger">Danger</button>
         </div>
         <div class="component-row">
-          <button class="btn btn-primary btn-sm">Small</button>
-          <button class="btn btn-primary">Default</button>
-          <button class="btn btn-primary btn-lg">Large</button>
-        </div>
-        <div class="component-row">
-          <button class="btn btn-primary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
-            With Icon
+          <button class="btn btn-danger">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Generate
+          </button>
+          <button class="btn btn-secondary btn-sm">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy
           </button>
         </div>
       </div>
@@ -1166,34 +1075,49 @@
         <h3 class="subsection-title">Inputs</h3>
         <div class="component-row flex-col" style="align-items: flex-start;">
           <div>
-            <label class="label">Default Input</label>
-            <input type="text" class="input" placeholder="Enter text...">
+            <label class="label">API Key</label>
+            <input type="password" class="input" placeholder="Paste your API key">
           </div>
           <div class="mt-4">
-            <label class="label">Error State</label>
-            <input type="text" class="input input-error" value="Invalid value">
+            <label class="label">Connected</label>
+            <input type="password" class="input input-success" value="••••••••••••••••••••">
+            <span class="status-badge success mt-4" style="margin-top: 8px; display: flex;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Connected
+            </span>
           </div>
-        </div>
-      </div>
-
-      <div class="subsection">
-        <h3 class="subsection-title">Textarea</h3>
-        <div>
-          <label class="label">Description</label>
-          <textarea class="textarea" placeholder="Describe the character, setting, or action..."></textarea>
         </div>
       </div>
 
       <div class="subsection">
         <h3 class="subsection-title">Select</h3>
         <div>
-          <label class="label">Shot Type</label>
+          <label class="label">Model</label>
           <select class="select">
-            <option>Close-up</option>
-            <option>Medium Shot</option>
-            <option>Wide Shot</option>
-            <option>Establishing</option>
+            <option>Gemini 3 Pro (Google)</option>
+            <option>Gemini 2.5 Flash (Google)</option>
+            <option>Flux Schnell (fal.ai)</option>
+            <option>Flux Dev (fal.ai)</option>
           </select>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3 class="subsection-title">Toggle Switch</h3>
+        <div class="component-row">
+          <div class="toggle" onclick="this.classList.toggle('active')">
+            <div class="toggle-knob"></div>
+          </div>
+          <span style="font-size: 13px; color: var(--color-text-secondary);">Auto-save every 30s</span>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3 class="subsection-title">Status Badges</h3>
+        <div class="component-row">
+          <span class="status-badge success"><span class="status-dot"></span> Connected</span>
+          <span class="status-badge warning"><span class="status-dot"></span> Generating</span>
+          <span class="status-badge error"><span class="status-dot"></span> Error</span>
         </div>
       </div>
     </section>
@@ -1214,7 +1138,10 @@
                 <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
               </svg>
             </div>
-            <div class="node-title">Mira Chen</div>
+            <div>
+              <div class="node-title">CHARACTER</div>
+              <div class="node-name">Mira Chen</div>
+            </div>
           </div>
           <div class="node-body">
             <div class="node-field">
@@ -1232,48 +1159,15 @@
                 <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
               </svg>
             </div>
-            <div class="node-title">The Undercity</div>
+            <div>
+              <div class="node-title">SETTING</div>
+              <div class="node-name">The Undercity</div>
+            </div>
           </div>
           <div class="node-body">
             <div class="node-field">
               <div class="node-field-label">Description</div>
               <div class="node-field-value">Crowded underground market, neon signs, steam vents</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Prop Node -->
-        <div class="node node-prop" onclick="this.classList.toggle('selected')">
-          <div class="node-header">
-            <div class="node-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
-              </svg>
-            </div>
-            <div class="node-title">Mira's Pistol</div>
-          </div>
-          <div class="node-body">
-            <div class="node-field">
-              <div class="node-field-label">Description</div>
-              <div class="node-field-value">Chrome handgun, holographic sight, worn grip</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Style Node -->
-        <div class="node node-style" onclick="this.classList.toggle('selected')">
-          <div class="node-header">
-            <div class="node-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
-              </svg>
-            </div>
-            <div class="node-title">Noir Style</div>
-          </div>
-          <div class="node-body">
-            <div class="node-field">
-              <div class="node-field-label">Description</div>
-              <div class="node-field-value">High contrast, heavy inks, dramatic shadows</div>
             </div>
           </div>
         </div>
@@ -1286,12 +1180,19 @@
                 <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>
               </svg>
             </div>
-            <div class="node-title">Low Angle</div>
+            <div>
+              <div class="node-title">SHOT</div>
+              <div class="node-name">Dramatic Angle</div>
+            </div>
           </div>
           <div class="node-body">
             <div class="node-field">
-              <div class="node-field-label">Preset</div>
-              <div class="node-field-value">low-angle</div>
+              <div class="node-field-label">Shot Type</div>
+              <div class="node-field-value">Low Angle</div>
+            </div>
+            <div class="node-field">
+              <div class="node-field-label">Notes</div>
+              <div class="node-field-value">Looking up at subject, emphasizing power</div>
             </div>
           </div>
         </div>
@@ -1304,12 +1205,36 @@
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
               </svg>
             </div>
-            <div class="node-title">Scene Action</div>
+            <div>
+              <div class="node-title">ACTION</div>
+              <div class="node-name">Scene Action</div>
+            </div>
           </div>
           <div class="node-body">
             <div class="node-field">
               <div class="node-field-label">Action</div>
-              <div class="node-field-value">Mira draws her weapon, scanning the crowd</div>
+              <div class="node-field-value">Mira walks through the crowded market, her cybernetic eye scanning the crowd</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Style Node -->
+        <div class="node node-style" onclick="this.classList.toggle('selected')">
+          <div class="node-header">
+            <div class="node-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="node-title">STYLE</div>
+              <div class="node-name">Noir</div>
+            </div>
+          </div>
+          <div class="node-body">
+            <div class="node-field">
+              <div class="node-field-label">Description</div>
+              <div class="node-field-value">Noir comic art, high contrast, heavy black inks, muted colors</div>
             </div>
           </div>
         </div>
@@ -1322,14 +1247,21 @@
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
               </svg>
             </div>
-            <div class="node-title">Output</div>
+            <div>
+              <div class="node-title">OUTPUT</div>
+              <div class="node-name">Output</div>
+            </div>
           </div>
           <div class="node-body">
             <div class="node-field">
-              <div class="node-field-label">Preview</div>
-              <div class="node-field-value" style="max-height: 60px; overflow: hidden;">Mira Chen, tall woman, short black hair...</div>
+              <div class="node-field-label">Assembled Prompt</div>
+              <div class="node-field-value" style="max-height: 48px; overflow: hidden;">Low Angle. Looking up at subject, Mira Chen, Tall woman...</div>
             </div>
-            <button class="btn btn-danger btn-sm" style="width: 100%; margin-top: 8px;">Generate</button>
+            <div style="font-size: 10px; color: var(--color-text-muted); margin: 8px 0;">Using: Gemini 3 Pro</div>
+            <button class="btn btn-danger" style="width: 100%;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Generate
+            </button>
           </div>
         </div>
       </div>
@@ -1338,7 +1270,7 @@
         <h3 class="subsection-title">Node States</h3>
         <div class="states-grid">
           <div>
-            <p class="mb-2" style="font-size: var(--text-sm); color: var(--text-muted);">Default</p>
+            <p class="mb-3" style="font-size: 12px; color: var(--color-text-muted);">Default</p>
             <div class="node node-character">
               <div class="node-header">
                 <div class="node-icon">
@@ -1346,12 +1278,12 @@
                     <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
                   </svg>
                 </div>
-                <div class="node-title">Default State</div>
+                <div class="node-title">CHARACTER</div>
               </div>
             </div>
           </div>
           <div>
-            <p class="mb-2" style="font-size: var(--text-sm); color: var(--text-muted);">Selected</p>
+            <p class="mb-3" style="font-size: 12px; color: var(--color-text-muted);">Selected</p>
             <div class="node node-character selected">
               <div class="node-header">
                 <div class="node-icon">
@@ -1359,12 +1291,12 @@
                     <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
                   </svg>
                 </div>
-                <div class="node-title">Selected State</div>
+                <div class="node-title">CHARACTER</div>
               </div>
             </div>
           </div>
           <div>
-            <p class="mb-2" style="font-size: var(--text-sm); color: var(--text-muted);">Processing</p>
+            <p class="mb-3" style="font-size: 12px; color: var(--color-text-muted);">Processing</p>
             <div class="node node-output processing">
               <div class="node-header">
                 <div class="node-icon">
@@ -1372,12 +1304,12 @@
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                   </svg>
                 </div>
-                <div class="node-title">Generating...</div>
+                <div class="node-title">OUTPUT</div>
               </div>
             </div>
           </div>
           <div>
-            <p class="mb-2" style="font-size: var(--text-sm); color: var(--text-muted);">Error</p>
+            <p class="mb-3" style="font-size: 12px; color: var(--color-text-muted);">Error</p>
             <div class="node node-output error">
               <div class="node-header">
                 <div class="node-icon">
@@ -1385,7 +1317,7 @@
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                   </svg>
                 </div>
-                <div class="node-title">Error State</div>
+                <div class="node-title">OUTPUT</div>
               </div>
             </div>
           </div>
@@ -1394,90 +1326,68 @@
     </section>
 
     <!-- ============================================
-         CONNECTIONS
+         TAILWIND V4 CSS REFERENCE
          ============================================ -->
     <section class="section">
-      <h2 class="section-title">Connections</h2>
-      <p class="section-desc">Bezier curves connect nodes. Connection color matches the source node type.</p>
-
-      <div class="connections-demo">
-        <svg width="100%" height="100%">
-          <defs>
-            <linearGradient id="sg-grad-char" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" style="stop-color:#3b82f6" />
-              <stop offset="100%" style="stop-color:#f97316" />
-            </linearGradient>
-            <linearGradient id="sg-grad-setting" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" style="stop-color:#10b981" />
-              <stop offset="100%" style="stop-color:#f97316" />
-            </linearGradient>
-            <linearGradient id="sg-grad-action" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" style="stop-color:#f97316" />
-              <stop offset="100%" style="stop-color:#ef4444" />
-            </linearGradient>
-          </defs>
-
-          <!-- Character to Action -->
-          <path class="connection-glow" d="M 80 50 C 180 50, 180 100, 280 100" stroke="url(#sg-grad-char)"/>
-          <path class="connection" d="M 80 50 C 180 50, 180 100, 280 100" stroke="url(#sg-grad-char)"/>
-
-          <!-- Setting to Action -->
-          <path class="connection-glow" d="M 80 150 C 180 150, 180 100, 280 100" stroke="url(#sg-grad-setting)"/>
-          <path class="connection" d="M 80 150 C 180 150, 180 100, 280 100" stroke="url(#sg-grad-setting)"/>
-
-          <!-- Action to Output -->
-          <path class="connection-glow" d="M 350 100 C 450 100, 450 100, 550 100" stroke="url(#sg-grad-action)"/>
-          <path class="connection" d="M 350 100 C 450 100, 450 100, 550 100" stroke="url(#sg-grad-action)"/>
-
-          <!-- Labels -->
-          <text x="40" y="55" fill="#3b82f6" font-size="11" font-family="var(--font-mono)">Character</text>
-          <text x="40" y="155" fill="#10b981" font-size="11" font-family="var(--font-mono)">Setting</text>
-          <text x="290" y="90" fill="#f97316" font-size="11" font-family="var(--font-mono)">Action</text>
-          <text x="560" y="105" fill="#ef4444" font-size="11" font-family="var(--font-mono)">Output</text>
-        </svg>
-      </div>
-    </section>
-
-    <!-- ============================================
-         CSS VARIABLES REFERENCE
-         ============================================ -->
-    <section class="section">
-      <h2 class="section-title">CSS Variables Reference</h2>
-      <p class="section-desc">Copy these CSS custom properties into your stylesheet.</p>
+      <h2 class="section-title">Tailwind v4 CSS Reference</h2>
+      <p class="section-desc">Copy this @theme block into your index.css file.</p>
 
       <div class="code-block">
         <code><pre>
-<span class="comment">/* Copy into your CSS */</span>
-:root {
+<span class="comment">/* Tailwind v4 @theme block */</span>
+@import "tailwindcss";
+
+@theme {
   <span class="comment">/* Backgrounds */</span>
-  <span class="property">--bg-darkest</span>: <span class="value">#0a0b0f</span>;
-  <span class="property">--bg-dark</span>: <span class="value">#12141a</span>;
-  <span class="property">--bg-panel</span>: <span class="value">#181a22</span>;
-  <span class="property">--bg-elevated</span>: <span class="value">#1e212b</span>;
-  <span class="property">--bg-hover</span>: <span class="value">#252836</span>;
+  <span class="property">--color-bg-darkest</span>: <span class="value">#0a0b0f</span>;
+  <span class="property">--color-bg-dark</span>: <span class="value">#12141a</span>;
+  <span class="property">--color-bg-panel</span>: <span class="value">#181a22</span>;
+  <span class="property">--color-bg-elevated</span>: <span class="value">#1e212b</span>;
+  <span class="property">--color-bg-hover</span>: <span class="value">#252836</span>;
 
   <span class="comment">/* Text */</span>
-  <span class="property">--text-primary</span>: <span class="value">#e8eaed</span>;
-  <span class="property">--text-secondary</span>: <span class="value">#9ca3af</span>;
-  <span class="property">--text-muted</span>: <span class="value">#6b7280</span>;
+  <span class="property">--color-text-primary</span>: <span class="value">#e8eaed</span>;
+  <span class="property">--color-text-secondary</span>: <span class="value">#9ca3af</span>;
+  <span class="property">--color-text-muted</span>: <span class="value">#6b7280</span>;
+  <span class="property">--color-text-placeholder</span>: <span class="value">#4b5563</span>;
+
+  <span class="comment">/* Borders */</span>
+  <span class="property">--color-border-subtle</span>: <span class="value">rgba(255, 255, 255, 0.06)</span>;
+  <span class="property">--color-border-medium</span>: <span class="value">rgba(255, 255, 255, 0.1)</span>;
+  <span class="property">--color-border-strong</span>: <span class="value">rgba(255, 255, 255, 0.15)</span>;
 
   <span class="comment">/* Node Colors */</span>
-  <span class="property">--node-character</span>: <span class="value">#3b82f6</span>;
-  <span class="property">--node-setting</span>: <span class="value">#10b981</span>;
-  <span class="property">--node-prop</span>: <span class="value">#f59e0b</span>;
-  <span class="property">--node-style</span>: <span class="value">#a855f7</span>;
-  <span class="property">--node-extras</span>: <span class="value">#64748b</span>;
-  <span class="property">--node-shot</span>: <span class="value">#ec4899</span>;
-  <span class="property">--node-outfit</span>: <span class="value">#06b6d4</span>;
-  <span class="property">--node-action</span>: <span class="value">#f97316</span>;
-  <span class="property">--node-negative</span>: <span class="value">#f43f5e</span>;
-  <span class="property">--node-params</span>: <span class="value">#14b8a6</span>;
-  <span class="property">--node-edit</span>: <span class="value">#6b7280</span>;
-  <span class="property">--node-output</span>: <span class="value">#ef4444</span>;
+  <span class="property">--color-node-character</span>: <span class="value">#3b82f6</span>;
+  <span class="property">--color-node-setting</span>: <span class="value">#10b981</span>;
+  <span class="property">--color-node-prop</span>: <span class="value">#f59e0b</span>;
+  <span class="property">--color-node-style</span>: <span class="value">#a855f7</span>;
+  <span class="property">--color-node-extras</span>: <span class="value">#64748b</span>;
+  <span class="property">--color-node-shot</span>: <span class="value">#ec4899</span>;
+  <span class="property">--color-node-outfit</span>: <span class="value">#06b6d4</span>;
+  <span class="property">--color-node-action</span>: <span class="value">#f97316</span>;
+  <span class="property">--color-node-negative</span>: <span class="value">#f43f5e</span>;
+  <span class="property">--color-node-params</span>: <span class="value">#14b8a6</span>;
+  <span class="property">--color-node-edit</span>: <span class="value">#6b7280</span>;
+  <span class="property">--color-node-output</span>: <span class="value">#ef4444</span>;
+
+  <span class="comment">/* Accents */</span>
+  <span class="property">--color-accent-primary</span>: <span class="value">#6366f1</span>;
+  <span class="property">--color-success</span>: <span class="value">#22c55e</span>;
+  <span class="property">--color-warning</span>: <span class="value">#eab308</span>;
+  <span class="property">--color-error</span>: <span class="value">#ef4444</span>;
 
   <span class="comment">/* Typography */</span>
   <span class="property">--font-display</span>: <span class="string">'Outfit', sans-serif</span>;
   <span class="property">--font-mono</span>: <span class="string">'JetBrains Mono', monospace</span>;
+
+  <span class="comment">/* Sizing */</span>
+  <span class="property">--sidebar-width</span>: <span class="value">280px</span>;
+  <span class="property">--node-width</span>: <span class="value">220px</span>;
+  <span class="property">--node-width-lg</span>: <span class="value">280px</span>;
+
+  <span class="comment">/* Shadows */</span>
+  <span class="property">--shadow-node</span>: <span class="value">0 4px 20px rgba(0, 0, 0, 0.5)</span>;
+  <span class="property">--shadow-panel</span>: <span class="value">0 0 40px rgba(0, 0, 0, 0.5)</span>;
 }
         </pre></code>
       </div>
