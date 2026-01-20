@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { CompNode as CompNodeType, TransformNodeData, ImageAlignment } from '@/types/nodes';
 import { NODE_COLORS } from '@/types/nodes';
@@ -42,7 +42,7 @@ interface LayerData {
 }
 
 export function CompNode({ id, data, selected }: NodeProps<CompNodeType>) {
-  const { nodes, edges } = useFlowStore();
+  const { nodes, edges, updateNodeData } = useFlowStore();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Get image and transform data from a connected node
@@ -225,6 +225,30 @@ export function CompNode({ id, data, selected }: NodeProps<CompNodeType>) {
 
     return canvas;
   }, [data.backgroundColor, data.outputWidth, data.outputHeight, layers]);
+
+  // Update composedImageUrl when layers change
+  useEffect(() => {
+    const updateComposedImage = async () => {
+      if (!hasImages) {
+        // Clear composed image if no layers
+        if (data.composedImageUrl) {
+          updateNodeData(id, { composedImageUrl: undefined });
+        }
+        return;
+      }
+
+      const canvas = await renderToCanvas();
+      if (canvas) {
+        const composedUrl = canvas.toDataURL('image/png');
+        // Only update if changed to avoid infinite loops
+        if (composedUrl !== data.composedImageUrl) {
+          updateNodeData(id, { composedImageUrl: composedUrl });
+        }
+      }
+    };
+
+    updateComposedImage();
+  }, [id, hasImages, renderToCanvas, data.composedImageUrl, updateNodeData]);
 
   const handleDownload = async () => {
     const canvas = await renderToCanvas();

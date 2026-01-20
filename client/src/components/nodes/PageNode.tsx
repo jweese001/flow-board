@@ -260,6 +260,11 @@ export function PageNode({ id, data, selected }: NodeProps<PageNodeType>) {
         return { imageUrl: refData.imageUrl || null };
       }
 
+      if (node.type === 'comp') {
+        const compData = node.data as { composedImageUrl?: string };
+        return { imageUrl: compData.composedImageUrl || null };
+      }
+
       if (node.type === 'transform') {
         const transformData = node.data as TransformNodeData;
         // Find what's connected to this transform's input
