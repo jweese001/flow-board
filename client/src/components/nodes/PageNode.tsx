@@ -24,6 +24,63 @@ interface PanelData {
 type LayoutSlot = { x: number; y: number; w: number; h: number };
 type LayoutDefinition = LayoutSlot[];
 
+// Calculate optimal grid dimensions for N panels
+function calculateGridDimensions(numPanels: number, pageWidth: number, pageHeight: number): { cols: number; rows: number; totalSlots: number } {
+  if (numPanels <= 0) return { cols: 1, rows: 1, totalSlots: 1 };
+  if (numPanels === 1) return { cols: 1, rows: 1, totalSlots: 1 };
+
+  // Try different grid configurations and find the best fit
+  let bestCols = 1;
+  let bestRows = numPanels;
+  let bestScore = Infinity;
+
+  for (let cols = 1; cols <= numPanels; cols++) {
+    const rows = Math.ceil(numPanels / cols);
+    const totalSlots = cols * rows;
+
+    // Calculate aspect ratio of each cell
+    const cellWidth = pageWidth / cols;
+    const cellHeight = pageHeight / rows;
+    const cellRatio = cellWidth / cellHeight;
+
+    // Score based on:
+    // 1. How close cell ratio is to 1 (square-ish cells are often preferred)
+    // 2. Minimize wasted slots
+    const wastedSlots = totalSlots - numPanels;
+    const ratioScore = Math.abs(Math.log(cellRatio)); // 0 when square
+    const wasteScore = wastedSlots * 0.5;
+    const score = ratioScore + wasteScore;
+
+    if (score < bestScore) {
+      bestScore = score;
+      bestCols = cols;
+      bestRows = rows;
+    }
+  }
+
+  return { cols: bestCols, rows: bestRows, totalSlots: bestCols * bestRows };
+}
+
+// Generate a grid layout definition
+function generateGridLayout(cols: number, rows: number): LayoutDefinition {
+  const layout: LayoutDefinition = [];
+  const cellW = 100 / cols;
+  const cellH = 100 / rows;
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      layout.push({
+        x: col * cellW,
+        y: row * cellH,
+        w: cellW,
+        h: cellH,
+      });
+    }
+  }
+
+  return layout;
+}
+
 const LAYOUTS: Record<PageLayout, LayoutDefinition> = {
   'full': [
     { x: 0, y: 0, w: 100, h: 100 },
@@ -164,8 +221,25 @@ function getTransformedImageStyles(transform?: PanelData['transform']): React.CS
 export function PageNode({ id, data, selected }: NodeProps<PageNodeType>) {
   const { nodes, edges, updateNodeData } = useFlowStore();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const slotCount = PAGE_LAYOUT_SLOTS[data.layout] || 1;
-  const layoutDef = LAYOUTS[data.layout] || LAYOUTS['full'];
+
+  // Calculate layout based on mode (preset or num-grid)
+  const { slotCount, layoutDef } = (() => {
+    if (data.useNumGrid && data.numPanels && data.numPanels > 0) {
+      const { cols, rows, totalSlots } = calculateGridDimensions(
+        data.numPanels,
+        data.outputWidth || 1200,
+        data.outputHeight || 1600
+      );
+      return {
+        slotCount: totalSlots,
+        layoutDef: generateGridLayout(cols, rows),
+      };
+    }
+    return {
+      slotCount: PAGE_LAYOUT_SLOTS[data.layout] || 1,
+      layoutDef: LAYOUTS[data.layout] || LAYOUTS['full'],
+    };
+  })();
 
   // Find connected Output, Reference, or Transform nodes and their images
   const getConnectedPanels = useCallback(() => {

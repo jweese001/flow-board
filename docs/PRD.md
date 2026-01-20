@@ -358,6 +358,7 @@ Users don't think about this — they pick a model, the adapter does the rest.
 - Collaboration features
 - Midjourney integration (requires proxy complexity)
 - Expression/Pose nodes (needs experimentation)
+- WebGL Scene Node — 3D scene builder for precise camera angles, composition, and layout as generation reference
 
 ---
 
@@ -413,14 +414,22 @@ Users don't think about this — they pick a model, the adapter does the rest.
 - [ ] UI refinements
 - [ ] Keyboard shortcuts
 - [ ] Undo/redo
+- [ ] Improve precision of Transforms — finer control for positioning/scaling
 
 ### Phase 5: Extended Features ✅
 - [x] Reference Node — attach reference images to assets for visual consistency
 - [x] Page Node — comic page layouts (full, 2-up, 3-up, 4-up, 6-up, manga, inset)
+- [x] Page Node Num Grid — dynamic grid layout by panel count
 - [x] Transform Node — scale, offset, rotation, flip controls for images
+- [x] Comp Node — 4-layer image compositing (back/mid/fore/ext)
+- [x] Camera Node — lens type, DoF, film stock, vignette, exposure settings
 - [x] Copy/paste — clipboard support for duplicating nodes
 - [x] Batch generation — generate multiple images at once (1-4)
 - [x] Temperature control — creativity slider for generation
 - [x] Resolution presets — 1K, 2K, 4K output options
 - [x] Auto-save — automatic project persistence
 - [x] History tracking — generation history with metadata
+
+### Phase 6: Advanced Composition (Planned)
+- [ ] WebGL Scene Node — 3D scene builder with primitives for camera angles and composition reference
+- [ ] Animatics support — basic motion/keyframes for Comp node layers

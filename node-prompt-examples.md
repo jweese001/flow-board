@@ -26,6 +26,12 @@ Name: Kai
 Description: Teenage boy, messy brown hair, bright green eyes, oversized hoodie, worn sneakers, determined expression
 ```
 
+**Example: Story Agent**
+```
+Name: Mido Washington
+Description: Tall lanky dank skinned black man, with a combed out Afro, a nose ring and pierced ears. He has green irises vivid eyes and a small perfectly horizontal scar on his left cheek. He wears A Blue Adidas track suit and a single prominent but bodest gold chain around his neck. Bis shoes are Air Jordans. They look as if they were just unboxed today. 
+```
+
 ---
 
 ## Setting Node

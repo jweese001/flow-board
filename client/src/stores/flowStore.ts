@@ -36,11 +36,11 @@ interface FlowState {
   pasteNodes: () => void;
 }
 
-// Helper to generate unique IDs
-let nodeIdCounter = 0;
+// Helper to generate unique IDs using timestamp + random suffix
 export const generateNodeId = (type: NodeType): string => {
-  nodeIdCounter++;
-  return `${type}-${nodeIdCounter}`;
+  const timestamp = Date.now().toString(36);
+  const random = Math.random().toString(36).substring(2, 6);
+  return `${type}-${timestamp}-${random}`;
 };
 
 // Initial demo nodes

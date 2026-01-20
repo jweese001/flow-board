@@ -2,13 +2,28 @@ import { useState, useCallback } from 'react';
 import { useReactFlow } from '@xyflow/react';
 import { useFlowStore, generateNodeId } from '@/stores/flowStore';
 import { useUIStore } from '@/stores/uiStore';
-import { NODE_COLORS, NODE_LABELS, SHOT_PRESET_LABELS, PAGE_LAYOUT_LABELS, type NodeType, type PageLayout } from '@/types/nodes';
+import {
+  NODE_COLORS,
+  NODE_LABELS,
+  SHOT_PRESET_LABELS,
+  PAGE_LAYOUT_LABELS,
+  LENS_TYPE_LABELS,
+  DEPTH_OF_FIELD_LABELS,
+  CAMERA_FEEL_LABELS,
+  FILM_STOCK_LABELS,
+  EXPOSURE_STYLE_LABELS,
+  VIGNETTE_LABELS,
+  CAMERA_POSITION_LABELS,
+  type NodeType,
+  type PageLayout,
+} from '@/types/nodes';
 import {
   UserIcon,
   HomeIcon,
   BoxIcon,
   PaletteIcon,
   CameraIcon,
+  ApertureIcon,
   BoltIcon,
   ImageIcon,
   SearchIcon,
@@ -27,6 +42,7 @@ import {
   PhotoIcon,
   LayoutIcon,
   TransformIcon,
+  LayersIcon,
 } from '@/components/ui/Icons';
 import { ProjectSection } from './ProjectSection';
 import { SettingsSection } from './SettingsSection';
@@ -76,6 +92,21 @@ const NODE_CONFIGS: NodeTypeConfig[] = [
     icon: <ShirtIcon size={14} />,
     defaultData: { label: 'Outfit', name: 'New Outfit', description: 'Outfit description...' },
   },
+  {
+    type: 'camera',
+    icon: <ApertureIcon size={14} />,
+    defaultData: {
+      label: 'Camera',
+      name: 'Camera Settings',
+      depthOfField: 'deep',
+      lensType: 'standard',
+      cameraFeel: 'locked',
+      filmStock: 'digital',
+      exposure: 'balanced',
+      vignette: 'none',
+      promptPosition: 'after-shot',
+    },
+  },
   // Scene Nodes
   {
     type: 'action',
@@ -101,7 +132,7 @@ const NODE_CONFIGS: NodeTypeConfig[] = [
   {
     type: 'reference',
     icon: <PhotoIcon size={14} />,
-    defaultData: { label: 'Reference', name: 'Reference Image', imageType: 'character', imageUrl: undefined },
+    defaultData: { label: 'Reference', name: 'Reference Image', imageType: 'image', imageUrl: undefined },
   },
   // Terminal Node
   {
@@ -120,6 +151,24 @@ const NODE_CONFIGS: NodeTypeConfig[] = [
     type: 'transform',
     icon: <TransformIcon size={14} />,
     defaultData: { label: 'Transform', name: 'Transform', scale: 1, offsetX: 0, offsetY: 0, rotation: 0, flipH: false, flipV: false, alignment: 'center' },
+  },
+  // Composition Node
+  {
+    type: 'comp',
+    icon: <LayersIcon size={14} />,
+    defaultData: {
+      label: 'Comp',
+      name: 'Composition',
+      outputWidth: 1920,
+      outputHeight: 1080,
+      backgroundColor: '#000000',
+      layers: {
+        back: { scale: 1, offsetX: 0, offsetY: 0, rotation: 0, flipH: false, flipV: false, opacity: 100 },
+        mid: { scale: 1, offsetX: 0, offsetY: 0, rotation: 0, flipH: false, flipV: false, opacity: 100 },
+        fore: { scale: 1, offsetX: 0, offsetY: 0, rotation: 0, flipH: false, flipV: false, opacity: 100 },
+        ext: { scale: 1, offsetX: 0, offsetY: 0, rotation: 0, flipH: false, flipV: false, opacity: 100 },
+      },
+    },
   },
 ];
 
@@ -469,6 +518,55 @@ function renderNodeFields(
         </div>
       );
 
+    case 'camera':
+      return (
+        <div className="space-y-4">
+          <FieldInput label="Name" value={data.name || ''} onChange={(v) => onChange('name', v)} />
+          <FieldSelect
+            label="Lens Type"
+            value={data.lensType || 'standard'}
+            options={Object.entries(LENS_TYPE_LABELS).map(([value, label]) => ({ value, label }))}
+            onChange={(v) => onChange('lensType', v)}
+          />
+          <FieldSelect
+            label="Depth of Field"
+            value={data.depthOfField || 'deep'}
+            options={Object.entries(DEPTH_OF_FIELD_LABELS).map(([value, label]) => ({ value, label }))}
+            onChange={(v) => onChange('depthOfField', v)}
+          />
+          <FieldSelect
+            label="Camera Feel"
+            value={data.cameraFeel || 'locked'}
+            options={Object.entries(CAMERA_FEEL_LABELS).map(([value, label]) => ({ value, label }))}
+            onChange={(v) => onChange('cameraFeel', v)}
+          />
+          <FieldSelect
+            label="Film Stock"
+            value={data.filmStock || 'digital'}
+            options={Object.entries(FILM_STOCK_LABELS).map(([value, label]) => ({ value, label }))}
+            onChange={(v) => onChange('filmStock', v)}
+          />
+          <FieldSelect
+            label="Exposure"
+            value={data.exposure || 'balanced'}
+            options={Object.entries(EXPOSURE_STYLE_LABELS).map(([value, label]) => ({ value, label }))}
+            onChange={(v) => onChange('exposure', v)}
+          />
+          <FieldSelect
+            label="Vignette"
+            value={data.vignette || 'none'}
+            options={Object.entries(VIGNETTE_LABELS).map(([value, label]) => ({ value, label }))}
+            onChange={(v) => onChange('vignette', v)}
+          />
+          <FieldSelect
+            label="Prompt Position"
+            value={data.promptPosition || 'after-shot'}
+            options={Object.entries(CAMERA_POSITION_LABELS).map(([value, label]) => ({ value, label }))}
+            onChange={(v) => onChange('promptPosition', v)}
+          />
+        </div>
+      );
+
     case 'negative':
       return (
         <div className="space-y-4">
@@ -575,8 +673,9 @@ function renderNodeFields(
           />
           <FieldSelect
             label="Reference Type"
-            value={data.imageType || 'character'}
+            value={data.imageType || 'image'}
             options={[
+              { value: 'image', label: 'Image' },
               { value: 'character', label: 'Character' },
               { value: 'setting', label: 'Setting / Environment' },
               { value: 'prop', label: 'Prop / Object' },
@@ -612,15 +711,34 @@ function renderNodeFields(
             onChange={(v) => onChange('name', v)}
             placeholder="Page Layout"
           />
-          <FieldSelect
-            label="Layout"
-            value={data.layout || '4-up'}
-            options={Object.entries(PAGE_LAYOUT_LABELS).map(([value, label]) => ({
-              value,
-              label,
-            }))}
-            onChange={(v) => onChange('layout', v as PageLayout)}
+          <FieldCheckbox
+            label="Use Num Grid"
+            checked={data.useNumGrid || false}
+            onChange={(v) => onChange('useNumGrid', v as unknown as number)}
           />
+          {data.useNumGrid ? (
+            <FieldInput
+              label="Number of Panels"
+              value={String(data.numPanels || 4)}
+              onChange={(v) => {
+                const num = parseInt(v, 10);
+                if (!isNaN(num) && num >= 1 && num <= 16) {
+                  onChange('numPanels', num);
+                }
+              }}
+              placeholder="4"
+            />
+          ) : (
+            <FieldSelect
+              label="Layout"
+              value={data.layout || '4-up'}
+              options={Object.entries(PAGE_LAYOUT_LABELS).map(([value, label]) => ({
+                value,
+                label,
+              }))}
+              onChange={(v) => onChange('layout', v as PageLayout)}
+            />
+          )}
           <FieldSlider
             label="Gutter (px)"
             value={data.gutter ?? 8}
@@ -722,6 +840,42 @@ function renderNodeFields(
               checked={data.flipV || false}
               onChange={(v) => onChange('flipV', v as unknown as number)}
             />
+          </div>
+        </div>
+      );
+
+    case 'comp':
+      return (
+        <div className="space-y-4">
+          <FieldInput
+            label="Name"
+            value={data.name || ''}
+            onChange={(v) => onChange('name', v)}
+            placeholder="Composition"
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <FieldInput
+              label="Width (px)"
+              value={String(data.outputWidth || 1920)}
+              onChange={(v) => onChange('outputWidth', parseInt(v, 10) || 1920)}
+              placeholder="1920"
+            />
+            <FieldInput
+              label="Height (px)"
+              value={String(data.outputHeight || 1080)}
+              onChange={(v) => onChange('outputHeight', parseInt(v, 10) || 1080)}
+              placeholder="1080"
+            />
+          </div>
+          <FieldInput
+            label="Background Color"
+            value={data.backgroundColor || '#000000'}
+            onChange={(v) => onChange('backgroundColor', v)}
+            placeholder="#000000"
+          />
+          <div className="text-xs text-muted mt-2 leading-relaxed">
+            Connect images to layer inputs:<br />
+            <span className="text-secondary">Ext</span> (top) → <span className="text-secondary">Back</span> (bottom)
           </div>
         </div>
       );
@@ -848,7 +1002,18 @@ interface FieldSliderProps {
 }
 
 function FieldSlider({ label, value, min, max, step, onChange }: FieldSliderProps) {
+  const [isShiftHeld, setIsShiftHeld] = useState(false);
   const percentage = ((value - min) / (max - min)) * 100;
+  const fineStep = step / 10;
+  const currentStep = isShiftHeld ? fineStep : step;
+
+  // Track shift key state
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Shift') setIsShiftHeld(true);
+  };
+  const handleKeyUp = (e: React.KeyboardEvent) => {
+    if (e.key === 'Shift') setIsShiftHeld(false);
+  };
 
   return (
     <div>
@@ -858,8 +1023,9 @@ function FieldSlider({ label, value, min, max, step, onChange }: FieldSliderProp
       >
         <label className="text-xs font-semibold uppercase tracking-wide text-muted">
           {label}
+          {isShiftHeld && <span className="ml-1 text-[9px] text-secondary">(fine)</span>}
         </label>
-        <span className="text-xs font-mono text-secondary">{value.toFixed(1)}</span>
+        <span className="text-xs font-mono text-secondary">{value.toFixed(isShiftHeld ? 2 : 1)}</span>
       </div>
       <div
         className="relative h-8 flex items-center"
@@ -884,8 +1050,26 @@ function FieldSlider({ label, value, min, max, step, onChange }: FieldSliderProp
           value={value}
           min={min}
           max={max}
-          step={step}
+          step={currentStep}
           onChange={(e) => onChange(parseFloat(e.target.value))}
+          onKeyDown={handleKeyDown}
+          onKeyUp={handleKeyUp}
+          onFocus={() => {
+            // Listen for shift globally while focused
+            const handleGlobalKeyDown = (e: KeyboardEvent) => {
+              if (e.key === 'Shift') setIsShiftHeld(true);
+            };
+            const handleGlobalKeyUp = (e: KeyboardEvent) => {
+              if (e.key === 'Shift') setIsShiftHeld(false);
+            };
+            window.addEventListener('keydown', handleGlobalKeyDown);
+            window.addEventListener('keyup', handleGlobalKeyUp);
+            return () => {
+              window.removeEventListener('keydown', handleGlobalKeyDown);
+              window.removeEventListener('keyup', handleGlobalKeyUp);
+            };
+          }}
+          onBlur={() => setIsShiftHeld(false)}
           className="absolute w-full h-8 opacity-0 cursor-pointer"
           style={{ zIndex: 2 }}
         />
@@ -919,24 +1103,31 @@ interface FieldCheckboxProps {
 
 function FieldCheckbox({ label, checked, onChange }: FieldCheckboxProps) {
   return (
-    <label
-      className="flex items-center gap-2 cursor-pointer flex-1"
-      onClick={() => onChange(!checked)}
-    >
+    <div>
       <div
-        className="w-5 h-5 rounded flex items-center justify-center transition-colors"
+        className="flex items-center gap-3 rounded-lg cursor-pointer transition-colors hover:opacity-80"
         style={{
-          background: checked ? 'var(--color-node-transform)' : 'var(--color-bg-elevated)',
-          border: `1px solid ${checked ? 'var(--color-node-transform)' : 'var(--color-border-subtle)'}`,
+          background: checked ? 'rgba(14, 165, 233, 0.15)' : 'var(--color-bg-elevated)',
+          border: `1px solid ${checked ? 'var(--color-node-page)' : 'var(--color-border-subtle)'}`,
+          padding: '12px 16px',
         }}
+        onClick={() => onChange(!checked)}
       >
-        {checked && (
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        )}
+        <div
+          className="w-5 h-5 rounded flex items-center justify-center transition-colors flex-shrink-0"
+          style={{
+            background: checked ? 'var(--color-node-page)' : 'transparent',
+            border: `2px solid ${checked ? 'var(--color-node-page)' : 'var(--color-text-muted)'}`,
+          }}
+        >
+          {checked && (
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          )}
+        </div>
+        <span className="text-sm text-primary">{label}</span>
       </div>
-      <span className="text-xs text-secondary">{label}</span>
-    </label>
+    </div>
   );
 }

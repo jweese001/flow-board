@@ -78,6 +78,74 @@ export interface OutfitNodeData extends BaseNodeData {
   description: string;
 }
 
+// ===== CAMERA NODE =====
+
+export type DepthOfField = 'deep' | 'shallow' | 'very-shallow';
+export type LensType = 'standard' | 'wide' | 'ultra-wide' | 'fisheye-180' | 'telephoto' | 'anamorphic' | 'tilt-shift';
+export type CameraFeel = 'locked' | 'handheld' | 'steadicam';
+export type FilmStock = 'digital' | '35mm' | '16mm' | 'large-format';
+export type ExposureStyle = 'balanced' | 'high-key' | 'low-key';
+export type VignetteStyle = 'none' | 'light' | 'heavy';
+export type CameraPromptPosition = 'after-shot' | 'after-subject' | 'before-style';
+
+export const DEPTH_OF_FIELD_LABELS: Record<DepthOfField, string> = {
+  'deep': 'Deep Focus',
+  'shallow': 'Shallow DoF',
+  'very-shallow': 'Very Shallow DoF',
+};
+
+export const LENS_TYPE_LABELS: Record<LensType, string> = {
+  'standard': 'Standard 50mm',
+  'wide': 'Wide 24mm',
+  'ultra-wide': 'Ultra-Wide 14mm',
+  'fisheye-180': 'Fisheye 180°',
+  'telephoto': 'Telephoto 85mm+',
+  'anamorphic': 'Anamorphic',
+  'tilt-shift': 'Tilt-Shift',
+};
+
+export const CAMERA_FEEL_LABELS: Record<CameraFeel, string> = {
+  'locked': 'Locked/Tripod',
+  'handheld': 'Handheld',
+  'steadicam': 'Steadicam',
+};
+
+export const FILM_STOCK_LABELS: Record<FilmStock, string> = {
+  'digital': 'Digital Clean',
+  '35mm': '35mm Film',
+  '16mm': '16mm Vintage',
+  'large-format': 'Large Format',
+};
+
+export const EXPOSURE_STYLE_LABELS: Record<ExposureStyle, string> = {
+  'balanced': 'Balanced',
+  'high-key': 'High Key',
+  'low-key': 'Low Key',
+};
+
+export const VIGNETTE_LABELS: Record<VignetteStyle, string> = {
+  'none': 'None',
+  'light': 'Light Vignette',
+  'heavy': 'Heavy Vignette',
+};
+
+export const CAMERA_POSITION_LABELS: Record<CameraPromptPosition, string> = {
+  'after-shot': 'After Shot',
+  'after-subject': 'After Subject',
+  'before-style': 'Before Style',
+};
+
+export interface CameraNodeData extends BaseNodeData {
+  name: string;
+  depthOfField: DepthOfField;
+  lensType: LensType;
+  cameraFeel: CameraFeel;
+  filmStock: FilmStock;
+  exposure: ExposureStyle;
+  vignette: VignetteStyle;
+  promptPosition: CameraPromptPosition;
+}
+
 // ===== SCENE NODES =====
 
 export interface ActionNodeData extends BaseNodeData {
@@ -119,7 +187,7 @@ export interface EditNodeData extends BaseNodeData {
   refinement: string;
 }
 
-export type ReferenceImageType = 'character' | 'setting' | 'prop' | 'style' | 'scene' | 'mood';
+export type ReferenceImageType = 'image' | 'character' | 'setting' | 'prop' | 'style' | 'scene' | 'mood';
 
 export interface ReferenceNodeData extends BaseNodeData {
   name: string;
@@ -170,6 +238,37 @@ export interface PageNodeData extends BaseNodeData {
   panelImages: (string | null)[]; // Array of image URLs for each slot
   outputWidth: number;   // Export width in pixels
   outputHeight: number;  // Export height in pixels
+  useNumGrid?: boolean;  // Use dynamic grid instead of preset layout
+  numPanels?: number;    // Number of panels for dynamic grid (1-16)
+}
+
+// ===== COMP NODE =====
+
+export interface CompLayerData {
+  imageUrl?: string;
+  // Transform properties (can be overridden by connected Transform node)
+  scale: number;
+  offsetX: number;
+  offsetY: number;
+  rotation: number;
+  flipH: boolean;
+  flipV: boolean;
+  opacity: number;  // 0-100 for layer opacity
+}
+
+export interface CompNodeData extends BaseNodeData {
+  name: string;
+  outputWidth: number;
+  outputHeight: number;
+  backgroundColor: string;
+  // Layers from back to front: back -> mid -> fore -> ext
+  layers: {
+    back: CompLayerData;
+    mid: CompLayerData;
+    fore: CompLayerData;
+    ext: CompLayerData;
+  };
+  composedImageUrl?: string;  // The final composed result
 }
 
 // ===== TRANSFORM NODE =====
@@ -206,6 +305,7 @@ export type NodeType =
   | 'extras'
   | 'shot'
   | 'outfit'
+  | 'camera'
   | 'action'
   | 'negative'
   | 'parameters'
@@ -213,7 +313,8 @@ export type NodeType =
   | 'reference'
   | 'output'
   | 'page'
-  | 'transform';
+  | 'transform'
+  | 'comp';
 
 export type AppNodeData =
   | CharacterNodeData
@@ -223,6 +324,7 @@ export type AppNodeData =
   | ExtrasNodeData
   | ShotNodeData
   | OutfitNodeData
+  | CameraNodeData
   | ActionNodeData
   | NegativeNodeData
   | ParametersNodeData
@@ -230,7 +332,8 @@ export type AppNodeData =
   | ReferenceNodeData
   | OutputNodeData
   | PageNodeData
-  | TransformNodeData;
+  | TransformNodeData
+  | CompNodeData;
 
 // Use BuiltInNode pattern for React Flow compatibility
 export type CharacterNode = Node<CharacterNodeData, 'character'>;
@@ -240,6 +343,7 @@ export type StyleNode = Node<StyleNodeData, 'style'>;
 export type ExtrasNode = Node<ExtrasNodeData, 'extras'>;
 export type ShotNode = Node<ShotNodeData, 'shot'>;
 export type OutfitNode = Node<OutfitNodeData, 'outfit'>;
+export type CameraNode = Node<CameraNodeData, 'camera'>;
 export type ActionNode = Node<ActionNodeData, 'action'>;
 export type NegativeNode = Node<NegativeNodeData, 'negative'>;
 export type ParametersNode = Node<ParametersNodeData, 'parameters'>;
@@ -248,6 +352,7 @@ export type ReferenceNode = Node<ReferenceNodeData, 'reference'>;
 export type OutputNode = Node<OutputNodeData, 'output'>;
 export type PageNode = Node<PageNodeData, 'page'>;
 export type TransformNode = Node<TransformNodeData, 'transform'>;
+export type CompNode = Node<CompNodeData, 'comp'>;
 
 export type AppNode =
   | CharacterNode
@@ -257,6 +362,7 @@ export type AppNode =
   | ExtrasNode
   | ShotNode
   | OutfitNode
+  | CameraNode
   | ActionNode
   | NegativeNode
   | ParametersNode
@@ -264,7 +370,8 @@ export type AppNode =
   | ReferenceNode
   | OutputNode
   | PageNode
-  | TransformNode;
+  | TransformNode
+  | CompNode;
 
 // ===== NODE COLORS =====
 
@@ -276,6 +383,7 @@ export const NODE_COLORS: Record<NodeType, string> = {
   extras: '#64748b',
   shot: '#ec4899',
   outfit: '#06b6d4',
+  camera: '#6366f1',    // Indigo for camera
   action: '#f97316',
   negative: '#f43f5e',
   parameters: '#14b8a6',
@@ -284,6 +392,7 @@ export const NODE_COLORS: Record<NodeType, string> = {
   output: '#ef4444',
   page: '#0ea5e9',      // Sky blue for page layout
   transform: '#f472b6', // Pink for transform
+  comp: '#22c55e',      // Green for composition
 };
 
 // ===== NODE ICONS =====
@@ -296,6 +405,7 @@ export const NODE_LABELS: Record<NodeType, string> = {
   extras: 'Extras',
   shot: 'Shot',
   outfit: 'Outfit',
+  camera: 'Camera',
   action: 'Action',
   negative: 'Negative',
   parameters: 'Parameters',
@@ -304,6 +414,7 @@ export const NODE_LABELS: Record<NodeType, string> = {
   output: 'Output',
   page: 'Page',
   transform: 'Transform',
+  comp: 'Comp',
 };
 
 // Layout preset labels for UI

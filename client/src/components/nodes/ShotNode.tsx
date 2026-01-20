@@ -11,7 +11,7 @@ export function ShotNode({ id, data, selected }: NodeProps<ShotNodeType>) {
       nodeType="shot"
       name={data.name}
       selected={selected}
-      showTargetHandle={false}
+      showTargetHandle={true}
       icon={<CameraIcon size={14} />}
     >
       <NodeField label="Shot Type">

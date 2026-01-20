@@ -6,6 +6,7 @@ import type {
   PropNodeData,
   StyleNodeData,
   ShotNodeData,
+  CameraNodeData,
   ActionNodeData,
   ExtrasNodeData,
   OutfitNodeData,
@@ -19,7 +20,15 @@ import type {
   AspectRatio,
   ImageResolution,
 } from '@/types/nodes';
-import { SHOT_PRESET_LABELS } from '@/types/nodes';
+import {
+  SHOT_PRESET_LABELS,
+  LENS_TYPE_LABELS,
+  DEPTH_OF_FIELD_LABELS,
+  CAMERA_FEEL_LABELS,
+  FILM_STOCK_LABELS,
+  EXPOSURE_STYLE_LABELS,
+  VIGNETTE_LABELS,
+} from '@/types/nodes';
 import { useSettingsStore } from '@/stores/settingsStore';
 
 export interface ReferenceImage {
@@ -43,6 +52,7 @@ interface AssembledPrompt {
   };
   parts: {
     shot?: string;
+    camera?: string;
     characters: string[];
     props: string[];
     settings: string[];
@@ -81,6 +91,7 @@ export function assemblePrompt(
   const negatives: NegativeNodeData[] = [];
   const standaloneReferences: ReferenceNodeData[] = [];
   let shot: ShotNodeData | null = null;
+  let camera: CameraNodeData | null = null;
   let parameters: ParametersNodeData | null = null;
 
   // Build map of reference nodes connected to asset nodes (via "reference" handle)
@@ -164,6 +175,9 @@ export function assemblePrompt(
       case 'shot':
         shot = node.data as ShotNodeData;
         break;
+      case 'camera':
+        camera = node.data as CameraNodeData;
+        break;
       case 'edit':
         edits.push(node.data as EditNodeData);
         break;
@@ -198,9 +212,14 @@ export function assemblePrompt(
   // Start traversal from output node (for prompt content)
   traverse(outputNodeId);
 
+  // Store camera position (cast needed because TS doesn't track mutations in closures)
+  const cameraData = camera as CameraNodeData | null;
+  const cameraPosition = cameraData?.promptPosition || 'after-shot';
+
   // Format the prompt parts
   const parts: AssembledPrompt['parts'] = {
     shot: shot ? formatShot(shot) : undefined,
+    camera: camera ? formatCamera(camera) : undefined,
     characters: characters.map((c) => formatCharacter(c.data)),
     props: props.map((p) => formatProp(p.data)),
     settings: settings.map((s) => formatSetting(s.data)),
@@ -218,12 +237,29 @@ export function assemblePrompt(
     promptParts.push(parts.shot);
   }
 
+  // Insert camera after shot if position is 'after-shot'
+  if (parts.camera && cameraPosition === 'after-shot') {
+    promptParts.push(parts.camera);
+  }
+
   promptParts.push(...parts.characters);
   promptParts.push(...parts.outfits);
+
+  // Insert camera after subject if position is 'after-subject'
+  if (parts.camera && cameraPosition === 'after-subject') {
+    promptParts.push(parts.camera);
+  }
+
   promptParts.push(...parts.props);
   promptParts.push(...parts.settings);
   promptParts.push(...parts.extras);
   promptParts.push(...parts.actions);
+
+  // Insert camera before style if position is 'before-style'
+  if (parts.camera && cameraPosition === 'before-style') {
+    promptParts.push(parts.camera);
+  }
+
   promptParts.push(...parts.styles);
   promptParts.push(...parts.edits);
 
@@ -354,6 +390,46 @@ function formatShot(data: ShotNodeData): string {
     text += ` ${data.description}`;
   }
   return text;
+}
+
+function formatCamera(data: CameraNodeData): string {
+  const parts: string[] = [];
+
+  // Lens type (only add if not standard)
+  if (data.lensType && data.lensType !== 'standard') {
+    parts.push(LENS_TYPE_LABELS[data.lensType]);
+  }
+
+  // Depth of field (only add if not deep/default)
+  if (data.depthOfField && data.depthOfField !== 'deep') {
+    parts.push(DEPTH_OF_FIELD_LABELS[data.depthOfField]);
+  }
+
+  // Camera feel (only add if not locked/default)
+  if (data.cameraFeel && data.cameraFeel !== 'locked') {
+    parts.push(CAMERA_FEEL_LABELS[data.cameraFeel] + ' camera');
+  }
+
+  // Film stock (only add if not digital/default)
+  if (data.filmStock && data.filmStock !== 'digital') {
+    parts.push(FILM_STOCK_LABELS[data.filmStock] + ' look');
+  }
+
+  // Exposure (only add if not balanced/default)
+  if (data.exposure && data.exposure !== 'balanced') {
+    parts.push(EXPOSURE_STYLE_LABELS[data.exposure] + ' lighting');
+  }
+
+  // Vignette (only add if present)
+  if (data.vignette && data.vignette !== 'none') {
+    parts.push(VIGNETTE_LABELS[data.vignette].toLowerCase());
+  }
+
+  if (parts.length === 0) {
+    return '';
+  }
+
+  return parts.join(', ') + '.';
 }
 
 function formatCharacter(data: CharacterNodeData): string {
