@@ -133,16 +133,46 @@
 - [ ] Additional API providers (OpenAI DALL-E 3, Midjourney proxy)
 - [ ] Expression/Pose nodes (experimental)
 - [ ] Lighting node (separate from Setting)
-- [ ] Composition node (rule of thirds, golden ratio guides)
 - [ ] Batch generation across multiple Output nodes
 - [ ] Story/sequence mode for comic creation
 - [ ] **Time Period node (experimental)** — injects temporal context (1970s, Victorian era, 1800s, etc.) to give actions/settings a period-appropriate feel
+- [ ] **WebGL Scene Node** — 3D scene builder for camera angles and composition reference (potential integration with existing Three.js IDE)
+- [ ] **Animatics support** — basic motion/keyframes for Comp node layers
+- [ ] **Prompt preview/edit before generation** — catch trigger words before sending
 
 ---
 
 ## Recent Changes (Session Log)
 
-### 2025-01-19 (Latest Session)
+### 2025-01-20 (Latest Session)
+- **Camera Node (new):**
+  - Lens type: standard, wide, ultra-wide, fisheye 180°, telephoto, anamorphic, tilt-shift
+  - Depth of field: deep, shallow, very shallow
+  - Camera feel: locked/tripod, handheld, steadicam
+  - Film stock: digital, 35mm, 16mm vintage, large format
+  - Exposure: balanced, high key, low key
+  - Vignette: none, light, heavy
+  - Prompt position: after-shot, after-subject, before-style (experimental)
+  - Plugs into Shot node for reusable "camera rigs"
+- **Comp Node (new):**
+  - 4-layer image compositing: back, mid, fore, ext (back-to-front)
+  - Compatible with Transform node for per-layer positioning
+  - PNG export of composed result
+  - Respects transparency in layers
+- **Page Node Num Grid:**
+  - Toggle between preset layouts and dynamic grid
+  - Enter panel count (1-16), auto-calculates optimal grid
+  - Rounds up if count doesn't divide evenly (11 → 12 slots)
+- **Shot Node accepts inputs:**
+  - Camera can now connect to Shot for organized node trees
+- **Bug fixes:**
+  - Node ID generation now uses timestamp+random to prevent collisions
+  - Checkbox styling improved for visibility (border contrast, padding)
+- **Roadmap updates:**
+  - Phase 6 planned: WebGL Scene Node, Animatics support
+  - User has existing Three.js IDE for potential future integration
+
+### 2025-01-19
 - **Transform node scale behavior improved:**
   - Without Transform: images use object-fit cover (fill panel, crop excess)
   - With Transform: images use object-fit contain as base
