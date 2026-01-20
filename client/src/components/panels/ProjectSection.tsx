@@ -30,6 +30,11 @@ export function ProjectSection() {
   const isDirty = useFlowStore((state) => state.isDirty);
 
   const handleCreateProject = () => {
+    if (isDirty) {
+      if (!confirm('You have unsaved changes. Create a new project anyway?')) {
+        return;
+      }
+    }
     createProject();
   };
 
@@ -62,24 +67,33 @@ export function ProjectSection() {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const json = event.target?.result as string;
-      const projectId = importProject(json);
-      if (projectId) {
-        loadProject(projectId);
-      } else {
-        alert('Invalid project file');
-      }
-    };
-    reader.readAsText(file);
-
     // Reset input so same file can be selected again
     e.target.value = '';
+
+    const json = await file.text();
+    console.log('Importing project, file size:', json.length);
+
+    try {
+      const projectId = await importProject(json);
+      console.log('Import result, projectId:', projectId);
+
+      if (projectId) {
+        const loaded = await loadProject(projectId);
+        console.log('Load result:', loaded);
+        if (!loaded) {
+          alert('Failed to load imported project');
+        }
+      } else {
+        alert('Invalid project file - could not parse');
+      }
+    } catch (err) {
+      console.error('Import error:', err);
+      alert('Failed to import project');
+    }
   };
 
   const startRenaming = (projectId: string, currentName: string, e: React.MouseEvent) => {

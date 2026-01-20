@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { useReactFlow } from '@xyflow/react';
 import { useFlowStore, generateNodeId } from '@/stores/flowStore';
 import { useUIStore } from '@/stores/uiStore';
 import { NODE_COLORS, NODE_LABELS, SHOT_PRESET_LABELS, PAGE_LAYOUT_LABELS, type NodeType, type PageLayout } from '@/types/nodes';
@@ -25,6 +26,7 @@ import {
   HistoryIcon,
   PhotoIcon,
   LayoutIcon,
+  TransformIcon,
 } from '@/components/ui/Icons';
 import { ProjectSection } from './ProjectSection';
 import { SettingsSection } from './SettingsSection';
@@ -111,7 +113,13 @@ const NODE_CONFIGS: NodeTypeConfig[] = [
   {
     type: 'page',
     icon: <LayoutIcon size={14} />,
-    defaultData: { label: 'Page', layout: '4-up', gutter: 8, backgroundColor: '#ffffff', panelImages: [] },
+    defaultData: { label: 'Page', name: 'Page Layout', layout: '4-up', gutter: 8, backgroundColor: '#ffffff', panelImages: [], outputWidth: 1200, outputHeight: 1600 },
+  },
+  // Transform Node
+  {
+    type: 'transform',
+    icon: <TransformIcon size={14} />,
+    defaultData: { label: 'Transform', name: 'Transform', scale: 1, offsetX: 0, offsetY: 0, rotation: 0, flipH: false, flipV: false, alignment: 'center' },
   },
 ];
 
@@ -122,6 +130,7 @@ export function LeftPanel() {
 
   const { nodes, addNode, updateNodeData } = useFlowStore();
   const { selectedNodeId, selectNode } = useUIStore();
+  const reactFlowInstance = useReactFlow();
 
   const selectedNode = selectedNodeId ? nodes.find((n) => n.id === selectedNodeId) : null;
 
@@ -137,12 +146,35 @@ export function LeftPanel() {
     });
   };
 
+  // Get the center of the visible viewport in flow coordinates
+  const getViewportCenter = useCallback(() => {
+    // Get the React Flow container element to know screen dimensions
+    const container = document.querySelector('.react-flow');
+    if (!container) {
+      return { x: 250, y: 150 }; // Fallback position
+    }
+
+    const rect = container.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    // Convert screen coordinates to flow coordinates
+    const position = reactFlowInstance.screenToFlowPosition({
+      x: rect.left + centerX,
+      y: rect.top + centerY,
+    });
+
+    return position;
+  }, [reactFlowInstance]);
+
   const handleAddNode = (config: NodeTypeConfig) => {
-    const offset = nodes.length * 20;
+    const center = getViewportCenter();
+    // Add small random offset to prevent nodes from stacking exactly on top of each other
+    const offset = (Math.random() - 0.5) * 50;
     const newNode = {
       id: generateNodeId(config.type),
       type: config.type,
-      position: { x: 250 + offset, y: 150 + offset },
+      position: { x: center.x + offset, y: center.y + offset },
       data: { ...config.defaultData },
     };
     addNode(newNode as any);
@@ -461,10 +493,14 @@ function renderNodeFields(
               { value: 'mock', label: 'Mock (No API)' },
               { value: 'gemini-pro', label: 'Gemini 3 Pro' },
               { value: 'gemini-flash', label: 'Gemini 2.5 Flash' },
-              { value: 'flux-schnell', label: 'Flux Schnell' },
-              { value: 'flux-dev', label: 'Flux Dev' },
-              { value: 'turbo', label: 'Turbo' },
-              { value: 'sdxl-turbo', label: 'SDXL Turbo' },
+              { value: 'sd3-large', label: 'SD3 Large (Stability)' },
+              { value: 'sd3-large-turbo', label: 'SD3 Large Turbo (Stability)' },
+              { value: 'sd3-medium', label: 'SD3 Medium (Stability)' },
+              { value: 'sdxl-1.0', label: 'SDXL 1.0 (Stability)' },
+              { value: 'flux-schnell', label: 'Flux Schnell (fal.ai)' },
+              { value: 'flux-dev', label: 'Flux Dev (fal.ai)' },
+              { value: 'turbo', label: 'Turbo (fal.ai)' },
+              { value: 'sdxl-turbo', label: 'SDXL Turbo (fal.ai)' },
             ]}
             onChange={(v) => onChange('model', v)}
           />
@@ -541,9 +577,12 @@ function renderNodeFields(
             label="Reference Type"
             value={data.imageType || 'character'}
             options={[
-              { value: 'character', label: 'Character Reference' },
-              { value: 'object', label: 'Object Reference' },
-              { value: 'style', label: 'Style Reference' },
+              { value: 'character', label: 'Character' },
+              { value: 'setting', label: 'Setting / Environment' },
+              { value: 'prop', label: 'Prop / Object' },
+              { value: 'style', label: 'Style / Aesthetic' },
+              { value: 'scene', label: 'Scene / Composition' },
+              { value: 'mood', label: 'Mood / Atmosphere' },
             ]}
             onChange={(v) => onChange('imageType', v)}
           />
@@ -567,6 +606,12 @@ function renderNodeFields(
     case 'page':
       return (
         <div className="space-y-4">
+          <FieldInput
+            label="Name"
+            value={data.name || ''}
+            onChange={(v) => onChange('name', v)}
+            placeholder="Page Layout"
+          />
           <FieldSelect
             label="Layout"
             value={data.layout || '4-up'}
@@ -590,6 +635,94 @@ function renderNodeFields(
             onChange={(v) => onChange('backgroundColor', v)}
             placeholder="#ffffff"
           />
+          <div className="grid grid-cols-2 gap-3">
+            <FieldInput
+              label="Width (px)"
+              value={String(data.outputWidth || 1200)}
+              onChange={(v) => onChange('outputWidth', parseInt(v, 10) || 1200)}
+              placeholder="1200"
+            />
+            <FieldInput
+              label="Height (px)"
+              value={String(data.outputHeight || 1600)}
+              onChange={(v) => onChange('outputHeight', parseInt(v, 10) || 1600)}
+              placeholder="1600"
+            />
+          </div>
+        </div>
+      );
+
+    case 'transform':
+      return (
+        <div className="space-y-4">
+          <FieldInput
+            label="Name"
+            value={data.name || ''}
+            onChange={(v) => onChange('name', v)}
+            placeholder="Transform"
+          />
+          <FieldSlider
+            label="Scale"
+            value={data.scale ?? 1}
+            min={0.1}
+            max={3}
+            step={0.1}
+            onChange={(v) => onChange('scale', v)}
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <FieldSlider
+              label="Offset X"
+              value={data.offsetX ?? 0}
+              min={-100}
+              max={100}
+              step={5}
+              onChange={(v) => onChange('offsetX', v)}
+            />
+            <FieldSlider
+              label="Offset Y"
+              value={data.offsetY ?? 0}
+              min={-100}
+              max={100}
+              step={5}
+              onChange={(v) => onChange('offsetY', v)}
+            />
+          </div>
+          <FieldSlider
+            label="Rotation"
+            value={data.rotation ?? 0}
+            min={0}
+            max={360}
+            step={15}
+            onChange={(v) => onChange('rotation', v)}
+          />
+          <FieldSelect
+            label="Alignment"
+            value={data.alignment || 'center'}
+            options={[
+              { value: 'center', label: 'Center' },
+              { value: 'top', label: 'Top' },
+              { value: 'bottom', label: 'Bottom' },
+              { value: 'left', label: 'Left' },
+              { value: 'right', label: 'Right' },
+              { value: 'top-left', label: 'Top Left' },
+              { value: 'top-right', label: 'Top Right' },
+              { value: 'bottom-left', label: 'Bottom Left' },
+              { value: 'bottom-right', label: 'Bottom Right' },
+            ]}
+            onChange={(v) => onChange('alignment', v)}
+          />
+          <div className="flex gap-3">
+            <FieldCheckbox
+              label="Flip Horizontal"
+              checked={data.flipH || false}
+              onChange={(v) => onChange('flipH', v as unknown as number)}
+            />
+            <FieldCheckbox
+              label="Flip Vertical"
+              checked={data.flipV || false}
+              onChange={(v) => onChange('flipV', v as unknown as number)}
+            />
+          </div>
         </div>
       );
 
@@ -775,5 +908,35 @@ function FieldSlider({ label, value, min, max, step, onChange }: FieldSliderProp
         <span>Creative</span>
       </div>
     </div>
+  );
+}
+
+interface FieldCheckboxProps {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}
+
+function FieldCheckbox({ label, checked, onChange }: FieldCheckboxProps) {
+  return (
+    <label
+      className="flex items-center gap-2 cursor-pointer flex-1"
+      onClick={() => onChange(!checked)}
+    >
+      <div
+        className="w-5 h-5 rounded flex items-center justify-center transition-colors"
+        style={{
+          background: checked ? 'var(--color-node-transform)' : 'var(--color-bg-elevated)',
+          border: `1px solid ${checked ? 'var(--color-node-transform)' : 'var(--color-border-subtle)'}`,
+        }}
+      >
+        {checked && (
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        )}
+      </div>
+      <span className="text-xs text-secondary">{label}</span>
+    </label>
   );
 }

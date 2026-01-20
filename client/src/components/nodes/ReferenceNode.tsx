@@ -6,9 +6,12 @@ import { ImageIcon, UploadIcon } from '../ui/Icons';
 import { useFlowStore } from '@/stores/flowStore';
 
 const IMAGE_TYPE_LABELS: Record<string, string> = {
-  character: 'Character Ref',
-  object: 'Object Ref',
-  style: 'Style Ref',
+  character: 'Character',
+  setting: 'Setting',
+  prop: 'Prop',
+  style: 'Style',
+  scene: 'Scene',
+  mood: 'Mood',
 };
 
 export function ReferenceNode({ id, data, selected }: NodeProps<ReferenceNodeType>) {

@@ -1,8 +1,9 @@
 import type { ModelType, AspectRatio } from './nodes';
 
 export interface APIKeys {
-  gemini?: string;   // Google AI Studio API key
-  fal?: string;      // fal.ai API key
+  gemini?: string;     // Google AI Studio API key
+  fal?: string;        // fal.ai API key
+  stability?: string;  // Stability AI API key
 }
 
 export interface GenerationDefaults {

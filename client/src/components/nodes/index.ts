@@ -13,6 +13,7 @@ import { EditNode } from './EditNode';
 import { ReferenceNode } from './ReferenceNode';
 import { OutputNode } from './OutputNode';
 import { PageNode } from './PageNode';
+import { TransformNode } from './TransformNode';
 
 // Registry of all custom node types for React Flow
 export const nodeTypes: NodeTypes = {
@@ -36,6 +37,8 @@ export const nodeTypes: NodeTypes = {
   output: OutputNode,
   // Layout Nodes
   page: PageNode,
+  // Transform Nodes
+  transform: TransformNode,
 };
 
 // Re-export individual nodes
@@ -53,4 +56,5 @@ export { EditNode } from './EditNode';
 export { ReferenceNode } from './ReferenceNode';
 export { OutputNode } from './OutputNode';
 export { PageNode } from './PageNode';
+export { TransformNode } from './TransformNode';
 export { BaseNode, NodeField } from './BaseNode';

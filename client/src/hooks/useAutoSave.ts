@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useFlowStore } from '@/stores/flowStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useProjectStore } from '@/stores/projectStore';
@@ -6,60 +6,81 @@ import { getCurrentProjectId } from '@/services/storage';
 
 export function useAutoSave() {
   const isDirty = useFlowStore((state) => state.isDirty);
+  const nodes = useFlowStore((state) => state.nodes);
+  const edges = useFlowStore((state) => state.edges);
   const autoSaveEnabled = useSettingsStore((state) => state.autoSaveEnabled);
-  const autoSaveIntervalMs = useSettingsStore((state) => state.autoSaveIntervalMs);
   const saveCurrentProject = useProjectStore((state) => state.saveCurrentProject);
   const loadProject = useProjectStore((state) => state.loadProject);
 
-  const lastSaveRef = useRef<number>(0);
   const hasLoadedRef = useRef(false);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isSavingRef = useRef(false);
 
   // Auto-load last project on startup, or create default project
   useEffect(() => {
     if (hasLoadedRef.current) return;
     hasLoadedRef.current = true;
 
-    const lastProjectId = getCurrentProjectId();
-    if (lastProjectId) {
-      const success = loadProject(lastProjectId);
-      if (success) {
-        console.log('Auto-loaded project:', lastProjectId);
-        return;
+    const initProject = async () => {
+      const lastProjectId = getCurrentProjectId();
+      if (lastProjectId) {
+        const success = await loadProject(lastProjectId);
+        if (success) {
+          console.log('Auto-loaded project:', lastProjectId);
+          return;
+        }
       }
-    }
 
-    // No existing project - save current state as a new project
-    // This ensures work is never lost even if user forgets to save
-    saveCurrentProject();
-    console.log('Created default project');
+      // No existing project - save current state as a new project
+      await saveCurrentProject();
+      console.log('Created default project');
+    };
+
+    initProject();
   }, [loadProject, saveCurrentProject]);
 
-  useEffect(() => {
-    if (!autoSaveEnabled || !isDirty) {
-      return;
+  // Debounced auto-save on every change (saves 2 seconds after last change)
+  const debouncedSave = useCallback(() => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
     }
 
-    const timeSinceLastSave = Date.now() - lastSaveRef.current;
-    const delayMs = Math.max(0, autoSaveIntervalMs - timeSinceLastSave);
-
-    const timeoutId = setTimeout(() => {
-      if (isDirty) {
-        saveCurrentProject();
-        lastSaveRef.current = Date.now();
+    saveTimeoutRef.current = setTimeout(async () => {
+      if (isDirty && autoSaveEnabled && !isSavingRef.current) {
+        isSavingRef.current = true;
+        try {
+          await saveCurrentProject();
+          console.log('Auto-saved project');
+        } catch (e) {
+          console.error('Auto-save failed:', e);
+        } finally {
+          isSavingRef.current = false;
+        }
       }
-    }, delayMs);
+    }, 2000); // Save 2 seconds after last change
+  }, [isDirty, autoSaveEnabled, saveCurrentProject]);
+
+  // Trigger debounced save whenever nodes or edges change
+  useEffect(() => {
+    if (isDirty && autoSaveEnabled) {
+      debouncedSave();
+    }
 
     return () => {
-      clearTimeout(timeoutId);
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
     };
-  }, [isDirty, autoSaveEnabled, autoSaveIntervalMs, saveCurrentProject]);
+  }, [nodes, edges, isDirty, autoSaveEnabled, debouncedSave]);
 
-  // Save on page unload if dirty (actually save, not just warn)
+  // Show warning on page unload (can't reliably do async save in beforeunload)
   useEffect(() => {
-    const handleBeforeUnload = () => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isDirty) {
-        // Synchronously save before unload
-        saveCurrentProject();
+        // Show browser warning dialog
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        return e.returnValue;
       }
     };
 
@@ -67,5 +88,14 @@ export function useAutoSave() {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [isDirty, saveCurrentProject]);
+  }, [isDirty]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
 }

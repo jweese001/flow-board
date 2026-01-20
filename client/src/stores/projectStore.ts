@@ -10,6 +10,7 @@ import {
   createNewProject,
   downloadProjectAsFile,
   importProjectFromJson,
+  loadProjectSync,
 } from '@/services/storage';
 import { useFlowStore } from './flowStore';
 
@@ -20,13 +21,13 @@ interface ProjectState {
 
   // Actions
   refreshProjectList: () => void;
-  createProject: (name?: string) => string;
-  loadProject: (projectId: string) => boolean;
-  saveCurrentProject: () => void;
-  deleteProject: (projectId: string) => void;
-  renameProject: (projectId: string, name: string) => void;
-  exportProject: (projectId: string) => void;
-  importProject: (json: string) => string | null;
+  createProject: (name?: string) => Promise<string>;
+  loadProject: (projectId: string) => Promise<boolean>;
+  saveCurrentProject: () => Promise<void>;
+  deleteProject: (projectId: string) => Promise<void>;
+  renameProject: (projectId: string, name: string) => Promise<void>;
+  exportProject: (projectId: string) => Promise<void>;
+  importProject: (json: string) => Promise<string | null>;
   newUnsavedProject: () => void;
 }
 
@@ -39,12 +40,12 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
     set({ projectList: getProjectMetadataList() });
   },
 
-  createProject: (name = 'Untitled Project') => {
+  createProject: async (name = 'Untitled Project') => {
     const project = createNewProject(name);
     const flowStore = useFlowStore.getState();
 
     // Save empty project first
-    storageSaveProject(project);
+    await storageSaveProject(project);
     setCurrentProjectId(project.id);
 
     // Clear the flow
@@ -60,27 +61,39 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
     return project.id;
   },
 
-  loadProject: (projectId: string) => {
-    const project = storageLoadProject(projectId);
-    if (!project) return false;
+  loadProject: async (projectId: string) => {
+    set({ isLoading: true });
 
-    const flowStore = useFlowStore.getState();
+    try {
+      const project = await storageLoadProject(projectId);
+      if (!project) {
+        set({ isLoading: false });
+        return false;
+      }
 
-    flowStore.setNodes(project.nodes);
-    flowStore.setEdges(project.edges);
-    flowStore.setDirty(false);
+      const flowStore = useFlowStore.getState();
 
-    setCurrentProjectId(projectId);
+      flowStore.setNodes(project.nodes);
+      flowStore.setEdges(project.edges);
+      flowStore.setDirty(false);
 
-    set({
-      currentProjectId: projectId,
-      projectList: getProjectMetadataList(),
-    });
+      setCurrentProjectId(projectId);
 
-    return true;
+      set({
+        currentProjectId: projectId,
+        projectList: getProjectMetadataList(),
+        isLoading: false,
+      });
+
+      return true;
+    } catch (e) {
+      console.error('Failed to load project:', e);
+      set({ isLoading: false });
+      return false;
+    }
   },
 
-  saveCurrentProject: () => {
+  saveCurrentProject: async () => {
     const { currentProjectId } = get();
     const flowStore = useFlowStore.getState();
 
@@ -89,7 +102,7 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
       const project = createNewProject();
       project.nodes = flowStore.nodes;
       project.edges = flowStore.edges;
-      storageSaveProject(project);
+      await storageSaveProject(project);
       setCurrentProjectId(project.id);
 
       set({
@@ -101,7 +114,7 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
       return;
     }
 
-    const existing = storageLoadProject(currentProjectId);
+    const existing = loadProjectSync(currentProjectId);
     const project: Project = {
       id: currentProjectId,
       name: existing?.name || 'Untitled Project',
@@ -111,16 +124,16 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
       updatedAt: Date.now(),
     };
 
-    storageSaveProject(project);
+    await storageSaveProject(project);
     flowStore.setDirty(false);
 
     set({ projectList: getProjectMetadataList() });
   },
 
-  deleteProject: (projectId: string) => {
+  deleteProject: async (projectId: string) => {
     const { currentProjectId } = get();
 
-    storageDeleteProject(projectId);
+    await storageDeleteProject(projectId);
 
     if (currentProjectId === projectId) {
       const flowStore = useFlowStore.getState();
@@ -134,28 +147,28 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
     set({ projectList: getProjectMetadataList() });
   },
 
-  renameProject: (projectId: string, name: string) => {
-    const project = storageLoadProject(projectId);
+  renameProject: async (projectId: string, name: string) => {
+    const project = loadProjectSync(projectId);
     if (!project) return;
 
     project.name = name;
-    storageSaveProject(project);
+    await storageSaveProject(project);
 
     set({ projectList: getProjectMetadataList() });
   },
 
-  exportProject: (projectId: string) => {
-    const project = storageLoadProject(projectId);
+  exportProject: async (projectId: string) => {
+    const project = await storageLoadProject(projectId);
     if (!project) return;
 
-    downloadProjectAsFile(project);
+    await downloadProjectAsFile(project);
   },
 
-  importProject: (json: string) => {
-    const project = importProjectFromJson(json);
+  importProject: async (json: string) => {
+    const project = await importProjectFromJson(json);
     if (!project) return null;
 
-    storageSaveProject(project);
+    await storageSaveProject(project);
     set({ projectList: getProjectMetadataList() });
 
     return project.id;

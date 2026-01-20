@@ -384,30 +384,43 @@ Users don't think about this — they pick a model, the adapter does the rest.
 
 ## Development Phases
 
-### Phase 1: Foundation
-- React Flow canvas with zoom/pan
-- Core asset nodes: Character, Setting, Prop, Style
-- Action and Output nodes
-- Shot node with preset dropdown
-- Basic prompt assembly (ordered concatenation)
-- Hardcoded mock "generation" (returns placeholder)
+### Phase 1: Foundation ✅
+- [x] React Flow canvas with zoom/pan
+- [x] Core asset nodes: Character, Setting, Prop, Style
+- [x] Action and Output nodes
+- [x] Shot node with preset dropdown
+- [x] Basic prompt assembly (ordered concatenation)
+- [x] Hardcoded mock "generation" (returns placeholder)
 
-### Phase 2: Real Generation
-- API integration (one model)
-- Parameters node
-- Negative prompt node
-- Prompt preview editing
-- Extras node
+### Phase 2: Real Generation ✅
+- [x] API integration (Gemini Pro/Flash)
+- [x] Parameters node
+- [x] Negative prompt node
+- [x] Prompt preview editing
+- [x] Extras node
 
-### Phase 3: Persistence & Modifiers
-- Project save/load
-- Library sidebar
-- Export/import JSON
-- Outfit node with override behavior
-- Edit/Refine node
+### Phase 3: Persistence & Modifiers ✅
+- [x] Project save/load
+- [x] Library sidebar
+- [x] Export/import JSON
+- [x] Outfit node with override behavior
+- [x] Edit/Refine node
 
-### Phase 4: Polish
-- UI refinements
-- Additional model adapters
-- Keyboard shortcuts
-- Undo/redo
+### Phase 4: Polish 🔄
+- [x] Gemini model adapter (Pro/Flash)
+- [x] Stability AI adapter (SD3 Large/Medium/Turbo, SDXL 1.0)
+- [ ] fal.ai model adapter (Flux, SDXL, Turbo) — code exists, needs testing
+- [ ] UI refinements
+- [ ] Keyboard shortcuts
+- [ ] Undo/redo
+
+### Phase 5: Extended Features ✅
+- [x] Reference Node — attach reference images to assets for visual consistency
+- [x] Page Node — comic page layouts (full, 2-up, 3-up, 4-up, 6-up, manga, inset)
+- [x] Transform Node — scale, offset, rotation, flip controls for images
+- [x] Copy/paste — clipboard support for duplicating nodes
+- [x] Batch generation — generate multiple images at once (1-4)
+- [x] Temperature control — creativity slider for generation
+- [x] Resolution presets — 1K, 2K, 4K output options
+- [x] Auto-save — automatic project persistence
+- [x] History tracking — generation history with metadata

@@ -98,7 +98,11 @@ export type ModelType =
   | 'flux-schnell'     // fal.ai Flux Schnell (fast)
   | 'flux-dev'         // fal.ai Flux Dev (quality)
   | 'turbo'            // fal.ai Turbo (very fast)
-  | 'sdxl-turbo';      // fal.ai SDXL Turbo
+  | 'sdxl-turbo'       // fal.ai SDXL Turbo
+  | 'sd3-large'        // Stability AI SD3 Large
+  | 'sd3-large-turbo'  // Stability AI SD3 Large Turbo (faster)
+  | 'sd3-medium'       // Stability AI SD3 Medium
+  | 'sdxl-1.0';        // Stability AI SDXL 1.0
 export type AspectRatio = '1:1' | '16:9' | '9:16' | '2:3' | '3:2';
 export type ImageResolution = '1K' | '2K' | '4K';
 
@@ -115,7 +119,7 @@ export interface EditNodeData extends BaseNodeData {
   refinement: string;
 }
 
-export type ReferenceImageType = 'character' | 'object' | 'style';
+export type ReferenceImageType = 'character' | 'setting' | 'prop' | 'style' | 'scene' | 'mood';
 
 export interface ReferenceNodeData extends BaseNodeData {
   name: string;
@@ -159,10 +163,37 @@ export type PageLayout =
   | 'inset';         // Large panel with small inset
 
 export interface PageNodeData extends BaseNodeData {
+  name: string;          // Editable page title
   layout: PageLayout;
   gutter: number;        // Gap between panels in pixels
   backgroundColor: string;
   panelImages: (string | null)[]; // Array of image URLs for each slot
+  outputWidth: number;   // Export width in pixels
+  outputHeight: number;  // Export height in pixels
+}
+
+// ===== TRANSFORM NODE =====
+
+export type ImageAlignment =
+  | 'center'
+  | 'top'
+  | 'bottom'
+  | 'left'
+  | 'right'
+  | 'top-left'
+  | 'top-right'
+  | 'bottom-left'
+  | 'bottom-right';
+
+export interface TransformNodeData extends BaseNodeData {
+  name: string;
+  scale: number;         // 0.1 to 3.0 (1 = 100%)
+  offsetX: number;       // -100 to 100 (percentage)
+  offsetY: number;       // -100 to 100 (percentage)
+  rotation: number;      // 0 to 360 degrees
+  flipH: boolean;        // Flip horizontal
+  flipV: boolean;        // Flip vertical
+  alignment: ImageAlignment;
 }
 
 // ===== NODE TYPE UNION =====
@@ -181,7 +212,8 @@ export type NodeType =
   | 'edit'
   | 'reference'
   | 'output'
-  | 'page';
+  | 'page'
+  | 'transform';
 
 export type AppNodeData =
   | CharacterNodeData
@@ -197,7 +229,8 @@ export type AppNodeData =
   | EditNodeData
   | ReferenceNodeData
   | OutputNodeData
-  | PageNodeData;
+  | PageNodeData
+  | TransformNodeData;
 
 // Use BuiltInNode pattern for React Flow compatibility
 export type CharacterNode = Node<CharacterNodeData, 'character'>;
@@ -214,6 +247,7 @@ export type EditNode = Node<EditNodeData, 'edit'>;
 export type ReferenceNode = Node<ReferenceNodeData, 'reference'>;
 export type OutputNode = Node<OutputNodeData, 'output'>;
 export type PageNode = Node<PageNodeData, 'page'>;
+export type TransformNode = Node<TransformNodeData, 'transform'>;
 
 export type AppNode =
   | CharacterNode
@@ -229,7 +263,8 @@ export type AppNode =
   | EditNode
   | ReferenceNode
   | OutputNode
-  | PageNode;
+  | PageNode
+  | TransformNode;
 
 // ===== NODE COLORS =====
 
@@ -247,7 +282,8 @@ export const NODE_COLORS: Record<NodeType, string> = {
   edit: '#6b7280',
   reference: '#8b5cf6',
   output: '#ef4444',
-  page: '#0ea5e9', // Sky blue for page layout
+  page: '#0ea5e9',      // Sky blue for page layout
+  transform: '#f472b6', // Pink for transform
 };
 
 // ===== NODE ICONS =====
@@ -267,6 +303,7 @@ export const NODE_LABELS: Record<NodeType, string> = {
   reference: 'Reference',
   output: 'Output',
   page: 'Page',
+  transform: 'Transform',
 };
 
 // Layout preset labels for UI

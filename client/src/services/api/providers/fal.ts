@@ -1,3 +1,4 @@
+import { fal } from '@fal-ai/client';
 import type { Provider, GenerationRequest, GenerationResponse } from '../types';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { ModelType } from '@/types/nodes';
@@ -25,51 +26,38 @@ export const falProvider: Provider = {
       throw new Error(`Unsupported fal.ai model: ${request.model}`);
     }
 
+    // Configure the client with the API key
+    fal.config({
+      credentials: apiKey,
+    });
+
     const { width, height } = getDimensions(request.aspectRatio);
 
-    // Submit the request
-    const submitResponse = await fetch(`https://queue.fal.run/${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Key ${apiKey}`,
-      },
-      body: JSON.stringify({
+    // Use the SDK's subscribe method which handles polling properly
+    const result = await fal.subscribe(endpoint, {
+      input: {
         prompt: request.prompt,
         negative_prompt: request.negativePrompt || '',
         image_size: { width, height },
         seed: request.seed,
-        num_images: 1,
+        num_images: request.numberOfImages || 1,
         enable_safety_checker: false,
-      }),
+      },
     });
 
-    if (!submitResponse.ok) {
-      const error = await submitResponse.json().catch(() => ({}));
-      throw new Error(error.detail || `fal.ai API error: ${submitResponse.status}`);
+    const data = result.data as {
+      images?: Array<{ url: string }>;
+      seed?: number;
+    };
+
+    if (!data.images || data.images.length === 0) {
+      throw new Error('No images returned from fal.ai');
     }
-
-    const submitData = await submitResponse.json();
-
-    // If we got images directly (sync response)
-    if (submitData.images && submitData.images.length > 0) {
-      return {
-        imageUrl: submitData.images[0].url,
-        seed: submitData.seed,
-      };
-    }
-
-    // Otherwise poll for result
-    const requestId = submitData.request_id;
-    if (!requestId) {
-      throw new Error('No request ID returned from fal.ai');
-    }
-
-    const result = await pollForResult(endpoint, requestId, apiKey);
 
     return {
-      imageUrl: result.images[0].url,
-      seed: result.seed,
+      imageUrl: data.images[0].url,
+      images: data.images.map((img) => ({ imageUrl: img.url, seed: data.seed })),
+      seed: data.seed,
     };
   },
 
@@ -78,57 +66,6 @@ export const falProvider: Provider = {
     return !!apiKey && apiKey.length > 0;
   },
 };
-
-async function pollForResult(
-  endpoint: string,
-  requestId: string,
-  apiKey: string,
-  maxAttempts = 120
-): Promise<any> {
-  for (let i = 0; i < maxAttempts; i++) {
-    const response = await fetch(
-      `https://queue.fal.run/${endpoint}/requests/${requestId}/status`,
-      {
-        headers: {
-          'Authorization': `Key ${apiKey}`,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Failed to check status: ${response.status}`);
-    }
-
-    const status = await response.json();
-
-    if (status.status === 'COMPLETED') {
-      // Fetch the result
-      const resultResponse = await fetch(
-        `https://queue.fal.run/${endpoint}/requests/${requestId}`,
-        {
-          headers: {
-            'Authorization': `Key ${apiKey}`,
-          },
-        }
-      );
-
-      if (!resultResponse.ok) {
-        throw new Error(`Failed to fetch result: ${resultResponse.status}`);
-      }
-
-      return resultResponse.json();
-    }
-
-    if (status.status === 'FAILED') {
-      throw new Error(status.error || 'Image generation failed');
-    }
-
-    // Wait before next poll
-    await new Promise((resolve) => setTimeout(resolve, 500));
-  }
-
-  throw new Error('Image generation timed out');
-}
 
 function getDimensions(aspectRatio: string): { width: number; height: number } {
   switch (aspectRatio) {

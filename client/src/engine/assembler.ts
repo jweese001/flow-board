@@ -278,9 +278,9 @@ export function assemblePrompt(
     if (ref) {
       referenceImages.push({
         imageUrl: ref.imageUrl,
-        imageType: 'object',
+        imageType: 'setting',
         name: setting.data.name,
-        description: `Reference for setting: ${setting.data.name}. ${setting.data.description}`,
+        description: `Reference for setting/environment: ${setting.data.name}. ${setting.data.description}`,
       });
     }
   }
@@ -290,9 +290,9 @@ export function assemblePrompt(
     if (ref) {
       referenceImages.push({
         imageUrl: ref.imageUrl,
-        imageType: 'object',
+        imageType: 'prop',
         name: prop.data.name,
-        description: `Reference for prop: ${prop.data.name}. ${prop.data.description}`,
+        description: `Reference for prop/object: ${prop.data.name}. ${prop.data.description}`,
       });
     }
   }

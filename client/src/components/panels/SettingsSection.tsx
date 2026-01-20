@@ -7,6 +7,10 @@ const MODEL_OPTIONS: { value: ModelType; label: string; provider: string }[] = [
   { value: 'mock', label: 'Mock', provider: 'No API' },
   { value: 'gemini-pro', label: 'Gemini 3 Pro', provider: 'Google' },
   { value: 'gemini-flash', label: 'Gemini 2.5 Flash', provider: 'Google' },
+  { value: 'sd3-large', label: 'SD3 Large', provider: 'Stability AI' },
+  { value: 'sd3-large-turbo', label: 'SD3 Large Turbo', provider: 'Stability AI' },
+  { value: 'sd3-medium', label: 'SD3 Medium', provider: 'Stability AI' },
+  { value: 'sdxl-1.0', label: 'SDXL 1.0', provider: 'Stability AI' },
   { value: 'flux-schnell', label: 'Flux Schnell', provider: 'fal.ai' },
   { value: 'flux-dev', label: 'Flux Dev', provider: 'fal.ai' },
   { value: 'turbo', label: 'Turbo', provider: 'fal.ai' },
@@ -23,6 +27,7 @@ const ASPECT_RATIO_OPTIONS: { value: AspectRatio; label: string }[] = [
 
 export function SettingsSection() {
   const [showGemini, setShowGemini] = useState(false);
+  const [showStability, setShowStability] = useState(false);
   const [showFal, setShowFal] = useState(false);
 
   const apiKeys = useSettingsStore((s) => s.apiKeys);
@@ -46,6 +51,16 @@ export function SettingsSection() {
           placeholder="Paste your API key"
           helpText="Google AI Studio"
           helpUrl="https://aistudio.google.com/apikey"
+        />
+        <ApiKeyInput
+          label="Stability AI"
+          value={apiKeys.stability || ''}
+          onChange={(val) => setApiKey('stability', val)}
+          show={showStability}
+          onToggleShow={() => setShowStability(!showStability)}
+          placeholder="Paste your API key"
+          helpText="Stability AI Platform"
+          helpUrl="https://platform.stability.ai/account/keys"
         />
         <ApiKeyInput
           label="fal.ai"
