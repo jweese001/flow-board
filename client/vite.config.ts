@@ -7,7 +7,7 @@ import path from 'path'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   // Base path for GitHub Pages - set via env or default to repo name
-  base: process.env.VITE_BASE_PATH || '/prompt-nodes/',
+  base: process.env.VITE_BASE_PATH || '/flow-board/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
