@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useStore, useReactFlow, useViewport } from '@xyflow/react';
+import { useStore, useViewport } from '@xyflow/react';
 import { useGroupStore } from '@/stores/groupStore';
 
 const PADDING = 16; // Padding around nodes
@@ -10,7 +10,6 @@ export function GroupOverlay() {
   const isolatedGroupId = useGroupStore((state) => state.isolatedGroupId);
   const isolateGroup = useGroupStore((state) => state.isolateGroup);
   const nodes = useStore((state) => state.nodes);
-  const { getNode } = useReactFlow();
   const { x, y, zoom } = useViewport();
 
   const handleDoubleClick = (groupId: string) => {
@@ -22,7 +21,7 @@ export function GroupOverlay() {
     }
   };
 
-  // Calculate bounding box for a group
+  // Calculate bounding box for a group using nodes from store (reactive to dimension changes)
   const getGroupBounds = useCallback(
     (nodeIds: string[]) => {
       let minX = Infinity;
@@ -31,11 +30,13 @@ export function GroupOverlay() {
       let maxY = -Infinity;
 
       for (const nodeId of nodeIds) {
-        const node = getNode(nodeId);
+        // Find node directly from store's nodes array for reactivity
+        const node = nodes.find((n) => n.id === nodeId);
         if (!node) continue;
 
+        // Use measured dimensions, with appropriate fallbacks per node type
         const width = node.measured?.width ?? (node.type === 'output' ? 280 : 220);
-        const height = node.measured?.height ?? 150;
+        const height = node.measured?.height ?? (node.type === 'output' ? 280 : 180);
 
         minX = Math.min(minX, node.position.x);
         minY = Math.min(minY, node.position.y);
@@ -52,7 +53,7 @@ export function GroupOverlay() {
         height: maxY - minY + PADDING * 2,
       };
     },
-    [getNode]
+    [nodes]
   );
 
   // Don't render anything if no groups
