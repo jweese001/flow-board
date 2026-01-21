@@ -15,6 +15,7 @@ import { useGroupStore } from '@/stores/groupStore';
 import { nodeTypes } from '@/components/nodes';
 import { NODE_COLORS } from '@/types/nodes';
 import type { NodeType } from '@/types/nodes';
+import { GroupOverlay } from './GroupOverlay';
 
 export function Canvas() {
   const { nodes, edges, onNodesChange, onEdgesChange, onConnect, copyNodes, pasteNodes } = useFlowStore();
@@ -77,6 +78,15 @@ export function Canvas() {
           groupStore.dissolveGroup(groupId);
         }
       }
+
+      // Exit isolation mode (Escape)
+      if (e.key === 'Escape') {
+        const groupStore = useGroupStore.getState();
+        if (groupStore.isolatedGroupId) {
+          e.preventDefault();
+          groupStore.isolateGroup(null);
+        }
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -104,6 +114,7 @@ export function Canvas() {
         selectNodesOnDrag={false}
         proOptions={{ hideAttribution: true }}
       >
+        <GroupOverlay />
         <Background
           variant={BackgroundVariant.Dots}
           gap={20}

@@ -22,6 +22,7 @@ export interface NodeGroup {
 
 interface GroupState {
   groups: NodeGroup[];
+  isolatedGroupId: string | null; // Currently focused/isolated group
 
   // Actions
   createGroup: (nodeIds: string[], name?: string) => string;
@@ -30,6 +31,7 @@ interface GroupState {
   getNodesInSameGroup: (nodeId: string) => string[];
   removeNodeFromAllGroups: (nodeId: string) => void;
   setGroups: (groups: NodeGroup[]) => void;
+  isolateGroup: (groupId: string | null) => void;
 }
 
 let groupCounter = 0;
@@ -37,6 +39,7 @@ let groupCounter = 0;
 export const useGroupStore = create<GroupState>()(
   immer((set, get) => ({
     groups: [],
+    isolatedGroupId: null,
 
     createGroup: (nodeIds, name) => {
       if (nodeIds.length < 2) return '';
@@ -66,6 +69,10 @@ export const useGroupStore = create<GroupState>()(
     dissolveGroup: (groupId) => {
       set((state) => {
         state.groups = state.groups.filter((g) => g.id !== groupId);
+        // Clear isolation if this was the isolated group
+        if (state.isolatedGroupId === groupId) {
+          state.isolatedGroupId = null;
+        }
       });
     },
 
@@ -93,6 +100,16 @@ export const useGroupStore = create<GroupState>()(
     setGroups: (groups) => {
       set((state) => {
         state.groups = groups;
+        // Clear isolation if the isolated group no longer exists
+        if (state.isolatedGroupId && !groups.some((g) => g.id === state.isolatedGroupId)) {
+          state.isolatedGroupId = null;
+        }
+      });
+    },
+
+    isolateGroup: (groupId) => {
+      set((state) => {
+        state.isolatedGroupId = groupId;
       });
     },
   }))

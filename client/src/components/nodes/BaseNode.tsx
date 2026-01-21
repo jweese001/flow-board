@@ -33,7 +33,11 @@ export function BaseNode({
   const label = NODE_LABELS[nodeType];
   const toggleNodeCollapsed = useUIStore((state) => state.toggleNodeCollapsed);
   const collapsed = useUIStore((state) => !!state.collapsedNodes[nodeId]);
-  const groupInfo = useGroupStore((state) => state.getGroupForNode(nodeId));
+
+  // Check if this node should be faded (isolation mode active and not in isolated group)
+  const isolatedGroupId = useGroupStore((state) => state.isolatedGroupId);
+  const nodeGroup = useGroupStore((state) => state.getGroupForNode(nodeId));
+  const isFaded = isolatedGroupId !== null && nodeGroup?.id !== isolatedGroupId;
 
   const handleCollapseClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -42,22 +46,13 @@ export function BaseNode({
 
   return (
     <div
-      className="relative"
+      className="relative transition-opacity duration-200"
       style={{
         width: nodeType === 'output' ? 280 : 220,
+        opacity: isFaded ? 0.2 : 1,
+        pointerEvents: isFaded ? 'none' : 'auto',
       }}
     >
-      {/* Group indicator - dashed border behind the node */}
-      {groupInfo && (
-        <div
-          className="absolute -inset-2 rounded-2xl pointer-events-none"
-          style={{
-            border: `2px dashed ${groupInfo.color}60`,
-            background: `${groupInfo.color}0a`,
-          }}
-        />
-      )}
-
       {/* Target Handle (left side) */}
       {showTargetHandle && (
         <Handle
