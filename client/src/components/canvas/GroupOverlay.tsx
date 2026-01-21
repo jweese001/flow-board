@@ -9,7 +9,8 @@ export function GroupOverlay() {
   const groups = useGroupStore((state) => state.groups);
   const isolatedGroupId = useGroupStore((state) => state.isolatedGroupId);
   const isolateGroup = useGroupStore((state) => state.isolateGroup);
-  const nodes = useStore((state) => state.nodes);
+  // Use nodeLookup for accurate measured dimensions
+  const nodeLookup = useStore((state) => state.nodeLookup);
   const { x, y, zoom } = useViewport();
 
   const handleDoubleClick = (groupId: string) => {
@@ -21,7 +22,7 @@ export function GroupOverlay() {
     }
   };
 
-  // Calculate bounding box for a group using nodes from store (reactive to dimension changes)
+  // Calculate bounding box for a group using nodeLookup for accurate dimensions
   const getGroupBounds = useCallback(
     (nodeIds: string[]) => {
       let minX = Infinity;
@@ -30,13 +31,13 @@ export function GroupOverlay() {
       let maxY = -Infinity;
 
       for (const nodeId of nodeIds) {
-        // Find node directly from store's nodes array for reactivity
-        const node = nodes.find((n) => n.id === nodeId);
+        // Get node from nodeLookup which has accurate measured dimensions
+        const node = nodeLookup.get(nodeId);
         if (!node) continue;
 
-        // Use measured dimensions, with appropriate fallbacks per node type
+        // Use measured dimensions from React Flow's internal state
         const width = node.measured?.width ?? (node.type === 'output' ? 280 : 220);
-        const height = node.measured?.height ?? (node.type === 'output' ? 280 : 180);
+        const height = node.measured?.height ?? (node.type === 'output' ? 400 : 180);
 
         minX = Math.min(minX, node.position.x);
         minY = Math.min(minY, node.position.y);
@@ -53,7 +54,7 @@ export function GroupOverlay() {
         height: maxY - minY + PADDING * 2,
       };
     },
-    [nodes]
+    [nodeLookup]
   );
 
   // Don't render anything if no groups
