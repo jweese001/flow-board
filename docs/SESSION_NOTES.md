@@ -1,5 +1,42 @@
 # FlowBoard Session Notes
 
+## Session: 2025-01-21
+
+### Completed
+- **Visual Node Grouping** — Cmd+G to group nodes, Cmd+Shift+G to ungroup, bounding box visualization
+- **Group Isolation Mode** — Double-click group border to isolate (fades non-group nodes), Escape to exit
+- **Editable Group Labels** — Click group label to rename inline
+- **Group Bounding Box Fixes** — Proper sizing using explicit node widths, pointer events pass through to nodes
+- **Page Node Handle Fix** — Added `useUpdateNodeInternals` to fix wire alignment when layout changes
+- **FlowBoard Alpha Documentation** — Created `FLOWBOARD_PAPER.md` and `QUICKSTART.md`
+- **Roadmap Updates** — Added Animation Timeline, Typography, Script Integration, Local Models to private roadmap
+- **Public Repo Sanitization** — Removed detailed feature specs from public docs, created `ROADMAP_PRIVATE.md` (gitignored)
+- **Branch Merge** — Merged `node-updates` into `main`, pushed to origin
+
+### Decisions Made
+- **Commercial Potential** — User sees indie filmmaker market opportunity; detailed roadmap moved to private file
+- **Script Integration** as key differentiator — Import scripts, bind scenes to nodes, bi-directional sync
+- **Next Priorities** — Animation Timeline (parallax), Typography (word balloons, captions), then Script system
+- **Keep public roadmap vague** — Only show "additional authoring tools" etc., protect competitive advantage
+
+### Issues/Blockers Discovered
+- **React Flow measurement quirks** — Output node width not captured correctly by native selection box either; worked around with explicit width values and Math.max
+- **Group label re-select bug** — useEffect was re-selecting text on every keystroke; fixed by extracting groupId as dependency
+
+### Notes for Next Session
+- **Alpha Testing Phase** — User spending a few days testing, will return with bug reports
+- **Graphic Novel Proof of Concept** — User has novel chapters to adapt; will demonstrate full workflow
+- **Private Roadmap Location** — `ROADMAP_PRIVATE.md` in project root (gitignored)
+- **Monetization Research** — User considering $10/month subscription for tool suite
+
+### Technical Details
+- Group store: `groupStore.ts` manages groups, isolation state, rename
+- Group overlay: `GroupOverlay.tsx` renders SVG bounding boxes + HTML labels with viewport transform
+- Grouped movement: `expandGroupedNodeChanges()` in `flowStore.ts` applies position delta to siblings
+- Handle refresh: `useUpdateNodeInternals(id)` in PageNode when slotCount/layout changes
+
+---
+
 ## Session: 2025-01-20
 
 ### Completed
