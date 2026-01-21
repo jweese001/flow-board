@@ -49,6 +49,7 @@ export function BaseNode({
       className="relative transition-opacity duration-200"
       style={{
         width: nodeType === 'output' ? 280 : 220,
+        minWidth: nodeType === 'output' ? 280 : 220,
         opacity: isFaded ? 0.2 : 1,
         pointerEvents: isFaded ? 'none' : 'auto',
       }}

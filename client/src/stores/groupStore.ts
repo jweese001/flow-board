@@ -27,6 +27,7 @@ interface GroupState {
   // Actions
   createGroup: (nodeIds: string[], name?: string) => string;
   dissolveGroup: (groupId: string) => void;
+  renameGroup: (groupId: string, name: string) => void;
   getGroupForNode: (nodeId: string) => NodeGroup | null;
   getNodesInSameGroup: (nodeId: string) => string[];
   removeNodeFromAllGroups: (nodeId: string) => void;
@@ -72,6 +73,15 @@ export const useGroupStore = create<GroupState>()(
         // Clear isolation if this was the isolated group
         if (state.isolatedGroupId === groupId) {
           state.isolatedGroupId = null;
+        }
+      });
+    },
+
+    renameGroup: (groupId, name) => {
+      set((state) => {
+        const group = state.groups.find((g) => g.id === groupId);
+        if (group) {
+          group.name = name;
         }
       });
     },

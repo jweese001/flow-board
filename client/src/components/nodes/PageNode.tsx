@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { Handle, Position, type NodeProps, useUpdateNodeInternals } from '@xyflow/react';
 import type { PageNode as PageNodeType, PageLayout, TransformNodeData, ImageAlignment } from '@/types/nodes';
 import { NODE_COLORS, PAGE_LAYOUT_SLOTS } from '@/types/nodes';
 import { BaseNode } from './BaseNode';
@@ -223,6 +223,7 @@ function getTransformedImageStyles(transform?: PanelData['transform']): React.CS
 export function PageNode({ id, data, selected }: NodeProps<PageNodeType>) {
   const { nodes, edges, updateNodeData } = useFlowStore();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const updateNodeInternals = useUpdateNodeInternals();
 
   // Calculate layout based on mode (preset or num-grid)
   const { slotCount, layoutDef } = (() => {
@@ -242,6 +243,11 @@ export function PageNode({ id, data, selected }: NodeProps<PageNodeType>) {
       layoutDef: LAYOUTS[data.layout] || LAYOUTS['full'],
     };
   })();
+
+  // Update React Flow's internal handle positions when layout changes
+  useEffect(() => {
+    updateNodeInternals(id);
+  }, [id, slotCount, data.layout, data.useNumGrid, data.numPanels, updateNodeInternals]);
 
   // Find connected Output, Reference, or Transform nodes and their images
   const getConnectedPanels = useCallback(() => {
