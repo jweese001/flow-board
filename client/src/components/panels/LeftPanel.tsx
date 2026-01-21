@@ -841,6 +841,14 @@ function renderNodeFields(
               onChange={(v) => onChange('flipV', v as unknown as number)}
             />
           </div>
+          <FieldSlider
+            label="Opacity"
+            value={data.opacity ?? 100}
+            min={0}
+            max={100}
+            step={5}
+            onChange={(v) => onChange('opacity', v)}
+          />
         </div>
       );
 

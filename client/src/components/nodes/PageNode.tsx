@@ -17,6 +17,7 @@ interface PanelData {
     flipH: boolean;
     flipV: boolean;
     alignment: ImageAlignment;
+    opacity: number;
   };
 }
 
@@ -215,6 +216,7 @@ function getTransformedImageStyles(transform?: PanelData['transform']): React.CS
     objectFit: 'contain' as const,
     transform: transforms.join(' '),
     transformOrigin: 'center center',
+    opacity: (transform.opacity ?? 100) / 100,
   };
 }
 
@@ -281,6 +283,7 @@ export function PageNode({ id, data, selected }: NodeProps<PageNodeType>) {
               flipH: transformData.flipH ?? false,
               flipV: transformData.flipV ?? false,
               alignment: transformData.alignment ?? 'center',
+              opacity: transformData.opacity ?? 100,
             },
           };
         }
@@ -387,6 +390,10 @@ export function PageNode({ id, data, selected }: NodeProps<PageNodeType>) {
           const flipH = transform?.flipH ?? false;
           const flipV = transform?.flipV ?? false;
           const alignment = transform?.alignment ?? 'center';
+          const opacity = transform?.opacity ?? 100;
+
+          // Set opacity
+          ctx.globalAlpha = opacity / 100;
 
           const imgRatio = img.width / img.height;
           const slotRatio = w / h;

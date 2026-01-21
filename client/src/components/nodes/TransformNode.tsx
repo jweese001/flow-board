@@ -56,6 +56,14 @@ export function TransformNode({ id, data, selected }: NodeProps<TransformNodeTyp
           <span className="text-muted">Align</span>
           <span className="font-mono capitalize">{data.alignment || 'center'}</span>
         </div>
+
+        {/* Opacity indicator */}
+        {(data.opacity ?? 100) !== 100 && (
+          <div className="flex items-center justify-between">
+            <span className="text-muted">Opacity</span>
+            <span className="font-mono">{data.opacity ?? 100}%</span>
+          </div>
+        )}
       </div>
     </BaseNode>
   );

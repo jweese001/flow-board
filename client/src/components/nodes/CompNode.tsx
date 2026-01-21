@@ -76,7 +76,7 @@ export function CompNode({ id, data, selected }: NodeProps<CompNodeType>) {
             flipH: transformData.flipH ?? false,
             flipV: transformData.flipV ?? false,
             alignment: transformData.alignment ?? 'center',
-            opacity: 100, // Transform node doesn't have opacity yet
+            opacity: transformData.opacity ?? 100,
           },
         };
       }
@@ -125,7 +125,8 @@ export function CompNode({ id, data, selected }: NodeProps<CompNodeType>) {
     canvas.width = width;
     canvas.height = height;
 
-    // Fill background
+    // Clear and fill background
+    ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = data.backgroundColor || '#000000';
     ctx.fillRect(0, 0, width, height);
 
@@ -226,29 +227,40 @@ export function CompNode({ id, data, selected }: NodeProps<CompNodeType>) {
     return canvas;
   }, [data.backgroundColor, data.outputWidth, data.outputHeight, layers]);
 
-  // Update composedImageUrl when layers change
-  useEffect(() => {
-    const updateComposedImage = async () => {
-      if (!hasImages) {
-        // Clear composed image if no layers
-        if (data.composedImageUrl) {
-          updateNodeData(id, { composedImageUrl: undefined });
-        }
-        return;
-      }
+  // Build a stable key from layer image URLs AND transforms to detect actual changes
+  const layerKey = LAYER_ORDER.map(name => {
+    const layer = layers[name];
+    const t = layer.transform;
+    const transformKey = t
+      ? `${t.scale}-${t.offsetX}-${t.offsetY}-${t.rotation}-${t.flipH}-${t.flipV}-${t.alignment}-${t.opacity}`
+      : '';
+    return `${layer.imageUrl || ''}:${transformKey}`;
+  }).join('|');
+  const prevLayerKeyRef = useRef<string>('');
 
+  // Update composedImageUrl when layers actually change
+  useEffect(() => {
+    // Skip if layers haven't changed
+    if (layerKey === prevLayerKeyRef.current) {
+      return;
+    }
+    prevLayerKeyRef.current = layerKey;
+
+    if (!hasImages) {
+      updateNodeData(id, { composedImageUrl: undefined });
+      return;
+    }
+
+    // Render immediately (layerKey check prevents unnecessary work)
+    (async () => {
       const canvas = await renderToCanvas();
       if (canvas) {
         const composedUrl = canvas.toDataURL('image/png');
-        // Only update if changed to avoid infinite loops
-        if (composedUrl !== data.composedImageUrl) {
-          updateNodeData(id, { composedImageUrl: composedUrl });
-        }
+        updateNodeData(id, { composedImageUrl: composedUrl });
       }
-    };
-
-    updateComposedImage();
-  }, [id, hasImages, renderToCanvas, data.composedImageUrl, updateNodeData]);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, layerKey, hasImages]);
 
   const handleDownload = async () => {
     const canvas = await renderToCanvas();

@@ -293,6 +293,7 @@ export interface TransformNodeData extends BaseNodeData {
   flipH: boolean;        // Flip horizontal
   flipV: boolean;        // Flip vertical
   alignment: ImageAlignment;
+  opacity: number;       // 0 to 100 (percentage)
 }
 
 // ===== NODE TYPE UNION =====
