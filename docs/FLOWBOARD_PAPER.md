@@ -2,13 +2,13 @@
 
 **Version:** Alpha Release
 **Date:** January 2025
-**Author:** J. Weese
+**Author:** Jeff W33s3
 
 ---
 
 ## Abstract
 
-FlowBoard is a visual node-based application designed to bring the power of context engineering to comic creators and visual storytellers. By treating prompt components as modular, reusable assets—characters, settings, styles, and actions—FlowBoard enables creators to build consistent visual narratives with AI image generation, approaching the craft with the mindset of a director orchestrating a production.
+FlowBoard is a visual node-based application designed to bring the power of context engineering to visual storytellers. By treating prompt components as modular, reusable assets—characters, settings, styles, and actions—FlowBoard enables creators to build consistent visual narratives with AI image generation, approaching the craft with the mindset of a director orchestrating a production.
 
 ---
 
@@ -74,6 +74,7 @@ In FlowBoard's domain, this means:
 - **Managing relationships** between story elements
 - **Composing context** from multiple sources into coherent wholes
 - **Maintaining state** across a body of work
+- **Leveraging variety** with hooks for many asset types
 
 ### The Pull-Based Model
 
@@ -134,10 +135,12 @@ Connections flow left-to-right, from asset nodes through modifiers to outputs. T
 
 ### Supported Models
 
-| Provider | Models |
-|----------|--------|
-| Google | Gemini 2.0 Flash, Gemini 3 Pro |
-| fal.ai | Flux Schnell, Flux Dev |
+| Provider     | Models                                     |
+| ------------ | ------------------------------------------ |
+| Google       | Gemini 2.0 Flash, Gemini 3 Pro             |
+| fal.ai       | Flux Schnell, Flux Dev                     |
+| Stability.ai | Stable Diffusion                           |
+| In the pipe  | More to come as we work through the design |
 
 Models can be mixed within a single project, selected per-Output node via the Parameters node.
 
@@ -203,6 +206,7 @@ A typical FlowBoard workflow for creating a comic page:
 - Transform and Comp nodes for image manipulation
 
 ### Next Priority (Phase 6)
+- **Script Integration System** — Import complete scripts, bind scenes to nodes, bi-directional sync (edit script → regenerate visuals), auto-parse characters and actions, visual story timeline
 - **Animation Timeline Node** — Keyframe-based animation for Comp layers, parallax scrolling effects, export to video/GIF
 - **Typography System** — Captions, word balloons, thought bubbles, title cards, AI-generated text, full font controls
 

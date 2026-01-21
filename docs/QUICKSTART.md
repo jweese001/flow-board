@@ -188,6 +188,6 @@ Click **Export Page** to download your composed comic page as a PNG.
 
 - Read the full [FlowBoard Paper](./FLOWBOARD_PAPER.md) for deeper context
 - Check the [PRD](./PRD.md) for detailed feature specifications
-- Experiment with the Transform and Comp nodes for advanced image manipulation
+- Experiment with the Transform and Comp nodes for manual image manipulation and layout
 
 Happy storytelling!

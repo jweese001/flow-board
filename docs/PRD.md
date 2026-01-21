@@ -433,8 +433,20 @@ Users don't think about this — they pick a model, the adapter does the rest.
 - [x] Auto-save — automatic project persistence
 - [x] History tracking — generation history with metadata
 
-### Phase 6: Animation & Typography 🎯 NEXT
-Priority features for motion and text capabilities.
+### Phase 6: Animation, Typography & Script 🎯 NEXT
+Priority features for motion, text, and narrative integration.
+
+#### Script Integration System
+- [ ] Script Node — import complete screenplay/script document
+- [ ] Script editor — inline editing with scene/action markup
+- [ ] Scene binding — associate script sections with Action/Output nodes
+- [ ] Bi-directional sync — edit script → regenerate visuals, or vice versa
+- [ ] Script formats — support for Fountain, Final Draft, plain text
+- [ ] Scene breakdown — auto-parse script into discrete scenes
+- [ ] Character extraction — identify characters mentioned, suggest Character nodes
+- [ ] Action parsing — extract action descriptions for generation
+- [ ] Dialogue extraction — pull dialogue for typography/caption placement
+- [ ] Script timeline — visual representation of story flow with linked nodes
 
 #### Animation Timeline Node
 - [ ] Timeline Node — keyframe-based animation for Comp node layers
