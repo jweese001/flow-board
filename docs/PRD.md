@@ -350,16 +350,10 @@ Users don't think about this — they pick a model, the adapter does the rest.
 
 ### Out (Future)
 
-- Versioning on assets
+- Extended authoring tools
+- Additional model integrations
 - Backend storage / accounts
 - Collaboration features
-- Midjourney integration (requires proxy complexity)
-- Expression/Pose nodes (needs experimentation)
-- WebGL Scene Node — 3D scene builder for precise camera angles, composition, and layout as generation reference
-- Local model support (Ollama, Open WebUI, local Stable Diffusion)
-- Animation timeline with parallax effects
-- Typography system (captions, word balloons, thought bubbles)
-- Online help and documentation system
 
 ---
 
@@ -433,65 +427,8 @@ Users don't think about this — they pick a model, the adapter does the rest.
 - [x] Auto-save — automatic project persistence
 - [x] History tracking — generation history with metadata
 
-### Phase 6: Animation, Typography & Script 🎯 NEXT
-Priority features for motion, text, and narrative integration.
-
-#### Script Integration System
-- [ ] Script Node — import complete screenplay/script document
-- [ ] Script editor — inline editing with scene/action markup
-- [ ] Scene binding — associate script sections with Action/Output nodes
-- [ ] Bi-directional sync — edit script → regenerate visuals, or vice versa
-- [ ] Script formats — support for Fountain, Final Draft, plain text
-- [ ] Scene breakdown — auto-parse script into discrete scenes
-- [ ] Character extraction — identify characters mentioned, suggest Character nodes
-- [ ] Action parsing — extract action descriptions for generation
-- [ ] Dialogue extraction — pull dialogue for typography/caption placement
-- [ ] Script timeline — visual representation of story flow with linked nodes
-
-#### Animation Timeline Node
-- [ ] Timeline Node — keyframe-based animation for Comp node layers
-- [ ] Parallax scrolling effects — depth-based layer movement
-- [ ] Basic motion presets — pan, zoom, fade transitions
-- [ ] Export to video/GIF — animated output formats
-
-#### Typography System
-- [ ] Text Node — add text layers to compositions
-- [ ] Caption placement — manual positioning with snap guides
-- [ ] Word balloons — comic-style speech bubbles with tails
-- [ ] Thought bubbles — cloud-style thought indicators
-- [ ] Title cards — stylized title and chapter headings
-- [ ] AI text generation — generate captions/dialogue from context
-- [ ] Font selection — typography controls (family, size, weight, color)
-- [ ] Text effects — outline, shadow, gradient fills
-
-### Phase 7: Documentation & Learning
-- [ ] Online help system — in-app help tooltips and guides
-- [ ] Interactive tutorials — guided first-project walkthrough
-- [ ] Video documentation — screen recordings of common workflows
-- [ ] Example project library — downloadable starter projects
-
-### Phase 8: Advanced Composition
-- [ ] WebGL Scene Node — 3D scene builder with primitives for camera angles and composition reference
-- [ ] Three.js IDE integration — connect to external 3D IDE for scene composition
-- [ ] Advanced layer blending — blend modes, masking, effects
-
-### Phase 9: Local & Extended Models
-- [ ] Ollama integration — run local LLMs for text generation
-- [ ] Open WebUI compatibility — connect to local model interfaces
-- [ ] Local Stable Diffusion — direct connection to local SD instances
-- [ ] Model management — download, configure, and switch local models
-
-### Phase 10: Collaboration & Publishing
-- [ ] Team collaboration — shared projects, real-time editing
-- [ ] Asset marketplace — share/sell character packs, style presets
-- [ ] Cloud storage — sync projects across devices
-- [ ] Direct publishing — export to webtoon platforms, print-ready formats
-
-### Proof of Concept: Graphic Novel Project
-Full graphic novel adaptation to prove out the complete workflow:
-- [ ] Select chapter from existing novel manuscript
-- [ ] Adapt to film script format (scenes, dialogue, action)
-- [ ] Build complete asset library (characters, settings, props, styles)
-- [ ] Generate all panels using FlowBoard workflow
-- [ ] Compose pages with typography and effects
-- [ ] Publish as downloadable example project
+### Future Development
+- Additional authoring tools
+- Extended model support
+- Documentation and tutorials
+- UI/UX refinements

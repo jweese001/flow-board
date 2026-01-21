@@ -205,20 +205,10 @@ A typical FlowBoard workflow for creating a comic page:
 - Project save/load
 - Transform and Comp nodes for image manipulation
 
-### Next Priority (Phase 6)
-- **Script Integration System** — Import complete scripts, bind scenes to nodes, bi-directional sync (edit script → regenerate visuals), auto-parse characters and actions, visual story timeline
-- **Animation Timeline Node** — Keyframe-based animation for Comp layers, parallax scrolling effects, export to video/GIF
-- **Typography System** — Captions, word balloons, thought bubbles, title cards, AI-generated text, full font controls
-
-### Planned
-- **Online Help & Documentation** — In-app guides, tutorials, example projects
-- **WebGL Scene Node** — 3D scene builder for camera angles and composition reference
-- **Local Model Support** — Ollama, Open WebUI, local Stable Diffusion integration
-- **Team Collaboration** — Shared projects, real-time editing
-- **Asset Marketplace** — Share/sell character packs, style presets
-
-### Proof of Concept
-- **Graphic Novel Project** — Full chapter adaptation from novel manuscript to published graphic novel, demonstrating complete workflow
+### In Development
+- Additional authoring and composition tools
+- Extended model support
+- Documentation and learning resources
 
 ---
 
