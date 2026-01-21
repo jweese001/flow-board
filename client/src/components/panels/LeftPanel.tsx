@@ -463,7 +463,7 @@ function renderNodeFields(
     case 'style':
     case 'extras':
       return (
-        <div className="space-y-4">
+        <div className="space-y-5">
           <FieldInput label="Name" value={data.name || ''} onChange={(v) => onChange('name', v)} />
           <FieldTextarea
             label="Description"
@@ -476,7 +476,7 @@ function renderNodeFields(
 
     case 'shot':
       return (
-        <div className="space-y-4">
+        <div className="space-y-5">
           <FieldInput label="Name" value={data.name || ''} onChange={(v) => onChange('name', v)} />
           <FieldSelect
             label="Shot Type"
@@ -507,7 +507,7 @@ function renderNodeFields(
 
     case 'outfit':
       return (
-        <div className="space-y-4">
+        <div className="space-y-5">
           <FieldInput label="Name" value={data.name || ''} onChange={(v) => onChange('name', v)} />
           <FieldTextarea
             label="Description"
@@ -520,7 +520,7 @@ function renderNodeFields(
 
     case 'camera':
       return (
-        <div className="space-y-4">
+        <div className="space-y-5">
           <FieldInput label="Name" value={data.name || ''} onChange={(v) => onChange('name', v)} />
           <FieldSelect
             label="Lens Type"
@@ -569,7 +569,7 @@ function renderNodeFields(
 
     case 'negative':
       return (
-        <div className="space-y-4">
+        <div className="space-y-5">
           <FieldInput label="Name" value={data.name || ''} onChange={(v) => onChange('name', v)} />
           <FieldTextarea
             label="Negative Prompts"
@@ -583,7 +583,7 @@ function renderNodeFields(
 
     case 'parameters':
       return (
-        <div className="space-y-4">
+        <div className="space-y-5">
           <FieldSelect
             label="Model"
             value={data.model || 'mock'}
@@ -631,6 +631,7 @@ function renderNodeFields(
             max={2}
             step={0.1}
             onChange={(v) => onChange('temperature', v)}
+            showHints={true}
           />
           <FieldInput
             label="Seed (optional)"
@@ -665,7 +666,7 @@ function renderNodeFields(
 
     case 'reference':
       return (
-        <div className="space-y-4">
+        <div className="space-y-5">
           <FieldInput
             label="Name"
             value={data.name || ''}
@@ -704,7 +705,7 @@ function renderNodeFields(
 
     case 'page':
       return (
-        <div className="space-y-4">
+        <div className="space-y-5">
           <FieldInput
             label="Name"
             value={data.name || ''}
@@ -772,7 +773,7 @@ function renderNodeFields(
 
     case 'transform':
       return (
-        <div className="space-y-4">
+        <div className="space-y-5">
           <FieldInput
             label="Name"
             value={data.name || ''}
@@ -854,7 +855,7 @@ function renderNodeFields(
 
     case 'comp':
       return (
-        <div className="space-y-4">
+        <div className="space-y-5">
           <FieldInput
             label="Name"
             value={data.name || ''}
@@ -906,7 +907,7 @@ function FieldInput({ label, value, onChange, placeholder }: FieldInputProps) {
     <div>
       <label
         className="block text-xs font-semibold uppercase tracking-wide text-muted"
-        style={{ marginBottom: '8px', marginLeft: '4px' }}
+        style={{ marginBottom: '10px', marginLeft: '12px', marginRight: '12px' }}
       >
         {label}
       </label>
@@ -939,7 +940,7 @@ function FieldTextarea({ label, value, onChange, placeholder, rows = 3 }: FieldT
     <div>
       <label
         className="block text-xs font-semibold uppercase tracking-wide text-muted"
-        style={{ marginBottom: '8px', marginLeft: '4px' }}
+        style={{ marginBottom: '10px', marginLeft: '12px', marginRight: '12px' }}
       >
         {label}
       </label>
@@ -972,7 +973,7 @@ function FieldSelect({ label, value, options, onChange }: FieldSelectProps) {
     <div>
       <label
         className="block text-xs font-semibold uppercase tracking-wide text-muted"
-        style={{ marginBottom: '8px', marginLeft: '4px' }}
+        style={{ marginBottom: '10px', marginLeft: '12px', marginRight: '12px' }}
       >
         {label}
       </label>
@@ -1007,9 +1008,10 @@ interface FieldSliderProps {
   max: number;
   step: number;
   onChange: (value: number) => void;
+  showHints?: boolean; // Show Precise/Creative labels (default false)
 }
 
-function FieldSlider({ label, value, min, max, step, onChange }: FieldSliderProps) {
+function FieldSlider({ label, value, min, max, step, onChange, showHints = false }: FieldSliderProps) {
   const [isShiftHeld, setIsShiftHeld] = useState(false);
   const percentage = ((value - min) / (max - min)) * 100;
   const fineStep = step / 10;
@@ -1027,7 +1029,7 @@ function FieldSlider({ label, value, min, max, step, onChange }: FieldSliderProp
     <div>
       <div
         className="flex items-center justify-between"
-        style={{ marginBottom: '8px', marginLeft: '4px', marginRight: '4px' }}
+        style={{ marginBottom: '10px', marginLeft: '12px', marginRight: '12px' }}
       >
         <label className="text-xs font-semibold uppercase tracking-wide text-muted">
           {label}
@@ -1037,7 +1039,7 @@ function FieldSlider({ label, value, min, max, step, onChange }: FieldSliderProp
       </div>
       <div
         className="relative h-8 flex items-center"
-        style={{ marginLeft: '4px', marginRight: '4px' }}
+        style={{ marginLeft: '12px', marginRight: '12px' }}
       >
         {/* Track background */}
         <div
@@ -1092,13 +1094,15 @@ function FieldSlider({ label, value, min, max, step, onChange }: FieldSliderProp
           }}
         />
       </div>
-      <div
-        className="flex justify-between text-[10px] text-muted mt-1"
-        style={{ marginLeft: '4px', marginRight: '4px' }}
-      >
-        <span>Precise</span>
-        <span>Creative</span>
-      </div>
+      {showHints && (
+        <div
+          className="flex justify-between text-[10px] text-muted mt-1"
+          style={{ marginLeft: '12px', marginRight: '12px' }}
+        >
+          <span>Precise</span>
+          <span>Creative</span>
+        </div>
+      )}
     </div>
   );
 }
