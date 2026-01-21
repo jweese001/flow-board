@@ -350,15 +350,16 @@ Users don't think about this — they pick a model, the adapter does the rest.
 
 ### Out (Future)
 
-- Multiple model adapters
-- Image history with full metadata
 - Versioning on assets
-- Panel/page layout system
 - Backend storage / accounts
 - Collaboration features
 - Midjourney integration (requires proxy complexity)
 - Expression/Pose nodes (needs experimentation)
 - WebGL Scene Node — 3D scene builder for precise camera angles, composition, and layout as generation reference
+- Local model support (Ollama, Open WebUI, local Stable Diffusion)
+- Animation timeline with parallax effects
+- Typography system (captions, word balloons, thought bubbles)
+- Online help and documentation system
 
 ---
 
@@ -407,12 +408,14 @@ Users don't think about this — they pick a model, the adapter does the rest.
 - [x] Outfit node with override behavior
 - [x] Edit/Refine node
 
-### Phase 4: Polish 🔄
+### Phase 4: Polish ✅
 - [x] Gemini model adapter (Pro/Flash)
 - [x] Stability AI adapter (SD3 Large/Medium/Turbo, SDXL 1.0)
-- [ ] fal.ai model adapter (Flux, SDXL, Turbo) — code exists, needs testing
+- [x] fal.ai model adapter (Flux Schnell, Flux Dev)
+- [x] Visual node grouping — Cmd+G grouping, bounding boxes, editable labels
+- [x] Group isolation mode — double-click to focus on a group
 - [ ] UI refinements
-- [ ] Keyboard shortcuts
+- [ ] Keyboard shortcuts (partial — copy/paste, grouping done)
 - [ ] Undo/redo
 - [ ] Improve precision of Transforms — finer control for positioning/scaling
 
@@ -430,6 +433,53 @@ Users don't think about this — they pick a model, the adapter does the rest.
 - [x] Auto-save — automatic project persistence
 - [x] History tracking — generation history with metadata
 
-### Phase 6: Advanced Composition (Planned)
+### Phase 6: Animation & Typography 🎯 NEXT
+Priority features for motion and text capabilities.
+
+#### Animation Timeline Node
+- [ ] Timeline Node — keyframe-based animation for Comp node layers
+- [ ] Parallax scrolling effects — depth-based layer movement
+- [ ] Basic motion presets — pan, zoom, fade transitions
+- [ ] Export to video/GIF — animated output formats
+
+#### Typography System
+- [ ] Text Node — add text layers to compositions
+- [ ] Caption placement — manual positioning with snap guides
+- [ ] Word balloons — comic-style speech bubbles with tails
+- [ ] Thought bubbles — cloud-style thought indicators
+- [ ] Title cards — stylized title and chapter headings
+- [ ] AI text generation — generate captions/dialogue from context
+- [ ] Font selection — typography controls (family, size, weight, color)
+- [ ] Text effects — outline, shadow, gradient fills
+
+### Phase 7: Documentation & Learning
+- [ ] Online help system — in-app help tooltips and guides
+- [ ] Interactive tutorials — guided first-project walkthrough
+- [ ] Video documentation — screen recordings of common workflows
+- [ ] Example project library — downloadable starter projects
+
+### Phase 8: Advanced Composition
 - [ ] WebGL Scene Node — 3D scene builder with primitives for camera angles and composition reference
-- [ ] Animatics support — basic motion/keyframes for Comp node layers
+- [ ] Three.js IDE integration — connect to external 3D IDE for scene composition
+- [ ] Advanced layer blending — blend modes, masking, effects
+
+### Phase 9: Local & Extended Models
+- [ ] Ollama integration — run local LLMs for text generation
+- [ ] Open WebUI compatibility — connect to local model interfaces
+- [ ] Local Stable Diffusion — direct connection to local SD instances
+- [ ] Model management — download, configure, and switch local models
+
+### Phase 10: Collaboration & Publishing
+- [ ] Team collaboration — shared projects, real-time editing
+- [ ] Asset marketplace — share/sell character packs, style presets
+- [ ] Cloud storage — sync projects across devices
+- [ ] Direct publishing — export to webtoon platforms, print-ready formats
+
+### Proof of Concept: Graphic Novel Project
+Full graphic novel adaptation to prove out the complete workflow:
+- [ ] Select chapter from existing novel manuscript
+- [ ] Adapt to film script format (scenes, dialogue, action)
+- [ ] Build complete asset library (characters, settings, props, styles)
+- [ ] Generate all panels using FlowBoard workflow
+- [ ] Compose pages with typography and effects
+- [ ] Publish as downloadable example project

@@ -194,20 +194,27 @@ A typical FlowBoard workflow for creating a comic page:
 
 ## 7. Roadmap
 
-### Current (Alpha)
+### Current (Alpha) ✅
 - Core node types for storytelling
-- Multi-model support (Gemini, Flux)
+- Multi-model support (Gemini, Flux, Stability AI)
 - Page composition with layouts
-- Visual grouping system
+- Visual grouping system with isolation mode
 - Project save/load
+- Transform and Comp nodes for image manipulation
+
+### Next Priority (Phase 6)
+- **Animation Timeline Node** — Keyframe-based animation for Comp layers, parallax scrolling effects, export to video/GIF
+- **Typography System** — Captions, word balloons, thought bubbles, title cards, AI-generated text, full font controls
 
 ### Planned
-- **Extended Model Support** — Additional providers and models
-- **Typography Tools** — Text and caption placement
-- **Advanced Composition** — Layer blending, masking
-- **Animation Pipeline** — Extend beyond stills into motion
-- **Team Collaboration** — Shared projects, asset libraries
-- **Asset Management** — Organize and search large component libraries
+- **Online Help & Documentation** — In-app guides, tutorials, example projects
+- **WebGL Scene Node** — 3D scene builder for camera angles and composition reference
+- **Local Model Support** — Ollama, Open WebUI, local Stable Diffusion integration
+- **Team Collaboration** — Shared projects, real-time editing
+- **Asset Marketplace** — Share/sell character packs, style presets
+
+### Proof of Concept
+- **Graphic Novel Project** — Full chapter adaptation from novel manuscript to published graphic novel, demonstrating complete workflow
 
 ---
 
