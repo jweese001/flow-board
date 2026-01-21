@@ -3,6 +3,7 @@ import { Handle, Position } from '@xyflow/react';
 import type { NodeType } from '@/types/nodes';
 import { NODE_COLORS, NODE_LABELS } from '@/types/nodes';
 import { useUIStore } from '@/stores/uiStore';
+import { useGroupStore } from '@/stores/groupStore';
 import { ChevronDownIcon } from '@/components/ui/Icons';
 
 interface BaseNodeProps {
@@ -32,6 +33,7 @@ export function BaseNode({
   const label = NODE_LABELS[nodeType];
   const toggleNodeCollapsed = useUIStore((state) => state.toggleNodeCollapsed);
   const collapsed = useUIStore((state) => !!state.collapsedNodes[nodeId]);
+  const groupInfo = useGroupStore((state) => state.getGroupForNode(nodeId));
 
   const handleCollapseClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -45,6 +47,17 @@ export function BaseNode({
         width: nodeType === 'output' ? 280 : 220,
       }}
     >
+      {/* Group indicator - dashed border behind the node */}
+      {groupInfo && (
+        <div
+          className="absolute -inset-2 rounded-2xl pointer-events-none"
+          style={{
+            border: `2px dashed ${groupInfo.color}60`,
+            background: `${groupInfo.color}0a`,
+          }}
+        />
+      )}
+
       {/* Target Handle (left side) */}
       {showTargetHandle && (
         <Handle

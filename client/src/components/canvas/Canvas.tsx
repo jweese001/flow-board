@@ -11,6 +11,7 @@ import '@xyflow/react/dist/style.css';
 
 import { useFlowStore } from '@/stores/flowStore';
 import { useUIStore } from '@/stores/uiStore';
+import { useGroupStore } from '@/stores/groupStore';
 import { nodeTypes } from '@/components/nodes';
 import { NODE_COLORS } from '@/types/nodes';
 import type { NodeType } from '@/types/nodes';
@@ -53,6 +54,28 @@ export function Canvas() {
       if (modifier && e.key === 'v') {
         e.preventDefault();
         pasteNodes();
+      }
+
+      // Group selected nodes (Cmd+G)
+      if (modifier && e.key === 'g' && !e.shiftKey) {
+        e.preventDefault();
+        if (selectedNodeIds.current.length >= 2) {
+          useGroupStore.getState().createGroup(selectedNodeIds.current);
+        }
+      }
+
+      // Ungroup selected nodes (Cmd+Shift+G)
+      if (modifier && e.key === 'g' && e.shiftKey) {
+        e.preventDefault();
+        const groupStore = useGroupStore.getState();
+        const groupsToDissolve = new Set<string>();
+        for (const nodeId of selectedNodeIds.current) {
+          const group = groupStore.getGroupForNode(nodeId);
+          if (group) groupsToDissolve.add(group.id);
+        }
+        for (const groupId of groupsToDissolve) {
+          groupStore.dissolveGroup(groupId);
+        }
       }
     };
 

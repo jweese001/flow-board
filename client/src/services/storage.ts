@@ -7,6 +7,7 @@ import {
   deleteProjectImages,
   getAllProjectImages,
 } from './imageStore';
+import { useGroupStore } from '@/stores/groupStore';
 
 const STORAGE_KEYS = {
   PROJECTS: 'flowboard:projects',
@@ -117,9 +118,13 @@ export async function saveProject(project: Project): Promise<void> {
     })
   );
 
+  // Include current groups from groupStore
+  const groupStore = useGroupStore.getState();
+
   const updatedProject: Project = {
     ...project,
     nodes: processedNodes as Project['nodes'],
+    groups: groupStore.groups,
     updatedAt: Date.now(),
   };
 
@@ -240,6 +245,10 @@ export async function loadProject(projectId: string): Promise<Project | null> {
       return node;
     })
   );
+
+  // Restore groups from project
+  const groupStore = useGroupStore.getState();
+  groupStore.setGroups(project.groups || []);
 
   return {
     ...project,

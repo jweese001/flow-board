@@ -1,11 +1,13 @@
 import type { Edge } from '@xyflow/react';
 import type { AppNode } from './nodes';
+import type { NodeGroup } from '@/stores/groupStore';
 
 export interface Project {
   id: string;
   name: string;
   nodes: AppNode[];
   edges: Edge[];
+  groups?: NodeGroup[];
   createdAt: number;
   updatedAt: number;
 }

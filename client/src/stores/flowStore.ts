@@ -10,6 +10,7 @@ import {
   addEdge,
 } from '@xyflow/react';
 import type { AppNode, AppNodeData, NodeType } from '@/types/nodes';
+import { useGroupStore } from './groupStore';
 
 interface ClipboardData {
   nodes: AppNode[];
@@ -118,6 +119,59 @@ const initialEdges: Edge[] = [
 // Counter for generating unique paste IDs
 let pasteCounter = 0;
 
+// Helper to expand position changes for grouped nodes
+function expandGroupedNodeChanges(
+  changes: NodeChange<AppNode>[],
+  nodes: AppNode[]
+): NodeChange<AppNode>[] {
+  const groupStore = useGroupStore.getState();
+  const positionChanges = changes.filter(
+    (c): c is NodeChange<AppNode> & { type: 'position'; position: { x: number; y: number } } =>
+      c.type === 'position' && 'position' in c && c.position != null
+  );
+
+  if (positionChanges.length === 0) return changes;
+
+  const additionalChanges: NodeChange<AppNode>[] = [];
+  const processedNodeIds = new Set<string>();
+
+  for (const change of positionChanges) {
+    const nodeId = change.id;
+    if (processedNodeIds.has(nodeId)) continue;
+
+    const groupedNodeIds = groupStore.getNodesInSameGroup(nodeId);
+    if (groupedNodeIds.length <= 1) continue;
+
+    // Find the original node to calculate delta
+    const originalNode = nodes.find((n) => n.id === nodeId);
+    if (!originalNode) continue;
+
+    const deltaX = change.position.x - originalNode.position.x;
+    const deltaY = change.position.y - originalNode.position.y;
+
+    // Apply same delta to all other nodes in the group
+    for (const siblingId of groupedNodeIds) {
+      processedNodeIds.add(siblingId);
+      if (siblingId === nodeId) continue;
+
+      const sibling = nodes.find((n) => n.id === siblingId);
+      if (!sibling) continue;
+
+      additionalChanges.push({
+        type: 'position',
+        id: siblingId,
+        position: {
+          x: sibling.position.x + deltaX,
+          y: sibling.position.y + deltaY,
+        },
+        dragging: change.dragging,
+      });
+    }
+  }
+
+  return [...changes, ...additionalChanges];
+}
+
 export const useFlowStore = create<FlowState>()(
   immer((set, get) => ({
     nodes: initialNodes,
@@ -127,7 +181,8 @@ export const useFlowStore = create<FlowState>()(
 
     onNodesChange: (changes) => {
       set((state) => {
-        state.nodes = applyNodeChanges(changes, state.nodes) as AppNode[];
+        const expandedChanges = expandGroupedNodeChanges(changes, state.nodes);
+        state.nodes = applyNodeChanges(expandedChanges, state.nodes) as AppNode[];
         state.isDirty = true;
       });
     },
@@ -201,6 +256,8 @@ export const useFlowStore = create<FlowState>()(
         );
         state.isDirty = true;
       });
+      // Clean up group membership
+      useGroupStore.getState().removeNodeFromAllGroups(nodeId);
     },
 
     setNodes: (nodes) => {

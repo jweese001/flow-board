@@ -13,6 +13,7 @@ import {
   loadProjectSync,
 } from '@/services/storage';
 import { useFlowStore } from './flowStore';
+import { useGroupStore } from './groupStore';
 
 interface ProjectState {
   currentProjectId: string | null;
@@ -43,15 +44,17 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
   createProject: async (name = 'Untitled Project') => {
     const project = createNewProject(name);
     const flowStore = useFlowStore.getState();
+    const groupStore = useGroupStore.getState();
 
     // Save empty project first
     await storageSaveProject(project);
     setCurrentProjectId(project.id);
 
-    // Clear the flow
+    // Clear the flow and groups
     flowStore.setNodes([]);
     flowStore.setEdges([]);
     flowStore.setDirty(false);
+    groupStore.setGroups([]);
 
     set({
       currentProjectId: project.id,
@@ -176,10 +179,12 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
 
   newUnsavedProject: () => {
     const flowStore = useFlowStore.getState();
+    const groupStore = useGroupStore.getState();
 
     flowStore.setNodes([]);
     flowStore.setEdges([]);
     flowStore.setDirty(false);
+    groupStore.setGroups([]);
     setCurrentProjectId(null);
 
     set({ currentProjectId: null });
