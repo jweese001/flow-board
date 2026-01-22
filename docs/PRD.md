@@ -163,6 +163,33 @@ This is where the "DM narration" happens — the creative, variable part of each
 
 ### Technical Nodes
 
+#### Time Period
+Defines the historical era for the scene, automatically preventing anachronistic elements.
+
+| Field | Description |
+|-------|-------------|
+| Name | "1970s America" |
+| Era Preset | (see presets below) |
+| Region | Geographic qualifier (e.g., "United States", "Japan") |
+| Notes | Additional period context |
+| Auto-Negatives | Toggle to automatically avoid anachronistic elements |
+| Custom Negatives | Additional things to avoid for this era |
+
+**Era Presets:**
+- **Prehistoric** — Before recorded history
+- **Ancient Egypt/Greece/Rome** — Classical antiquity
+- **Medieval** — 500-1400 AD
+- **Renaissance** — 1400-1600
+- **Colonial** — 1600-1800
+- **Victorian** — 1837-1901
+- **Edwardian** — 1901-1910
+- **Roaring 20s** — 1920-1929
+- **1930s-40s, 1950s, 1960s, 1970s, 1980s, 1990s, 2000s, 2010s** — Decade-specific
+- **Contemporary** — 2020s
+- **Near Future / Far Future** — Speculative
+
+When Auto-Negatives is enabled, the system automatically adds era-appropriate negative prompts (e.g., "smartphones, modern cars" for 1970s).
+
 #### Negative
 Defines what to avoid in generation.
 
@@ -209,11 +236,12 @@ The terminal node. Collects all upstream inputs, assembles the prompt, shows pre
 | Asset | Character | Who | Blue |
 | Asset | Setting | Where | Green |
 | Asset | Prop | What (objects) | Amber |
-| Asset | Style | How it looks | Purple |
+| Asset | Style | How it looks | Fuchsia |
 | Asset | Extras | Background life | Slate |
 | Modifier | Outfit | Character override | Cyan |
 | Modifier | Shot | Camera framing | Pink |
 | Scene | Action | What's happening | Orange |
+| Technical | Time Period | Historical era | Yellow |
 | Technical | Negative | What to avoid | Rose |
 | Technical | Parameters | Generation settings | Teal |
 | Technical | Edit/Refine | Iteration | Gray |
@@ -226,6 +254,7 @@ The terminal node. Collects all upstream inputs, assembles the prompt, shows pre
 The Output node traverses upstream and assembles elements in this order:
 
 ```
+[Time Period] — era context (if present, e.g., "1970s, United States")
 [Shot] — camera framing (if present)
 [Characters] — with Outfit overrides applied if connected
 [Props] — objects in the scene
@@ -233,7 +262,7 @@ The Output node traverses upstream and assembles elements in this order:
 [Extras] — background elements
 [Action] — what's happening
 [Style] — visual aesthetic
-[Negative] — sent separately to API as negative prompt
+[Negative] — sent separately to API as negative prompt (includes Time Period auto-negatives)
 [Parameters] — sent as API parameters, not in prompt text
 ```
 

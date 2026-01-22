@@ -131,13 +131,14 @@ export const useFlowStore = create<FlowState>()(
 | Character | Blue | #3b82f6 |
 | Setting | Green | #10b981 |
 | Prop | Amber | #f59e0b |
-| Style | Purple | #a855f7 |
+| Style | Fuchsia | #d946ef |
 | Extras | Slate | #64748b |
 | Shot | Pink | #ec4899 |
 | Outfit | Cyan | #06b6d4 |
 | Action | Orange | #f97316 |
 | Negative | Rose | #f43f5e |
 | Parameters | Teal | #14b8a6 |
+| Time Period | Yellow | #eab308 |
 | Edit | Gray | #6b7280 |
 | Output | Red | #ef4444 |
 
@@ -162,11 +163,12 @@ export const useFlowStore = create<FlowState>()(
 | Asset | Character | Who (named entity with appearance) | Blue |
 | Asset | Setting | Where (location/environment) | Green |
 | Asset | Prop | What (consistent objects) | Amber |
-| Asset | Style | How it looks (visual aesthetic) | Purple |
+| Asset | Style | How it looks (visual aesthetic) | Fuchsia |
 | Asset | Extras | Background life (crowds, ambient) | Slate |
 | Modifier | Shot | Camera framing (DP presets) | Pink |
 | Modifier | Outfit | Character appearance override | Cyan |
 | Scene | Action | What's happening (DM narration) | Orange |
+| Technical | Time Period | Historical era (with auto-negatives) | Yellow |
 | Technical | Negative | What to avoid | Rose |
 | Technical | Parameters | Model, aspect ratio, seed | Teal |
 | Technical | Edit/Refine | Iteration on previous output | Gray |
