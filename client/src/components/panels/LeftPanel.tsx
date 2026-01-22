@@ -14,8 +14,11 @@ import {
   EXPOSURE_STYLE_LABELS,
   VIGNETTE_LABELS,
   CAMERA_POSITION_LABELS,
+  ERA_PRESET_LABELS,
+  ERA_AUTO_NEGATIVES,
   type NodeType,
   type PageLayout,
+  type EraPreset,
 } from '@/types/nodes';
 import {
   UserIcon,
@@ -43,6 +46,7 @@ import {
   LayoutIcon,
   TransformIcon,
   LayersIcon,
+  CalendarClockIcon,
 } from '@/components/ui/Icons';
 import { ProjectSection } from './ProjectSection';
 import { SettingsSection } from './SettingsSection';
@@ -123,6 +127,20 @@ const NODE_CONFIGS: NodeTypeConfig[] = [
     type: 'parameters',
     icon: <SlidersIcon size={14} />,
     defaultData: { label: 'Parameters', model: 'mock', aspectRatio: '1:1', seed: undefined },
+  },
+  {
+    type: 'timeperiod',
+    icon: <CalendarClockIcon size={14} />,
+    defaultData: {
+      label: 'Time Period',
+      name: 'New Era',
+      eraPreset: 'custom',
+      customEra: '',
+      region: '',
+      description: '',
+      useAutoNegatives: true,
+      customNegatives: '',
+    },
   },
   {
     type: 'edit',
@@ -662,6 +680,73 @@ function renderNodeFields(
           placeholder="Make the colors more vibrant..."
           rows={4}
         />
+      );
+
+    case 'timeperiod':
+      return (
+        <div className="space-y-5">
+          <FieldInput
+            label="Name"
+            value={data.name || ''}
+            onChange={(v) => onChange('name', v)}
+          />
+          <FieldSelect
+            label="Era Preset"
+            value={data.eraPreset || 'custom'}
+            options={Object.entries(ERA_PRESET_LABELS).map(([value, label]) => ({
+              value,
+              label,
+            }))}
+            onChange={(v) => onChange('eraPreset', v)}
+          />
+          {data.eraPreset === 'custom' && (
+            <FieldInput
+              label="Custom Era"
+              value={data.customEra || ''}
+              onChange={(v) => onChange('customEra', v)}
+              placeholder="e.g., 1920s Prohibition-era"
+            />
+          )}
+          <FieldInput
+            label="Region"
+            value={data.region || ''}
+            onChange={(v) => onChange('region', v)}
+            placeholder="e.g., United States, Victorian England"
+          />
+          <FieldTextarea
+            label="Period Notes"
+            value={data.description || ''}
+            onChange={(v) => onChange('description', v)}
+            placeholder="Additional context about the era..."
+            rows={2}
+          />
+          <FieldCheckbox
+            label="Use Auto-Negatives"
+            checked={data.useAutoNegatives ?? true}
+            onChange={(v) => onChange('useAutoNegatives', v as unknown as number)}
+          />
+          {data.eraPreset !== 'custom' && data.useAutoNegatives && (
+            <div
+              className="p-3 rounded-lg text-[11px] text-muted"
+              style={{
+                background: 'var(--color-bg-elevated)',
+                border: '1px solid var(--color-border-subtle)',
+              }}
+            >
+              <div className="font-semibold text-secondary mb-1">Auto-excluded:</div>
+              <div className="line-clamp-3">
+                {ERA_AUTO_NEGATIVES[data.eraPreset as EraPreset]?.join(', ') || 'None'}
+              </div>
+            </div>
+          )}
+          <FieldTextarea
+            label="Custom Negatives"
+            value={data.customNegatives || ''}
+            onChange={(v) => onChange('customNegatives', v)}
+            placeholder="Additional things to avoid..."
+            rows={2}
+          />
+        </div>
       );
 
     case 'reference':
