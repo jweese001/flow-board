@@ -154,6 +154,159 @@ export interface ActionNodeData extends BaseNodeData {
 
 // ===== TECHNICAL NODES =====
 
+// ----- Time Period Node -----
+
+export type EraPreset =
+  | 'custom'
+  | 'prehistoric'
+  | 'ancient-egypt'
+  | 'ancient-greece'
+  | 'ancient-rome'
+  | 'medieval'
+  | 'renaissance'
+  | 'colonial'
+  | 'victorian'
+  | 'edwardian'
+  | 'roaring-20s'
+  | '1930s-40s'
+  | '1950s'
+  | '1960s'
+  | '1970s'
+  | '1980s'
+  | '1990s'
+  | '2000s'
+  | '2010s'
+  | 'contemporary'
+  | 'near-future'
+  | 'far-future';
+
+export const ERA_PRESET_LABELS: Record<EraPreset, string> = {
+  'custom': 'Custom',
+  'prehistoric': 'Prehistoric',
+  'ancient-egypt': 'Ancient Egypt',
+  'ancient-greece': 'Ancient Greece',
+  'ancient-rome': 'Ancient Rome',
+  'medieval': 'Medieval (500-1400)',
+  'renaissance': 'Renaissance (1400-1600)',
+  'colonial': 'Colonial (1600-1800)',
+  'victorian': 'Victorian (1837-1901)',
+  'edwardian': 'Edwardian (1901-1910)',
+  'roaring-20s': 'Roaring 20s (1920-1929)',
+  '1930s-40s': '1930s-40s',
+  '1950s': '1950s',
+  '1960s': '1960s',
+  '1970s': '1970s',
+  '1980s': '1980s',
+  '1990s': '1990s',
+  '2000s': '2000s',
+  '2010s': '2010s',
+  'contemporary': 'Contemporary (2020s)',
+  'near-future': 'Near Future',
+  'far-future': 'Far Future',
+};
+
+// Auto-generated negative prompts per era (anachronistic elements to avoid)
+export const ERA_AUTO_NEGATIVES: Record<EraPreset, string[]> = {
+  'custom': [],
+  'prehistoric': [
+    'metal tools', 'clothing', 'buildings', 'domesticated animals',
+    'pottery', 'written text', 'modern elements',
+  ],
+  'ancient-egypt': [
+    'modern clothing', 'glass windows', 'firearms', 'printed text',
+    'electric lights', 'modern architecture', 'plastic',
+  ],
+  'ancient-greece': [
+    'medieval armor', 'firearms', 'printed books', 'modern clothing',
+    'electric lights', 'glass windows', 'concrete buildings',
+  ],
+  'ancient-rome': [
+    'medieval elements', 'firearms', 'printed text', 'modern materials',
+    'electric lighting', 'contemporary fashion',
+  ],
+  'medieval': [
+    'firearms', 'printed books', 'glass windows', 'modern clothing',
+    'electric lights', 'concrete', 'plastic', 'refined sugar',
+    'potatoes', 'tomatoes', 'accurate maps',
+  ],
+  'renaissance': [
+    'electric lights', 'modern weapons', 'industrial machinery',
+    'photography', 'modern clothing', 'cars', 'plastic',
+  ],
+  'colonial': [
+    'electric lights', 'automobiles', 'modern weapons', 'photography',
+    'industrial factories', 'modern clothing', 'plastic',
+  ],
+  'victorian': [
+    'electric lights', 'automobiles', 'airplanes', 'modern weapons',
+    'color photography', 'plastic', 'modern clothing', 'computers',
+  ],
+  'edwardian': [
+    'modern cars', 'airplanes', 'plastic', 'modern electronics',
+    'contemporary fashion', 'color photography', 'television',
+  ],
+  'roaring-20s': [
+    'television', 'plastic', 'jet aircraft', 'modern cars',
+    'color photography', 'computers', 'contemporary fashion',
+    'post-1930 vehicles', 'air conditioning',
+  ],
+  '1930s-40s': [
+    'television', 'plastic consumer goods', 'jet aircraft', 'modern cars',
+    'color photography', 'computers', 'contemporary fashion', 'smartphones',
+  ],
+  '1950s': [
+    'modern computers', 'smartphones', 'flat screen TV', 'modern cars',
+    'contemporary fashion', 'internet', 'digital displays', 'LED lighting',
+  ],
+  '1960s': [
+    'personal computers', 'smartphones', 'flat screens', 'modern cars',
+    'contemporary fashion', 'internet', 'digital cameras', 'LED lighting',
+  ],
+  '1970s': [
+    'personal computers', 'smartphones', 'flat screen TV', 'modern cars',
+    'contemporary fashion', 'internet', 'digital cameras', 'CDs', 'DVDs',
+  ],
+  '1980s': [
+    'smartphones', 'flat screen TV', 'modern laptops', 'LCD monitors',
+    'contemporary fashion', 'streaming', 'Wi-Fi', 'hybrid cars',
+  ],
+  '1990s': [
+    'smartphones', 'flat screen TV', 'social media', 'streaming services',
+    'contemporary fashion', 'modern laptops', 'hybrid cars', 'LED lighting',
+  ],
+  '2000s': [
+    'modern smartphones post-2010', 'contemporary 2020s fashion',
+    'streaming dominance', 'social media saturation', 'electric vehicles',
+  ],
+  '2010s': [
+    'contemporary 2020s fashion', 'AI assistants', 'modern electric vehicles',
+    'TikTok-era social media', 'current streaming interfaces', 'foldable phones',
+  ],
+  'contemporary': [
+    'futuristic technology', 'sci-fi elements', 'holographic displays',
+    'flying cars', 'robot servants', 'space colonies',
+  ],
+  'near-future': [
+    'historical elements', 'outdated technology', 'vintage aesthetics',
+  ],
+  'far-future': [
+    'contemporary technology', 'current fashion', 'present-day vehicles',
+    'modern architecture', 'today\'s electronics',
+  ],
+};
+
+export interface TimePeriodNodeData extends BaseNodeData {
+  name: string;
+  eraPreset: EraPreset;
+  customEra?: string;         // Used when preset is 'custom'
+  region?: string;            // Geographic qualifier (e.g., "United States", "Japan")
+  description?: string;       // Additional period notes
+  useAutoNegatives: boolean;  // Whether to inject auto negatives
+  customNegatives?: string;   // User-added negatives for this period
+}
+
+// ----- Other Technical Nodes -----
+
 export interface NegativeNodeData extends BaseNodeData {
   name: string;
   content: string;
@@ -310,6 +463,7 @@ export type NodeType =
   | 'action'
   | 'negative'
   | 'parameters'
+  | 'timeperiod'
   | 'edit'
   | 'reference'
   | 'output'
@@ -329,6 +483,7 @@ export type AppNodeData =
   | ActionNodeData
   | NegativeNodeData
   | ParametersNodeData
+  | TimePeriodNodeData
   | EditNodeData
   | ReferenceNodeData
   | OutputNodeData
@@ -348,6 +503,7 @@ export type CameraNode = Node<CameraNodeData, 'camera'>;
 export type ActionNode = Node<ActionNodeData, 'action'>;
 export type NegativeNode = Node<NegativeNodeData, 'negative'>;
 export type ParametersNode = Node<ParametersNodeData, 'parameters'>;
+export type TimePeriodNode = Node<TimePeriodNodeData, 'timeperiod'>;
 export type EditNode = Node<EditNodeData, 'edit'>;
 export type ReferenceNode = Node<ReferenceNodeData, 'reference'>;
 export type OutputNode = Node<OutputNodeData, 'output'>;
@@ -367,6 +523,7 @@ export type AppNode =
   | ActionNode
   | NegativeNode
   | ParametersNode
+  | TimePeriodNode
   | EditNode
   | ReferenceNode
   | OutputNode
@@ -388,6 +545,7 @@ export const NODE_COLORS: Record<NodeType, string> = {
   action: '#f97316',
   negative: '#f43f5e',
   parameters: '#14b8a6',
+  timeperiod: '#eab308', // Yellow/gold for time period
   edit: '#6b7280',
   reference: '#8b5cf6',
   output: '#ef4444',
@@ -410,6 +568,7 @@ export const NODE_LABELS: Record<NodeType, string> = {
   action: 'Action',
   negative: 'Negative',
   parameters: 'Parameters',
+  timeperiod: 'Time Period',
   edit: 'Edit',
   reference: 'Reference',
   output: 'Output',

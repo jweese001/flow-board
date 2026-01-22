@@ -10,6 +10,7 @@ import { CameraNode } from './CameraNode';
 import { ActionNode } from './ActionNode';
 import { NegativeNode } from './NegativeNode';
 import { ParametersNode } from './ParametersNode';
+import { TimePeriodNode } from './TimePeriodNode';
 import { EditNode } from './EditNode';
 import { ReferenceNode } from './ReferenceNode';
 import { OutputNode } from './OutputNode';
@@ -34,6 +35,7 @@ export const nodeTypes: NodeTypes = {
   // Technical Nodes
   negative: NegativeNode,
   parameters: ParametersNode,
+  timeperiod: TimePeriodNode,
   edit: EditNode,
   reference: ReferenceNode,
   // Terminal Nodes
@@ -58,6 +60,7 @@ export { CameraNode } from './CameraNode';
 export { ActionNode } from './ActionNode';
 export { NegativeNode } from './NegativeNode';
 export { ParametersNode } from './ParametersNode';
+export { TimePeriodNode } from './TimePeriodNode';
 export { EditNode } from './EditNode';
 export { ReferenceNode } from './ReferenceNode';
 export { OutputNode } from './OutputNode';

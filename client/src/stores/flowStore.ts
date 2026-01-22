@@ -201,11 +201,13 @@ export const useFlowStore = create<FlowState>()(
 
         let targetHandle = connection.targetHandle;
 
-        // Auto-route parameters and negative nodes to the config handle on output nodes
+        // Auto-route parameters, negative, and timeperiod nodes to the config handle on output nodes
         if (
           sourceNode &&
           targetNode &&
-          (sourceNode.type === 'parameters' || sourceNode.type === 'negative') &&
+          (sourceNode.type === 'parameters' ||
+            sourceNode.type === 'negative' ||
+            sourceNode.type === 'timeperiod') &&
           targetNode.type === 'output'
         ) {
           targetHandle = 'config';

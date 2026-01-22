@@ -12,6 +12,7 @@ import {
   SearchIcon,
   PlusIcon,
   ChevronDownIcon,
+  CalendarClockIcon,
 } from '@/components/ui/Icons';
 
 interface NodeTypeConfig {
@@ -73,6 +74,20 @@ const NODE_CONFIGS: NodeTypeConfig[] = [
     defaultData: {
       label: 'Action',
       content: 'Describe the action...',
+    },
+  },
+  {
+    type: 'timeperiod',
+    icon: <CalendarClockIcon size={14} />,
+    defaultData: {
+      label: 'Time Period',
+      name: 'New Era',
+      eraPreset: 'custom',
+      customEra: '',
+      region: '',
+      description: '',
+      useAutoNegatives: true,
+      customNegatives: '',
     },
   },
   {

@@ -1,6 +1,6 @@
 import { useFlowStore } from '@/stores/flowStore';
 import { useUIStore } from '@/stores/uiStore';
-import { NODE_COLORS, NODE_LABELS, SHOT_PRESET_LABELS, type NodeType } from '@/types/nodes';
+import { NODE_COLORS, NODE_LABELS, SHOT_PRESET_LABELS, ERA_PRESET_LABELS, ERA_AUTO_NEGATIVES, type NodeType, type EraPreset } from '@/types/nodes';
 import { XIcon } from '@/components/ui/Icons';
 
 export function PropertiesPanel() {
@@ -20,7 +20,7 @@ export function PropertiesPanel() {
   const color = NODE_COLORS[nodeType];
   const label = NODE_LABELS[nodeType];
 
-  const handleChange = (field: string, value: string | number) => {
+  const handleChange = (field: string, value: string | number | boolean) => {
     updateNodeData(selectedNodeId, { [field]: value });
   };
 
@@ -82,7 +82,7 @@ export function PropertiesPanel() {
 function renderNodeFields(
   nodeType: NodeType,
   data: any,
-  onChange: (field: string, value: string | number) => void
+  onChange: (field: string, value: string | number | boolean) => void
 ) {
   switch (nodeType) {
     case 'character':
@@ -141,6 +141,74 @@ function renderNodeFields(
           placeholder="Describe what's happening in the scene..."
           rows={6}
         />
+      );
+
+    case 'timeperiod':
+      return (
+        <>
+          <FieldInput
+            label="Name"
+            value={data.name || ''}
+            onChange={(v) => onChange('name', v)}
+          />
+          <FieldSelect
+            label="Era Preset"
+            value={data.eraPreset || 'custom'}
+            options={Object.entries(ERA_PRESET_LABELS).map(([value, label]) => ({
+              value,
+              label,
+            }))}
+            onChange={(v) => onChange('eraPreset', v)}
+          />
+          {data.eraPreset === 'custom' && (
+            <FieldInput
+              label="Custom Era"
+              value={data.customEra || ''}
+              onChange={(v) => onChange('customEra', v)}
+              placeholder="e.g., 1920s Prohibition-era"
+            />
+          )}
+          <FieldInput
+            label="Region"
+            value={data.region || ''}
+            onChange={(v) => onChange('region', v)}
+            placeholder="e.g., United States, Victorian England"
+          />
+          <FieldTextarea
+            label="Period Notes"
+            value={data.description || ''}
+            onChange={(v) => onChange('description', v)}
+            placeholder="Additional context about the era..."
+            rows={3}
+          />
+          <FieldCheckbox
+            label="Use Auto-Negatives"
+            checked={data.useAutoNegatives ?? true}
+            onChange={(v) => onChange('useAutoNegatives', v)}
+            description="Automatically avoid anachronistic elements"
+          />
+          {data.eraPreset !== 'custom' && data.useAutoNegatives && (
+            <div
+              className="mb-4 p-3 rounded-md text-[10px] text-muted"
+              style={{
+                background: 'var(--color-bg-elevated)',
+                border: '1px solid var(--color-border-subtle)',
+              }}
+            >
+              <div className="font-semibold text-secondary mb-1">Auto-excluded:</div>
+              <div className="line-clamp-3">
+                {ERA_AUTO_NEGATIVES[data.eraPreset as EraPreset]?.join(', ') || 'None'}
+              </div>
+            </div>
+          )}
+          <FieldTextarea
+            label="Custom Negatives"
+            value={data.customNegatives || ''}
+            onChange={(v) => onChange('customNegatives', v)}
+            placeholder="Additional things to avoid..."
+            rows={2}
+          />
+        </>
       );
 
     case 'output':
@@ -265,6 +333,37 @@ function FieldSelect({ label, value, options, onChange }: FieldSelectProps) {
           </option>
         ))}
       </select>
+    </div>
+  );
+}
+
+interface FieldCheckboxProps {
+  label: string;
+  checked: boolean;
+  onChange: (value: boolean) => void;
+  description?: string;
+}
+
+function FieldCheckbox({ label, checked, onChange, description }: FieldCheckboxProps) {
+  return (
+    <div className="mb-4">
+      <label className="flex items-start gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          className="mt-0.5 w-4 h-4 rounded cursor-pointer"
+          style={{
+            accentColor: 'var(--color-accent)',
+          }}
+        />
+        <div>
+          <div className="text-sm font-medium text-primary">{label}</div>
+          {description && (
+            <div className="text-[11px] text-muted mt-0.5">{description}</div>
+          )}
+        </div>
+      </label>
     </div>
   );
 }

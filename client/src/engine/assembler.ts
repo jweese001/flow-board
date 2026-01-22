@@ -12,6 +12,7 @@ import type {
   OutfitNodeData,
   NegativeNodeData,
   ParametersNodeData,
+  TimePeriodNodeData,
   EditNodeData,
   ReferenceNodeData,
   OutputNodeData,
@@ -28,6 +29,8 @@ import {
   FILM_STOCK_LABELS,
   EXPOSURE_STYLE_LABELS,
   VIGNETTE_LABELS,
+  ERA_PRESET_LABELS,
+  ERA_AUTO_NEGATIVES,
 } from '@/types/nodes';
 import { useSettingsStore } from '@/stores/settingsStore';
 
@@ -51,6 +54,7 @@ interface AssembledPrompt {
     numberOfImages?: number;
   };
   parts: {
+    timePeriod?: string;
     shot?: string;
     camera?: string;
     characters: string[];
@@ -93,6 +97,7 @@ export function assemblePrompt(
   let shot: ShotNodeData | null = null;
   let camera: CameraNodeData | null = null;
   let parameters: ParametersNodeData | null = null;
+  let timePeriod: TimePeriodNodeData | null = null;
 
   // Build map of reference nodes connected to asset nodes (via "reference" handle)
   const referenceToAsset = new Map<string, string>(); // referenceNodeId -> assetNodeId
@@ -123,6 +128,8 @@ export function assemblePrompt(
         parameters = node.data as ParametersNodeData;
       } else if (node.type === 'negative') {
         negatives.push(node.data as NegativeNodeData);
+      } else if (node.type === 'timeperiod') {
+        timePeriod = node.data as TimePeriodNodeData;
       }
     }
   }
@@ -216,8 +223,12 @@ export function assemblePrompt(
   const cameraData = camera as CameraNodeData | null;
   const cameraPosition = cameraData?.promptPosition || 'after-shot';
 
+  // Store time period data (cast needed because TS doesn't track mutations in closures)
+  const timePeriodData = timePeriod as TimePeriodNodeData | null;
+
   // Format the prompt parts
   const parts: AssembledPrompt['parts'] = {
+    timePeriod: timePeriodData ? formatTimePeriod(timePeriodData) : undefined,
     shot: shot ? formatShot(shot) : undefined,
     camera: camera ? formatCamera(camera) : undefined,
     characters: characters.map((c) => formatCharacter(c.data)),
@@ -232,6 +243,11 @@ export function assemblePrompt(
 
   // Assemble final prompt in order
   const promptParts: string[] = [];
+
+  // Time period first - establishes temporal context for everything
+  if (parts.timePeriod) {
+    promptParts.push(parts.timePeriod);
+  }
 
   if (parts.shot) {
     promptParts.push(parts.shot);
@@ -365,9 +381,20 @@ export function assemblePrompt(
     });
   }
 
+  // Collect all negatives (time period auto-negatives + explicit negative nodes)
+  const allNegatives: string[] = [];
+
+  // Add time period auto-negatives first
+  if (timePeriodData) {
+    allNegatives.push(...getTimePeriodNegatives(timePeriodData));
+  }
+
+  // Add explicit negative nodes
+  allNegatives.push(...negatives.map((n) => n.content));
+
   return {
     prompt: promptParts.join(' '),
-    negativePrompt: negatives.map((n) => n.content).join(', '),
+    negativePrompt: allNegatives.join(', '),
     referenceImages,
     parameters: {
       model: resolvedParams?.model || settingsDefaults.model,
@@ -462,4 +489,52 @@ function formatOutfit(data: OutfitNodeData): string {
 
 function formatEdit(data: EditNodeData): string {
   return data.refinement;
+}
+
+function formatTimePeriod(data: TimePeriodNodeData): string {
+  const parts: string[] = [];
+
+  // Era label
+  if (data.eraPreset === 'custom') {
+    if (data.customEra) {
+      parts.push(data.customEra);
+    }
+  } else {
+    parts.push(ERA_PRESET_LABELS[data.eraPreset]);
+  }
+
+  // Region qualifier
+  if (data.region) {
+    parts.push(data.region);
+  }
+
+  // Additional description
+  if (data.description) {
+    parts.push(data.description);
+  }
+
+  if (parts.length === 0) return '';
+
+  return parts.join(', ') + '.';
+}
+
+function getTimePeriodNegatives(data: TimePeriodNodeData): string[] {
+  const negatives: string[] = [];
+
+  // Add auto-negatives if enabled
+  if (data.useAutoNegatives && data.eraPreset !== 'custom') {
+    negatives.push(...(ERA_AUTO_NEGATIVES[data.eraPreset] || []));
+  }
+
+  // Add custom negatives
+  if (data.customNegatives) {
+    negatives.push(
+      ...data.customNegatives
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+    );
+  }
+
+  return negatives;
 }
