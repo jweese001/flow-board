@@ -199,22 +199,55 @@ export const useFlowStore = create<FlowState>()(
         const sourceNode = state.nodes.find((n) => n.id === connection.source);
         const targetNode = state.nodes.find((n) => n.id === connection.target);
 
+        if (!sourceNode || !targetNode) return;
+
         let targetHandle = connection.targetHandle;
+
+        // Define node categories for validation
+        const configNodes = ['parameters', 'negative', 'timeperiod'];
+        const referenceSourceNodes = ['reference', 'output'];
+        const contentNodes = [
+          'character', 'setting', 'prop', 'style', 'extras',
+          'shot', 'outfit', 'camera', 'action',
+        ];
+
+        // Connection validation for Output node handles
+        if (targetNode.type === 'output') {
+          const requestedHandle = connection.targetHandle;
+
+          // Reject content nodes trying to connect to reference or config handles
+          if (contentNodes.includes(sourceNode.type as string)) {
+            if (requestedHandle === 'reference' || requestedHandle === 'config') {
+              // Invalid connection - content nodes must use default handle
+              return;
+            }
+          }
+
+          // Reject config nodes trying to connect to reference handle
+          if (configNodes.includes(sourceNode.type as string)) {
+            if (requestedHandle === 'reference') {
+              return;
+            }
+          }
+
+          // Reject reference nodes trying to connect to config handle
+          if (referenceSourceNodes.includes(sourceNode.type as string)) {
+            if (requestedHandle === 'config') {
+              return;
+            }
+          }
+        }
 
         // Auto-route parameters, negative, and timeperiod nodes to the config handle on output nodes
         if (
-          sourceNode &&
-          targetNode &&
-          (sourceNode.type === 'parameters' ||
-            sourceNode.type === 'negative' ||
-            sourceNode.type === 'timeperiod') &&
+          configNodes.includes(sourceNode.type as string) &&
           targetNode.type === 'output'
         ) {
           targetHandle = 'config';
         }
 
         // Auto-route reference nodes and output nodes to the reference handle
-        if ((sourceNode?.type === 'reference' || sourceNode?.type === 'output') && targetNode) {
+        if (referenceSourceNodes.includes(sourceNode.type as string)) {
           const assetTypes = ['character', 'setting', 'prop', 'style', 'output'];
           if (assetTypes.includes(targetNode.type as string)) {
             targetHandle = 'reference';

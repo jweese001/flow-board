@@ -537,7 +537,7 @@ export const NODE_COLORS: Record<NodeType, string> = {
   character: '#3b82f6',
   setting: '#10b981',
   prop: '#f59e0b',
-  style: '#a855f7',
+  style: '#d946ef',  // Fuchsia - distinct from Reference violet
   extras: '#64748b',
   shot: '#ec4899',
   outfit: '#06b6d4',

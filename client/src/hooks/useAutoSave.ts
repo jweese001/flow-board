@@ -40,16 +40,22 @@ export function useAutoSave() {
   }, [loadProject, saveCurrentProject]);
 
   // Debounced auto-save on every change (saves 2 seconds after last change)
+  // IMPORTANT: Read current state from stores inside setTimeout to avoid stale closures
   const debouncedSave = useCallback(() => {
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
 
     saveTimeoutRef.current = setTimeout(async () => {
-      if (isDirty && autoSaveEnabled && !isSavingRef.current) {
+      // Read CURRENT state from stores, not captured closure values
+      const currentIsDirty = useFlowStore.getState().isDirty;
+      const currentAutoSaveEnabled = useSettingsStore.getState().autoSaveEnabled;
+      const save = useProjectStore.getState().saveCurrentProject;
+
+      if (currentIsDirty && currentAutoSaveEnabled && !isSavingRef.current) {
         isSavingRef.current = true;
         try {
-          await saveCurrentProject();
+          await save();
           console.log('Auto-saved project');
         } catch (e) {
           console.error('Auto-save failed:', e);
@@ -58,7 +64,7 @@ export function useAutoSave() {
         }
       }
     }, 2000); // Save 2 seconds after last change
-  }, [isDirty, autoSaveEnabled, saveCurrentProject]);
+  }, []); // No dependencies needed - we read from stores directly
 
   // Trigger debounced save whenever nodes or edges change
   useEffect(() => {
@@ -73,11 +79,20 @@ export function useAutoSave() {
     };
   }, [nodes, edges, isDirty, autoSaveEnabled, debouncedSave]);
 
-  // Show warning on page unload (can't reliably do async save in beforeunload)
+  // Save immediately on page unload or HMR
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isDirty) {
-        // Show browser warning dialog
+      const currentIsDirty = useFlowStore.getState().isDirty;
+      if (currentIsDirty) {
+        // Try to save synchronously before unload
+        // Note: async operations may not complete, but localStorage writes are sync
+        try {
+          const save = useProjectStore.getState().saveCurrentProject;
+          save(); // Fire and forget - may not complete but worth trying
+        } catch {
+          // Ignore errors during unload
+        }
+        // Show browser warning dialog as fallback
         e.preventDefault();
         e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
         return e.returnValue;
@@ -88,13 +103,24 @@ export function useAutoSave() {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [isDirty]);
+  }, []);
 
-  // Cleanup on unmount
+  // Save on unmount (for HMR and navigation)
   useEffect(() => {
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
+      }
+      // Save immediately on unmount if dirty
+      const currentIsDirty = useFlowStore.getState().isDirty;
+      if (currentIsDirty && !isSavingRef.current) {
+        try {
+          const save = useProjectStore.getState().saveCurrentProject;
+          save(); // Fire and forget
+          console.log('Saved on unmount');
+        } catch (e) {
+          console.error('Failed to save on unmount:', e);
+        }
       }
     };
   }, []);
