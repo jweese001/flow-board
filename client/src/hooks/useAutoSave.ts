@@ -50,18 +50,18 @@ export function useAutoSave() {
     saveTimeoutRef.current = setTimeout(async () => {
       // Read CURRENT state from stores, not captured closure values
       const currentIsDirty = useFlowStore.getState().isDirty;
-      const currentAutoSaveEnabled = useSettingsStore.getState().autoSaveEnabled;
+      const { autoSaveEnabled, autoSaveToFileEnabled } = useSettingsStore.getState();
       const { isFileBacked } = useFileStore.getState();
       const { saveCurrentProject, saveCurrentToFile } = useProjectStore.getState();
 
-      if (currentIsDirty && currentAutoSaveEnabled && !isSavingRef.current) {
+      if (currentIsDirty && autoSaveEnabled && !isSavingRef.current) {
         isSavingRef.current = true;
         try {
           // Always save to localStorage as backup
           await saveCurrentProject();
 
-          // Also save to file if file-backed
-          if (isFileBacked) {
+          // Also save to file if file-backed AND file sync enabled
+          if (isFileBacked && autoSaveToFileEnabled) {
             await saveCurrentToFile();
             console.log('Auto-saved to file and localStorage');
           } else {

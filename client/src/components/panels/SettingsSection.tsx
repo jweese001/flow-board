@@ -33,9 +33,11 @@ export function SettingsSection() {
   const apiKeys = useSettingsStore((s) => s.apiKeys);
   const defaults = useSettingsStore((s) => s.defaults);
   const autoSaveEnabled = useSettingsStore((s) => s.autoSaveEnabled);
+  const autoSaveToFileEnabled = useSettingsStore((s) => s.autoSaveToFileEnabled);
   const setApiKey = useSettingsStore((s) => s.setApiKey);
   const setDefaults = useSettingsStore((s) => s.setDefaults);
   const setAutoSaveEnabled = useSettingsStore((s) => s.setAutoSaveEnabled);
+  const setAutoSaveToFileEnabled = useSettingsStore((s) => s.setAutoSaveToFileEnabled);
 
   return (
     <div style={{ padding: '0 16px 16px 16px' }}>
@@ -97,14 +99,29 @@ export function SettingsSection() {
       </div>
 
       {/* Auto-save Section */}
-      <SectionHeader>Preferences</SectionHeader>
-      <label className="flex items-center justify-between cursor-pointer py-1">
-        <span className="text-sm text-secondary">Auto-save every 30s</span>
-        <ToggleSwitch
-          checked={autoSaveEnabled}
-          onChange={setAutoSaveEnabled}
-        />
-      </label>
+      <SectionHeader>Auto-save</SectionHeader>
+      <div className="space-y-3">
+        <label className="flex items-center justify-between cursor-pointer py-1">
+          <div>
+            <span className="text-sm text-secondary">Browser backup</span>
+            <p className="text-xs text-muted">Save to localStorage every 2s</p>
+          </div>
+          <ToggleSwitch
+            checked={autoSaveEnabled}
+            onChange={setAutoSaveEnabled}
+          />
+        </label>
+        <label className="flex items-center justify-between cursor-pointer py-1">
+          <div>
+            <span className="text-sm text-secondary">File sync</span>
+            <p className="text-xs text-muted">Also write to open file</p>
+          </div>
+          <ToggleSwitch
+            checked={autoSaveToFileEnabled}
+            onChange={setAutoSaveToFileEnabled}
+          />
+        </label>
+      </div>
     </div>
   );
 }

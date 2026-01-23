@@ -15,6 +15,7 @@ export interface AppSettings {
   apiKeys: APIKeys;
   defaults: GenerationDefaults;
   autoSaveEnabled: boolean;
+  autoSaveToFileEnabled: boolean;  // Auto-save to file when file-backed
   autoSaveIntervalMs: number;
 }
 
@@ -25,5 +26,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
     aspectRatio: '1:1',
   },
   autoSaveEnabled: true,
+  autoSaveToFileEnabled: true,  // Auto-save to file when file-backed
   autoSaveIntervalMs: 30000, // 30 seconds
 };

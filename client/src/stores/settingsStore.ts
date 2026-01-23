@@ -9,6 +9,7 @@ interface SettingsState extends AppSettings {
   clearApiKey: (provider: keyof APIKeys) => void;
   setDefaults: (defaults: Partial<GenerationDefaults>) => void;
   setAutoSaveEnabled: (enabled: boolean) => void;
+  setAutoSaveToFileEnabled: (enabled: boolean) => void;
   setAutoSaveInterval: (intervalMs: number) => void;
   resetSettings: () => void;
 }
@@ -37,6 +38,9 @@ export const useSettingsStore = create<SettingsState>()(
       setAutoSaveEnabled: (enabled) =>
         set({ autoSaveEnabled: enabled }),
 
+      setAutoSaveToFileEnabled: (enabled) =>
+        set({ autoSaveToFileEnabled: enabled }),
+
       setAutoSaveInterval: (intervalMs) =>
         set({ autoSaveIntervalMs: intervalMs }),
 
@@ -49,6 +53,7 @@ export const useSettingsStore = create<SettingsState>()(
         apiKeys: state.apiKeys,
         defaults: state.defaults,
         autoSaveEnabled: state.autoSaveEnabled,
+        autoSaveToFileEnabled: state.autoSaveToFileEnabled,
         autoSaveIntervalMs: state.autoSaveIntervalMs,
       }),
     }
