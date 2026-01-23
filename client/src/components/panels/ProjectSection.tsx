@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { useProjectStore } from '@/stores/projectStore';
 import { useFlowStore } from '@/stores/flowStore';
+import { useFileStore } from '@/stores/fileStore';
 import {
   PlusIcon,
   FileIcon,
@@ -8,6 +9,7 @@ import {
   DownloadIcon,
   UploadIcon,
   SaveIcon,
+  FolderOpenIcon,
 } from '@/components/ui/Icons';
 
 export function ProjectSection() {
@@ -25,9 +27,14 @@ export function ProjectSection() {
     renameProject,
     exportProject,
     importProject,
+    openFromFile,
+    saveCurrentToFile,
+    saveCurrentAsFile,
+    isFileSystemSupported,
   } = useProjectStore();
 
   const isDirty = useFlowStore((state) => state.isDirty);
+  const { isFileBacked, fileName } = useFileStore();
 
   const handleCreateProject = () => {
     if (isDirty) {
@@ -47,8 +54,35 @@ export function ProjectSection() {
     loadProject(projectId);
   };
 
-  const handleSaveProject = () => {
-    saveCurrentProject();
+  const handleSaveProject = async () => {
+    if (isFileBacked) {
+      const success = await saveCurrentToFile();
+      if (!success) {
+        // Fallback already handled in saveCurrentToFile
+        console.log('Saved to localStorage as fallback');
+      }
+    } else {
+      await saveCurrentProject();
+    }
+  };
+
+  const handleOpenFile = async () => {
+    if (isDirty) {
+      if (!confirm('You have unsaved changes. Open a file anyway?')) {
+        return;
+      }
+    }
+    const projectId = await openFromFile();
+    if (projectId) {
+      console.log('Opened project from file:', projectId);
+    }
+  };
+
+  const handleSaveAs = async () => {
+    const success = await saveCurrentAsFile();
+    if (success) {
+      console.log('Project saved to new file');
+    }
   };
 
   const handleDeleteProject = (projectId: string, e: React.MouseEvent) => {
@@ -118,8 +152,26 @@ export function ProjectSection() {
     });
   };
 
+  const fileSystemSupported = isFileSystemSupported();
+
   return (
     <div className="px-5 pb-4 space-y-3">
+      {/* File Indicator (when file-backed) */}
+      {isFileBacked && fileName && (
+        <div
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs"
+          style={{
+            background: 'var(--color-bg-elevated)',
+            border: '1px solid var(--color-node-setting)',
+          }}
+        >
+          <FileIcon size={12} className="text-green-400 flex-shrink-0" />
+          <span className="text-muted truncate" title={fileName}>
+            {fileName}
+          </span>
+        </div>
+      )}
+
       {/* Action Buttons */}
       <div className="flex gap-2">
         <button
@@ -143,10 +195,39 @@ export function ProjectSection() {
             border: '1px solid var(--color-border-subtle)',
             color: isDirty ? 'white' : 'var(--color-text-primary)',
           }}
+          title={isFileBacked ? 'Save to file (Cmd+S)' : 'Save to browser (Cmd+S)'}
         >
           <SaveIcon size={14} />
           Save
         </button>
+        {fileSystemSupported && (
+          <button
+            onClick={handleOpenFile}
+            className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+            style={{
+              background: 'var(--color-bg-elevated)',
+              border: '1px solid var(--color-border-subtle)',
+              color: 'var(--color-text-primary)',
+            }}
+            title="Open project file (Cmd+O)"
+          >
+            <FolderOpenIcon size={14} />
+          </button>
+        )}
+        {fileSystemSupported && (
+          <button
+            onClick={handleSaveAs}
+            className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+            style={{
+              background: 'var(--color-bg-elevated)',
+              border: '1px solid var(--color-border-subtle)',
+              color: 'var(--color-text-primary)',
+            }}
+            title="Save As (Cmd+Shift+S)"
+          >
+            <DownloadIcon size={14} />
+          </button>
+        )}
         <button
           onClick={handleImportClick}
           className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors"
@@ -155,7 +236,7 @@ export function ProjectSection() {
             border: '1px solid var(--color-border-subtle)',
             color: 'var(--color-text-primary)',
           }}
-          title="Import project"
+          title="Import project (creates copy)"
         >
           <UploadIcon size={14} />
         </button>

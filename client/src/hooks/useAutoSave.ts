@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useFlowStore } from '@/stores/flowStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useProjectStore } from '@/stores/projectStore';
+import { useFileStore } from '@/stores/fileStore';
 import { getCurrentProjectId } from '@/services/storage';
 
 export function useAutoSave() {
@@ -50,13 +51,22 @@ export function useAutoSave() {
       // Read CURRENT state from stores, not captured closure values
       const currentIsDirty = useFlowStore.getState().isDirty;
       const currentAutoSaveEnabled = useSettingsStore.getState().autoSaveEnabled;
-      const save = useProjectStore.getState().saveCurrentProject;
+      const { isFileBacked } = useFileStore.getState();
+      const { saveCurrentProject, saveCurrentToFile } = useProjectStore.getState();
 
       if (currentIsDirty && currentAutoSaveEnabled && !isSavingRef.current) {
         isSavingRef.current = true;
         try {
-          await save();
-          console.log('Auto-saved project');
+          // Always save to localStorage as backup
+          await saveCurrentProject();
+
+          // Also save to file if file-backed
+          if (isFileBacked) {
+            await saveCurrentToFile();
+            console.log('Auto-saved to file and localStorage');
+          } else {
+            console.log('Auto-saved to localStorage');
+          }
         } catch (e) {
           console.error('Auto-save failed:', e);
         } finally {

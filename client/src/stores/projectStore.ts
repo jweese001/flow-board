@@ -10,10 +10,20 @@ import {
   createNewProject,
   downloadProjectAsFile,
   importProjectFromJson,
+  openProjectFromFile as storageOpenProjectFromFile,
   loadProjectSync,
+  exportProjectAsJson,
 } from '@/services/storage';
+import {
+  openFile,
+  saveToFile,
+  saveAsFile,
+  checkFileModified,
+  isFileSystemAccessSupported,
+} from '@/services/fileSystem';
 import { useFlowStore } from './flowStore';
 import { useGroupStore } from './groupStore';
+import { useFileStore } from './fileStore';
 
 interface ProjectState {
   currentProjectId: string | null;
@@ -30,6 +40,12 @@ interface ProjectState {
   exportProject: (projectId: string) => Promise<void>;
   importProject: (json: string) => Promise<string | null>;
   newUnsavedProject: () => void;
+
+  // File System Access API actions
+  openFromFile: () => Promise<string | null>;
+  saveCurrentToFile: () => Promise<boolean>;
+  saveCurrentAsFile: () => Promise<boolean>;
+  isFileSystemSupported: () => boolean;
 }
 
 export const useProjectStore = create<ProjectState>()((set, get) => ({
@@ -188,5 +204,152 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
     setCurrentProjectId(null);
 
     set({ currentProjectId: null });
+  },
+
+  // File System Access API actions
+  isFileSystemSupported: () => isFileSystemAccessSupported(),
+
+  openFromFile: async () => {
+    const result = await openFile();
+    if (!result) return null;
+
+    set({ isLoading: true });
+
+    try {
+      const project = await storageOpenProjectFromFile(result.content);
+      if (!project) {
+        set({ isLoading: false });
+        return null;
+      }
+
+      // Save to localStorage as backup
+      await storageSaveProject(project);
+
+      // Track the file handle
+      const fileStore = useFileStore.getState();
+      fileStore.setFileHandle(result.handle, result.fileName, result.lastModified);
+
+      // Load into flow
+      const flowStore = useFlowStore.getState();
+      flowStore.setNodes(project.nodes);
+      flowStore.setEdges(project.edges);
+      flowStore.setDirty(false);
+
+      setCurrentProjectId(project.id);
+
+      set({
+        currentProjectId: project.id,
+        projectList: getProjectMetadataList(),
+        isLoading: false,
+      });
+
+      return project.id;
+    } catch (e) {
+      console.error('Failed to open from file:', e);
+      set({ isLoading: false });
+      return null;
+    }
+  },
+
+  saveCurrentToFile: async () => {
+    const { currentProjectId } = get();
+    const fileStore = useFileStore.getState();
+
+    if (!currentProjectId || !fileStore.fileHandle) {
+      console.warn('No file handle to save to');
+      return false;
+    }
+
+    try {
+      // Check for external modifications
+      if (fileStore.lastFileModified) {
+        const wasModified = await checkFileModified(
+          fileStore.fileHandle,
+          fileStore.lastFileModified
+        );
+        if (wasModified) {
+          const overwrite = confirm(
+            'The file has been modified externally. Overwrite with your changes?'
+          );
+          if (!overwrite) return false;
+        }
+      }
+
+      // Get current project state
+      const flowStore = useFlowStore.getState();
+      const existing = loadProjectSync(currentProjectId);
+      const project: Project = {
+        id: currentProjectId,
+        name: existing?.name || 'Untitled Project',
+        nodes: flowStore.nodes,
+        edges: flowStore.edges,
+        createdAt: existing?.createdAt || Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      // Export to JSON (with images embedded)
+      const json = await exportProjectAsJson(project);
+
+      // Save to file
+      const result = await saveToFile(fileStore.fileHandle, json);
+      fileStore.updateLastSaved(Date.now(), result.lastModified);
+
+      // Also save to localStorage as backup
+      await storageSaveProject(project);
+      flowStore.setDirty(false);
+
+      set({ projectList: getProjectMetadataList() });
+      return true;
+    } catch (e) {
+      console.error('Failed to save to file:', e);
+      // Fall back to localStorage save
+      await get().saveCurrentProject();
+      return false;
+    }
+  },
+
+  saveCurrentAsFile: async () => {
+    const { currentProjectId } = get();
+    const flowStore = useFlowStore.getState();
+
+    // Get or create project
+    const existing = currentProjectId ? loadProjectSync(currentProjectId) : null;
+    const project: Project = {
+      id: currentProjectId || `project-${Date.now()}`,
+      name: existing?.name || 'Untitled Project',
+      nodes: flowStore.nodes,
+      edges: flowStore.edges,
+      createdAt: existing?.createdAt || Date.now(),
+      updatedAt: Date.now(),
+    };
+
+    try {
+      // Export to JSON
+      const json = await exportProjectAsJson(project);
+
+      // Show Save As dialog
+      const suggestedName = project.name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+      const result = await saveAsFile(json, suggestedName);
+      if (!result) return false;
+
+      // Track the new file handle
+      const fileStore = useFileStore.getState();
+      fileStore.setFileHandle(result.handle, suggestedName + '.flowboard.json', result.lastModified);
+
+      // Save to localStorage as backup
+      await storageSaveProject(project);
+      setCurrentProjectId(project.id);
+      flowStore.setDirty(false);
+
+      set({
+        currentProjectId: project.id,
+        projectList: getProjectMetadataList(),
+      });
+
+      return true;
+    } catch (e) {
+      console.error('Failed to Save As:', e);
+      return false;
+    }
   },
 }));

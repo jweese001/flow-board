@@ -12,6 +12,8 @@ import '@xyflow/react/dist/style.css';
 import { useFlowStore } from '@/stores/flowStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useGroupStore } from '@/stores/groupStore';
+import { useProjectStore } from '@/stores/projectStore';
+import { useFileStore } from '@/stores/fileStore';
 import { nodeTypes } from '@/components/nodes';
 import { NODE_COLORS } from '@/types/nodes';
 import type { NodeType } from '@/types/nodes';
@@ -85,6 +87,36 @@ export function Canvas() {
         if (groupStore.isolatedGroupId) {
           e.preventDefault();
           groupStore.isolateGroup(null);
+        }
+      }
+
+      // Save (Cmd+S) - save to file if file-backed, otherwise localStorage
+      if (modifier && e.key === 's' && !e.shiftKey) {
+        e.preventDefault();
+        const { isFileBacked } = useFileStore.getState();
+        const { saveCurrentProject, saveCurrentToFile } = useProjectStore.getState();
+        if (isFileBacked) {
+          saveCurrentToFile();
+        } else {
+          saveCurrentProject();
+        }
+      }
+
+      // Save As (Cmd+Shift+S)
+      if (modifier && e.key === 's' && e.shiftKey) {
+        e.preventDefault();
+        const { saveCurrentAsFile, isFileSystemSupported } = useProjectStore.getState();
+        if (isFileSystemSupported()) {
+          saveCurrentAsFile();
+        }
+      }
+
+      // Open (Cmd+O)
+      if (modifier && e.key === 'o') {
+        e.preventDefault();
+        const { openFromFile, isFileSystemSupported } = useProjectStore.getState();
+        if (isFileSystemSupported()) {
+          openFromFile();
         }
       }
     };

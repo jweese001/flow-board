@@ -523,6 +523,128 @@ export async function importProjectFromJson(json: string): Promise<Project | nul
   }
 }
 
+/**
+ * Open project from file - preserves original ID (unlike import which creates a copy)
+ * Used for File System Access API workflow where you work directly with a file
+ */
+export async function openProjectFromFile(json: string): Promise<Project | null> {
+  try {
+    const data = JSON.parse(json) as ProjectExport;
+
+    if (!data.project || !data.project.id || !data.project.nodes) {
+      console.error('Open validation failed');
+      return null;
+    }
+
+    // Use original project ID (key difference from import)
+    const projectId = data.project.id;
+
+    // Check if project with this ID already exists and delete its images
+    const existingProject = loadProjectSync(projectId);
+    if (existingProject) {
+      await deleteProjectImages(projectId);
+    }
+
+    // Process nodes - store any embedded images in IndexedDB
+    const processedNodes = await Promise.all(
+      data.project.nodes.map(async (node) => {
+        if (node.type === 'output' && node.data) {
+          const outputData = node.data as {
+            generatedImages?: { imageUrl: string; seed?: number }[];
+            generatedImageUrl?: string;
+            status?: string;
+            [key: string]: unknown;
+          };
+
+          // Store embedded images in IndexedDB
+          const imageRefs: string[] = [];
+          if (outputData.generatedImages) {
+            for (let i = 0; i < outputData.generatedImages.length; i++) {
+              const img = outputData.generatedImages[i];
+              if (img.imageUrl) {
+                const ref = await storeImage(projectId, node.id, img.imageUrl, i);
+                imageRefs.push(ref);
+              }
+            }
+          } else if (outputData.generatedImageUrl) {
+            const ref = await storeImage(projectId, node.id, outputData.generatedImageUrl, 0);
+            imageRefs.push(ref);
+          }
+
+          return {
+            ...node,
+            data: {
+              ...outputData,
+              status: outputData.status === 'generating' ? 'idle' : outputData.status,
+              _imageRefs: imageRefs.length > 0 ? imageRefs : undefined,
+            },
+          };
+        }
+
+        if (node.type === 'page' && node.data) {
+          const pageData = node.data as {
+            panelImages?: (string | null)[];
+            [key: string]: unknown;
+          };
+
+          if (pageData.panelImages) {
+            const imageRefs: (string | null)[] = [];
+            for (let i = 0; i < pageData.panelImages.length; i++) {
+              const img = pageData.panelImages[i];
+              if (img) {
+                const ref = await storeImage(projectId, node.id, img, i);
+                imageRefs.push(ref);
+              } else {
+                imageRefs.push(null);
+              }
+            }
+            return {
+              ...node,
+              data: {
+                ...pageData,
+                _panelImageRefs: imageRefs,
+              },
+            };
+          }
+        }
+
+        if (node.type === 'reference' && node.data) {
+          const refData = node.data as {
+            imageUrl?: string;
+            [key: string]: unknown;
+          };
+
+          if (refData.imageUrl) {
+            const ref = await storeImage(projectId, node.id, refData.imageUrl, 0);
+            return {
+              ...node,
+              data: {
+                ...refData,
+                _imageRef: ref,
+              },
+            };
+          }
+        }
+
+        return node;
+      })
+    );
+
+    // Preserve original name (no "(Imported)" suffix)
+    return {
+      ...data.project,
+      id: projectId,
+      nodes: processedNodes as typeof data.project.nodes,
+      // Keep original timestamps or use current if missing
+      createdAt: data.project.createdAt || Date.now(),
+      updatedAt: Date.now(),
+    };
+  } catch (e) {
+    console.error('Open failed:', e);
+    return null;
+  }
+}
+
 export async function downloadProjectAsFile(project: Project): Promise<void> {
   const json = await exportProjectAsJson(project);
   const blob = new Blob([json], { type: 'application/json' });
