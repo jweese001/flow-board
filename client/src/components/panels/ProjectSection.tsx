@@ -88,7 +88,10 @@ export function ProjectSection() {
 
   const handleDeleteProject = (projectId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (confirm('Delete this project? This cannot be undone.')) {
+    const message = isFileBacked && currentProjectId === projectId
+      ? 'Remove from browser? (The file on disk will NOT be deleted)'
+      : 'Remove this project from browser storage?';
+    if (confirm(message)) {
       deleteProject(projectId);
     }
   };
