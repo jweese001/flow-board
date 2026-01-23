@@ -160,7 +160,7 @@ export function ProjectSection() {
       {/* File Indicator (when file-backed) */}
       {isFileBacked && fileName && (
         <div
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs"
+          className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs"
           style={{
             background: 'var(--color-bg-elevated)',
             border: '1px solid var(--color-node-setting)',
@@ -177,7 +177,7 @@ export function ProjectSection() {
       <div className="flex gap-2">
         <button
           onClick={handleCreateProject}
-          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors"
           style={{
             background: 'var(--color-bg-elevated)',
             border: '1px solid var(--color-border-subtle)',
@@ -190,7 +190,7 @@ export function ProjectSection() {
         <button
           onClick={handleSaveProject}
           disabled={!isDirty}
-          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
+          className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
           style={{
             background: isDirty ? 'var(--color-node-setting)' : 'var(--color-bg-elevated)',
             border: '1px solid var(--color-border-subtle)',
@@ -204,7 +204,7 @@ export function ProjectSection() {
         {fileSystemSupported && (
           <button
             onClick={handleSaveAs}
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors"
             style={{
               background: 'var(--color-bg-elevated)',
               border: '1px solid var(--color-border-subtle)',
@@ -223,7 +223,7 @@ export function ProjectSection() {
         {fileSystemSupported && (
           <button
             onClick={handleOpenFile}
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors"
             style={{
               background: 'var(--color-bg-elevated)',
               border: '1px solid var(--color-border-subtle)',
@@ -237,7 +237,7 @@ export function ProjectSection() {
         )}
         <button
           onClick={handleImportClick}
-          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors"
           style={{
             background: 'var(--color-bg-elevated)',
             border: '1px solid var(--color-border-subtle)',
