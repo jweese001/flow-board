@@ -137,6 +137,8 @@ export function Canvas() {
         nodeTypes={nodeTypes}
         fitView
         fitViewOptions={{ padding: 0.2 }}
+        minZoom={0.1}
+        maxZoom={2}
         defaultEdgeOptions={{
           type: 'bezier',
           style: { strokeWidth: 2 },
