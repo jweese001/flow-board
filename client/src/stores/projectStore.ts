@@ -61,16 +61,18 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
     const project = createNewProject(name);
     const flowStore = useFlowStore.getState();
     const groupStore = useGroupStore.getState();
+    const fileStore = useFileStore.getState();
 
     // Save empty project first
     await storageSaveProject(project);
     setCurrentProjectId(project.id);
 
-    // Clear the flow and groups
+    // Clear the flow, groups, and file handle
     flowStore.setNodes([]);
     flowStore.setEdges([]);
     flowStore.setDirty(false);
     groupStore.setGroups([]);
+    fileStore.clearFileHandle();
 
     set({
       currentProjectId: project.id,
@@ -91,10 +93,14 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
       }
 
       const flowStore = useFlowStore.getState();
+      const fileStore = useFileStore.getState();
 
       flowStore.setNodes(project.nodes);
       flowStore.setEdges(project.edges);
       flowStore.setDirty(false);
+
+      // Clear file handle - loading from browser storage, not a file
+      fileStore.clearFileHandle();
 
       setCurrentProjectId(projectId);
 
@@ -156,9 +162,15 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
 
     if (currentProjectId === projectId) {
       const flowStore = useFlowStore.getState();
+      const fileStore = useFileStore.getState();
+
       flowStore.setNodes([]);
       flowStore.setEdges([]);
       flowStore.setDirty(false);
+
+      // Clear file handle if this was a file-backed project
+      // Note: The actual file on disk is NOT deleted
+      fileStore.clearFileHandle();
 
       set({ currentProjectId: null });
     }
