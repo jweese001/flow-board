@@ -9,6 +9,7 @@ import {
   DownloadIcon,
   UploadIcon,
   SaveIcon,
+  SaveAsIcon,
   FolderOpenIcon,
 } from '@/components/ui/Icons';
 
@@ -172,7 +173,7 @@ export function ProjectSection() {
         </div>
       )}
 
-      {/* Action Buttons */}
+      {/* Action Buttons - Row 1: New, Save, Save As */}
       <div className="flex gap-2">
         <button
           onClick={handleCreateProject}
@@ -202,8 +203,27 @@ export function ProjectSection() {
         </button>
         {fileSystemSupported && (
           <button
+            onClick={handleSaveAs}
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+            style={{
+              background: 'var(--color-bg-elevated)',
+              border: '1px solid var(--color-border-subtle)',
+              color: 'var(--color-text-primary)',
+            }}
+            title="Save As new file (Cmd+Shift+S)"
+          >
+            <SaveAsIcon size={14} />
+            Save As
+          </button>
+        )}
+      </div>
+
+      {/* Action Buttons - Row 2: Open, Import */}
+      <div className="flex gap-2">
+        {fileSystemSupported && (
+          <button
             onClick={handleOpenFile}
-            className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors"
             style={{
               background: 'var(--color-bg-elevated)',
               border: '1px solid var(--color-border-subtle)',
@@ -212,25 +232,12 @@ export function ProjectSection() {
             title="Open project file (Cmd+O)"
           >
             <FolderOpenIcon size={14} />
-          </button>
-        )}
-        {fileSystemSupported && (
-          <button
-            onClick={handleSaveAs}
-            className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors"
-            style={{
-              background: 'var(--color-bg-elevated)',
-              border: '1px solid var(--color-border-subtle)',
-              color: 'var(--color-text-primary)',
-            }}
-            title="Save As (Cmd+Shift+S)"
-          >
-            <DownloadIcon size={14} />
+            Open
           </button>
         )}
         <button
           onClick={handleImportClick}
-          className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors"
           style={{
             background: 'var(--color-bg-elevated)',
             border: '1px solid var(--color-border-subtle)',
@@ -239,6 +246,7 @@ export function ProjectSection() {
           title="Import project (creates copy)"
         >
           <UploadIcon size={14} />
+          Import
         </button>
       </div>
 
