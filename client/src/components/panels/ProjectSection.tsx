@@ -219,7 +219,7 @@ export function ProjectSection() {
       </div>
 
       {/* Action Buttons - Row 2: Open, Import */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 mt-1">
         {fileSystemSupported && (
           <button
             onClick={handleOpenFile}
