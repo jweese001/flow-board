@@ -457,7 +457,7 @@ export function PageNode({ id, data, selected }: NodeProps<PageNodeType>) {
           imgX -= (offsetX / 100) * w;
           imgY -= (offsetY / 100) * h;
 
-          // Apply rotation/flip around anchor
+          // Apply rotation/flip around anchor point
           ctx.translate(anchorX, anchorY);
 
           if (rotation !== 0) {
@@ -468,10 +468,9 @@ export function PageNode({ id, data, selected }: NodeProps<PageNodeType>) {
             ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
           }
 
-          ctx.translate(-anchorX, -anchorY);
-
-          // Draw image
-          ctx.drawImage(img, imgX, imgY, drawW, drawH);
+          // Draw image with coordinates relative to anchor
+          // (Don't translate back - that breaks flip due to coordinate space inversion)
+          ctx.drawImage(img, imgX - anchorX, imgY - anchorY, drawW, drawH);
           ctx.restore();
         } catch (e) {
           console.error('Failed to load image for panel', i, e);
