@@ -431,6 +431,8 @@ export type TimelineFPS = 12 | 24 | 30 | 60;
 
 export const FPS_OPTIONS: TimelineFPS[] = [12, 24, 30, 60];
 
+export type PlayDirection = 1 | -1;
+
 export interface TimelineNodeData extends BaseNodeData {
   name: string;
   fps: TimelineFPS;
@@ -440,6 +442,7 @@ export interface TimelineNodeData extends BaseNodeData {
   easing: EasingType; // Default easing between keyframes
   currentTime: number; // Current playhead position (for preview)
   isPlaying: boolean; // Playback state
+  playDirection: PlayDirection; // 1 = forward, -1 = reverse
   currentTransforms?: KeyframeTransforms; // Interpolated transforms at currentTime (for downstream nodes)
 }
 

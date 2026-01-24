@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { NodeProps } from '@xyflow/react';
-import type { TimelineNode as TimelineNodeType, Keyframe, EasingType, TimelineFPS, KeyframeTransforms } from '@/types/nodes';
+import type { TimelineNode as TimelineNodeType, Keyframe, EasingType, TimelineFPS, KeyframeTransforms, PlayDirection } from '@/types/nodes';
 import { NODE_COLORS, EASING_LABELS, FPS_OPTIONS } from '@/types/nodes';
 import { BaseNode } from './BaseNode';
-import { TimelineIcon, PlayIcon, PauseIcon, PlusIcon, TrashIcon, RepeatIcon } from '../ui/Icons';
+import { TimelineIcon, PlusIcon, TrashIcon, RepeatIcon } from '../ui/Icons';
 import { useFlowStore } from '@/stores/flowStore';
 import { interpolateTransforms, DEFAULT_TRANSFORMS } from '@/engine/animation';
 
@@ -16,6 +16,7 @@ export function TimelineNode({ id, data, selected }: NodeProps<TimelineNodeType>
   const updateNodeData = useFlowStore((s) => s.updateNodeData);
   const animationRef = useRef<number | null>(null);
   const lastTimeRef = useRef<number>(0);
+  const timeRef = useRef<number>(data.currentTime ?? 0);
 
   const fps = data.fps ?? 24;
   const duration = data.duration ?? 2;
@@ -24,6 +25,14 @@ export function TimelineNode({ id, data, selected }: NodeProps<TimelineNodeType>
   const easing = data.easing ?? 'ease-in-out';
   const currentTime = data.currentTime ?? 0;
   const isPlaying = data.isPlaying ?? false;
+  const playDirection = data.playDirection ?? 1;
+
+  // Sync ref with prop when not playing (for scrubbing)
+  useEffect(() => {
+    if (!isPlaying) {
+      timeRef.current = currentTime;
+    }
+  }, [currentTime, isPlaying]);
 
   // Playback animation loop
   useEffect(() => {
@@ -41,18 +50,36 @@ export function TimelineNode({ id, data, selected }: NodeProps<TimelineNodeType>
       const delta = (now - lastTimeRef.current) / 1000; // seconds
       lastTimeRef.current = now;
 
-      let newTime = currentTime + delta;
+      let newTime = timeRef.current + delta * playDirection;
 
-      if (newTime >= duration) {
-        if (loop) {
-          newTime = newTime % duration;
-        } else {
-          newTime = duration;
-          updateNodeData(id, { currentTime: newTime, isPlaying: false });
-          return;
+      // Clamp time to valid range
+      if (playDirection > 0) {
+        // Playing forward
+        if (newTime >= duration) {
+          if (loop) {
+            newTime = 0;
+          } else {
+            newTime = duration;
+            timeRef.current = newTime;
+            updateNodeData(id, { currentTime: newTime, isPlaying: false });
+            return;
+          }
+        }
+      } else {
+        // Playing in reverse
+        if (newTime <= 0) {
+          if (loop) {
+            newTime = duration;
+          } else {
+            newTime = 0;
+            timeRef.current = newTime;
+            updateNodeData(id, { currentTime: newTime, isPlaying: false });
+            return;
+          }
         }
       }
 
+      timeRef.current = newTime;
       updateNodeData(id, { currentTime: newTime });
       animationRef.current = requestAnimationFrame(animate);
     };
@@ -62,9 +89,10 @@ export function TimelineNode({ id, data, selected }: NodeProps<TimelineNodeType>
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
       }
     };
-  }, [id, isPlaying, currentTime, duration, loop, updateNodeData]);
+  }, [id, isPlaying, playDirection, duration, loop, updateNodeData]);
 
   // Update interpolated transforms whenever time/keyframes change
   useEffect(() => {
@@ -81,24 +109,42 @@ export function TimelineNode({ id, data, selected }: NodeProps<TimelineNodeType>
     }
   }, [id, keyframes, currentTime, easing, data.currentTransforms, updateNodeData]);
 
-  const handlePlayPause = useCallback(() => {
-    if (isPlaying) {
+  const handlePlayForward = useCallback(() => {
+    if (isPlaying && playDirection === 1) {
+      // Already playing forward, pause
       updateNodeData(id, { isPlaying: false });
     } else {
-      // Reset to start if at the end
+      // Start or resume forward playback
+      // If at end, reset to start
       const newTime = currentTime >= duration ? 0 : currentTime;
-      updateNodeData(id, { isPlaying: true, currentTime: newTime });
+      timeRef.current = newTime;
+      updateNodeData(id, { isPlaying: true, playDirection: 1 as PlayDirection, currentTime: newTime });
     }
-  }, [id, isPlaying, currentTime, duration, updateNodeData]);
+  }, [id, isPlaying, playDirection, currentTime, duration, updateNodeData]);
+
+  const handlePlayReverse = useCallback(() => {
+    if (isPlaying && playDirection === -1) {
+      // Already playing reverse, pause
+      updateNodeData(id, { isPlaying: false });
+    } else {
+      // Start or resume reverse playback
+      // If at start, go to end
+      const newTime = currentTime <= 0 ? duration : currentTime;
+      timeRef.current = newTime;
+      updateNodeData(id, { isPlaying: true, playDirection: -1 as PlayDirection, currentTime: newTime });
+    }
+  }, [id, isPlaying, playDirection, currentTime, duration, updateNodeData]);
 
   const handleStop = useCallback(() => {
+    timeRef.current = 0;
     updateNodeData(id, { isPlaying: false, currentTime: 0 });
   }, [id, updateNodeData]);
 
   const handleSeek = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const time = parseFloat(e.target.value);
+    const time = Math.max(0, Math.min(parseFloat(e.target.value), duration));
+    timeRef.current = time;
     updateNodeData(id, { currentTime: time, isPlaying: false });
-  }, [id, updateNodeData]);
+  }, [id, duration, updateNodeData]);
 
   const handleFpsChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     updateNodeData(id, { fps: parseInt(e.target.value, 10) as TimelineFPS });
@@ -106,8 +152,11 @@ export function TimelineNode({ id, data, selected }: NodeProps<TimelineNodeType>
 
   const handleDurationChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newDuration = Math.max(0.1, parseFloat(e.target.value) || 1);
-    updateNodeData(id, { duration: newDuration });
-  }, [id, updateNodeData]);
+    // Clamp current time to new duration
+    const clampedTime = Math.min(currentTime, newDuration);
+    timeRef.current = clampedTime;
+    updateNodeData(id, { duration: newDuration, currentTime: clampedTime });
+  }, [id, currentTime, updateNodeData]);
 
   const handleLoopToggle = useCallback(() => {
     updateNodeData(id, { loop: !loop });
@@ -118,17 +167,18 @@ export function TimelineNode({ id, data, selected }: NodeProps<TimelineNodeType>
   }, [id, updateNodeData]);
 
   const handleAddKeyframe = useCallback(() => {
-    // Add keyframe at current time
+    // Clamp current time before adding keyframe
+    const clampedTime = Math.max(0, Math.min(currentTime, duration));
     const newKeyframe: Keyframe = {
       id: generateKeyframeId(),
-      time: currentTime,
+      time: clampedTime,
       transforms: { ...DEFAULT_TRANSFORMS },
     };
 
     // Sort keyframes by time
     const newKeyframes = [...keyframes, newKeyframe].sort((a, b) => a.time - b.time);
     updateNodeData(id, { keyframes: newKeyframes });
-  }, [id, currentTime, keyframes, updateNodeData]);
+  }, [id, currentTime, duration, keyframes, updateNodeData]);
 
   const handleRemoveKeyframe = useCallback((kfId: string) => {
     const newKeyframes = keyframes.filter((kf) => kf.id !== kfId);
@@ -136,6 +186,7 @@ export function TimelineNode({ id, data, selected }: NodeProps<TimelineNodeType>
   }, [id, keyframes, updateNodeData]);
 
   const handleKeyframeClick = useCallback((kf: Keyframe) => {
+    timeRef.current = kf.time;
     updateNodeData(id, { currentTime: kf.time, isPlaying: false });
   }, [id, updateNodeData]);
 
@@ -156,10 +207,13 @@ export function TimelineNode({ id, data, selected }: NodeProps<TimelineNodeType>
   const selectedKeyframe = keyframes.find((kf) => Math.abs(kf.time - currentTime) < 0.05);
 
   // Format time as seconds with 1 decimal
-  const formatTime = (t: number) => t.toFixed(1) + 's';
+  const formatTime = (t: number) => Math.max(0, t).toFixed(1) + 's';
 
   // Calculate frame count
   const frameCount = Math.ceil(fps * duration);
+
+  // Clamp display time
+  const displayTime = Math.max(0, Math.min(currentTime, duration));
 
   return (
     <BaseNode
@@ -243,7 +297,7 @@ export function TimelineNode({ id, data, selected }: NodeProps<TimelineNodeType>
           >
             {/* Keyframe markers */}
             {keyframes.map((kf) => {
-              const leftPercent = (kf.time / duration) * 100;
+              const leftPercent = Math.max(0, Math.min((kf.time / duration) * 100, 100));
               const isSelected = selectedKeyframe?.id === kf.id;
               return (
                 <button
@@ -267,7 +321,7 @@ export function TimelineNode({ id, data, selected }: NodeProps<TimelineNodeType>
             <div
               className="absolute top-0 bottom-0 w-0.5"
               style={{
-                left: `${(currentTime / duration) * 100}%`,
+                left: `${Math.max(0, Math.min((displayTime / duration) * 100, 100))}%`,
                 background: NODE_COLORS.timeline,
               }}
             >
@@ -284,40 +338,60 @@ export function TimelineNode({ id, data, selected }: NodeProps<TimelineNodeType>
             min={0}
             max={duration}
             step={0.01}
-            value={currentTime}
+            value={displayTime}
             onChange={handleSeek}
             className="absolute inset-0 w-full h-8 opacity-0 cursor-pointer"
             style={{ top: '14px' }}
           />
         </div>
 
-        {/* Playback Controls */}
+        {/* Playback Controls: < [] > */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">
+            {/* Reverse */}
+            <button
+              onClick={handlePlayReverse}
+              className="p-1.5 rounded transition-colors"
+              style={{
+                background: isPlaying && playDirection === -1 ? NODE_COLORS.timeline : 'var(--color-bg-elevated)',
+                color: isPlaying && playDirection === -1 ? 'white' : 'currentColor',
+              }}
+              title={isPlaying && playDirection === -1 ? 'Pause' : 'Play Reverse'}
+            >
+              <svg width={10} height={10} viewBox="0 0 10 10" fill="currentColor">
+                <polygon points="8,1 2,5 8,9" />
+              </svg>
+            </button>
+
+            {/* Stop */}
             <button
               onClick={handleStop}
               className="p-1.5 rounded bg-bg-elevated hover:bg-bg-hover transition-colors"
-              title="Stop"
+              title="Stop (reset to start)"
             >
               <svg width={10} height={10} viewBox="0 0 10 10" fill="currentColor">
                 <rect x="1" y="1" width="8" height="8" />
               </svg>
             </button>
+
+            {/* Play Forward */}
             <button
-              onClick={handlePlayPause}
+              onClick={handlePlayForward}
               className="p-1.5 rounded transition-colors"
               style={{
-                background: isPlaying ? NODE_COLORS.timeline : 'var(--color-bg-elevated)',
-                color: isPlaying ? 'white' : 'currentColor',
+                background: isPlaying && playDirection === 1 ? NODE_COLORS.timeline : 'var(--color-bg-elevated)',
+                color: isPlaying && playDirection === 1 ? 'white' : 'currentColor',
               }}
-              title={isPlaying ? 'Pause' : 'Play'}
+              title={isPlaying && playDirection === 1 ? 'Pause' : 'Play Forward'}
             >
-              {isPlaying ? <PauseIcon size={10} /> : <PlayIcon size={10} />}
+              <svg width={10} height={10} viewBox="0 0 10 10" fill="currentColor">
+                <polygon points="2,1 8,5 2,9" />
+              </svg>
             </button>
           </div>
 
           <div className="text-[10px] font-mono text-muted">
-            {formatTime(currentTime)} / {formatTime(duration)}
+            {formatTime(displayTime)} / {formatTime(duration)}
           </div>
 
           <button

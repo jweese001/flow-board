@@ -207,6 +207,7 @@ const NODE_CONFIGS: NodeTypeConfig[] = [
       easing: 'ease-in-out',
       currentTime: 0,
       isPlaying: false,
+      playDirection: 1,
     },
   },
 ];
