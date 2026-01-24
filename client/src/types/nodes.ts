@@ -347,6 +347,10 @@ export interface ReferenceNodeData extends BaseNodeData {
   imageUrl?: string; // Base64 data URL or uploaded image URL
   imageType: ReferenceImageType; // For Gemini's reference image categories
   description?: string; // Optional description of what's in the reference
+  // Sequence mode fields
+  isSequence?: boolean; // Toggle for sequence mode
+  sequenceImages?: string[]; // Array of image URLs for sequence
+  sequenceIndex?: number; // Current frame being previewed (for UI)
 }
 
 // ===== TERMINAL NODE =====
@@ -393,6 +397,50 @@ export interface PageNodeData extends BaseNodeData {
   outputHeight: number;  // Export height in pixels
   useNumGrid?: boolean;  // Use dynamic grid instead of preset layout
   numPanels?: number;    // Number of panels for dynamic grid (1-16)
+}
+
+// ===== TIMELINE NODE =====
+
+export type EasingType = 'linear' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'spring';
+
+export const EASING_LABELS: Record<EasingType, string> = {
+  'linear': 'Linear',
+  'ease-in': 'Ease In',
+  'ease-out': 'Ease Out',
+  'ease-in-out': 'Ease In-Out',
+  'spring': 'Spring',
+};
+
+export interface KeyframeTransforms {
+  scale: number;
+  offsetX: number;
+  offsetY: number;
+  rotation: number;
+  opacity: number;
+  // Note: flipH/flipV are instant, not animated
+}
+
+export interface Keyframe {
+  id: string; // Unique ID for React keys
+  time: number; // Time in seconds
+  transforms: KeyframeTransforms;
+  easing?: EasingType; // Override easing for this keyframe
+}
+
+export type TimelineFPS = 12 | 24 | 30 | 60;
+
+export const FPS_OPTIONS: TimelineFPS[] = [12, 24, 30, 60];
+
+export interface TimelineNodeData extends BaseNodeData {
+  name: string;
+  fps: TimelineFPS;
+  duration: number; // Total duration in seconds
+  keyframes: Keyframe[];
+  loop: boolean;
+  easing: EasingType; // Default easing between keyframes
+  currentTime: number; // Current playhead position (for preview)
+  isPlaying: boolean; // Playback state
+  currentTransforms?: KeyframeTransforms; // Interpolated transforms at currentTime (for downstream nodes)
 }
 
 // ===== COMP NODE =====
@@ -469,7 +517,8 @@ export type NodeType =
   | 'output'
   | 'page'
   | 'transform'
-  | 'comp';
+  | 'comp'
+  | 'timeline';
 
 export type AppNodeData =
   | CharacterNodeData
@@ -489,7 +538,8 @@ export type AppNodeData =
   | OutputNodeData
   | PageNodeData
   | TransformNodeData
-  | CompNodeData;
+  | CompNodeData
+  | TimelineNodeData;
 
 // Use BuiltInNode pattern for React Flow compatibility
 export type CharacterNode = Node<CharacterNodeData, 'character'>;
@@ -510,6 +560,7 @@ export type OutputNode = Node<OutputNodeData, 'output'>;
 export type PageNode = Node<PageNodeData, 'page'>;
 export type TransformNode = Node<TransformNodeData, 'transform'>;
 export type CompNode = Node<CompNodeData, 'comp'>;
+export type TimelineNode = Node<TimelineNodeData, 'timeline'>;
 
 export type AppNode =
   | CharacterNode
@@ -529,7 +580,8 @@ export type AppNode =
   | OutputNode
   | PageNode
   | TransformNode
-  | CompNode;
+  | CompNode
+  | TimelineNode;
 
 // ===== NODE COLORS =====
 
@@ -552,6 +604,7 @@ export const NODE_COLORS: Record<NodeType, string> = {
   page: '#0ea5e9',      // Sky blue for page layout
   transform: '#f472b6', // Pink for transform
   comp: '#22c55e',      // Green for composition
+  timeline: '#a855f7',  // Purple for timeline/animation
 };
 
 // ===== NODE ICONS =====
@@ -575,6 +628,7 @@ export const NODE_LABELS: Record<NodeType, string> = {
   page: 'Page',
   transform: 'Transform',
   comp: 'Comp',
+  timeline: 'Timeline',
 };
 
 // Layout preset labels for UI

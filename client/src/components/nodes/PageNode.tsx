@@ -296,6 +296,38 @@ export function PageNode({ id, data, selected }: NodeProps<PageNodeType>) {
         return { imageUrl: null };
       }
 
+      if (node.type === 'timeline') {
+        const timelineData = node.data as {
+          currentTransforms?: {
+            scale: number;
+            offsetX: number;
+            offsetY: number;
+            rotation: number;
+            opacity: number;
+          };
+        };
+        // Find what's connected to this timeline's input
+        const upstreamEdge = edges.find((e) => e.target === nodeId);
+        if (upstreamEdge) {
+          const upstream = getImageFromNode(upstreamEdge.source);
+          const t = timelineData.currentTransforms;
+          return {
+            imageUrl: upstream.imageUrl,
+            transform: t ? {
+              scale: t.scale ?? 1,
+              offsetX: t.offsetX ?? 0,
+              offsetY: t.offsetY ?? 0,
+              rotation: t.rotation ?? 0,
+              flipH: false, // Timeline doesn't animate flip
+              flipV: false,
+              alignment: 'center' as const,
+              opacity: t.opacity ?? 100,
+            } : upstream.transform,
+          };
+        }
+        return { imageUrl: null };
+      }
+
       return { imageUrl: null };
     };
 

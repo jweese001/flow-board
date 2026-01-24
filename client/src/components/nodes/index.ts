@@ -17,6 +17,7 @@ import { OutputNode } from './OutputNode';
 import { PageNode } from './PageNode';
 import { TransformNode } from './TransformNode';
 import { CompNode } from './CompNode';
+import { TimelineNode } from './TimelineNode';
 
 // Registry of all custom node types for React Flow
 export const nodeTypes: NodeTypes = {
@@ -46,6 +47,8 @@ export const nodeTypes: NodeTypes = {
   transform: TransformNode,
   // Composition Nodes
   comp: CompNode,
+  // Animation Nodes
+  timeline: TimelineNode,
 };
 
 // Re-export individual nodes
@@ -67,4 +70,5 @@ export { OutputNode } from './OutputNode';
 export { PageNode } from './PageNode';
 export { TransformNode } from './TransformNode';
 export { CompNode } from './CompNode';
+export { TimelineNode } from './TimelineNode';
 export { BaseNode, NodeField } from './BaseNode';

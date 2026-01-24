@@ -1,5 +1,73 @@
 # FlowBoard Session Notes
 
+## Session: 2025-01-24 (Continued)
+
+### Completed
+- **Reference Node Sequence Mode** — Added multi-image support to Reference nodes:
+  - Toggle checkbox to enable sequence mode
+  - Multi-file upload/drop support
+  - Thumbnail strip with frame selection
+  - Playhead slider for scrubbing
+  - Frame counter overlay
+  - Individual frame removal
+- **Timeline Node** — Full keyframe-based animation controller:
+  - FPS selector (12/24/30/60)
+  - Duration control
+  - Loop toggle
+  - Easing presets (linear, ease-in, ease-out, ease-in-out, spring)
+  - Timeline track with keyframe diamonds
+  - Add/remove keyframe at current time
+  - Keyframe transform editor (scale, offset X/Y, rotation, opacity)
+  - Play/pause/stop controls
+  - Real-time playback with requestAnimationFrame
+- **Animation Engine** — Transform interpolation system (`engine/animation.ts`):
+  - Easing functions with spring support
+  - Keyframe interpolation with rotation wrap-around
+  - Frame generation utilities
+- **Playback Preview** — Timeline transforms flow to Comp/Page nodes:
+  - Comp and Page nodes detect Timeline inputs
+  - Use interpolated currentTransforms for live preview
+  - Animation updates in real-time during playback
+
+### Technical Details
+- Timeline stores `currentTransforms` in node data for downstream consumption
+- Animation engine handles rotation shortest-path interpolation
+- Both CompNode and PageNode updated with timeline type handling
+
+---
+
+## Session: 2025-01-24
+
+### Completed
+- **Page Node Export Flip Bug Fix** — Canvas transform was applying translate-back in flipped coordinate space, causing incorrect positioning. Fixed by drawing with coordinates relative to anchor point instead.
+- **Motion Feature Plan** — Created comprehensive `docs/feature-plan-motion.md` documenting animation system architecture:
+  - Reference Node sequence mode (multi-image)
+  - Timeline Node (fps, duration, keyframes, easing)
+  - Comp Node output handle for chaining
+  - Transcode Node with FFmpeg integration
+  - PNG sequence and video export modes
+
+### Decisions Made
+- **PNG sequence first, FFmpeg optional** — Browser-native PNG sequence export is priority; FFmpeg for video is optional enhancement requiring local install
+- **Keyframe-based animation** — Timeline node controls transform interpolation (scale, offset, rotation, opacity) over time
+- **Flip is instant, not animated** — flipH/flipV in Transform won't be interpolated
+
+### Issues/Blockers Discovered
+- **Canvas coordinate space** — When applying flip with `ctx.scale(-1, 1)`, subsequent translations are inverted. The original code did `translate → rotate → flip → translate-back → draw`, but translate-back went wrong direction. Fixed: `translate → rotate → flip → draw-relative-to-anchor`.
+
+### Notes for Next Session
+- **Stay on `motion` branch** — User explicitly requested staying here
+- **Feature plan ready** — `docs/feature-plan-motion.md` has full implementation spec
+- **Next implementation step** — Phase 1: Core Animation Framework (Timeline node, transform interpolation, basic playback preview)
+- **Flip fix verified working** — User tested and confirmed
+
+### Technical Details
+- Bug fix location: `client/src/components/nodes/PageNode.tsx:460-475`
+- Before: `ctx.translate(-anchorX, -anchorY)` then `ctx.drawImage(img, imgX, imgY, ...)`
+- After: `ctx.drawImage(img, imgX - anchorX, imgY - anchorY, ...)` (no translate-back)
+
+---
+
 ## Session: 2025-01-21
 
 ### Completed

@@ -137,14 +137,53 @@
 - [ ] Story/sequence mode for comic creation
 - [ ] **Time Period node (experimental)** — injects temporal context (1970s, Victorian era, 1800s, etc.) to give actions/settings a period-appropriate feel
 - [ ] **WebGL Scene Node** — 3D scene builder for camera angles and composition reference (potential integration with existing Three.js IDE)
-- [ ] **Animatics support** — basic motion/keyframes for Comp node layers
 - [ ] **Prompt preview/edit before generation** — catch trigger words before sending
+
+---
+
+## Motion/Animation System (Branch: `motion`)
+
+Full spec: `docs/feature-plan-motion.md`
+
+### Phase 1: Core Animation Framework
+- [x] Timeline node with keyframe system
+- [x] Transform interpolation engine
+- [x] Basic playback preview in canvas
+- [x] Reference node sequence mode
+
+### Phase 2: PNG Sequence Export
+- [ ] Frame-by-frame render pipeline
+- [ ] Page node sequence export
+- [ ] ZIP archive generation
+- [ ] Progress indication
+
+### Phase 3: FFmpeg Integration
+- [ ] Transcode node implementation
+- [ ] FFmpeg command generation
+- [ ] Local FFmpeg detection
+- [ ] Render queue management
+
+### Phase 4: Polish
+- [ ] Easing curve editor
+- [ ] Onion skinning for keyframes
+- [ ] Copy/paste keyframes
+- [ ] Timeline zoom/pan
 
 ---
 
 ## Recent Changes (Session Log)
 
-### 2025-01-20 (Latest Session)
+### 2025-01-24 (Latest Session)
+- **Page Node Flip Bug Fix:**
+  - Export now correctly respects flip transforms from Transform node
+  - Fixed canvas coordinate space issue in `PageNode.tsx`
+- **Motion Feature Plan:**
+  - Created `docs/feature-plan-motion.md` with full animation system spec
+  - Timeline node, Reference sequence mode, Comp output handle, Transcode node
+  - PNG sequence export (browser-native) and video export (FFmpeg)
+- **Branch: `motion`** — pushed to origin
+
+### 2025-01-20
 - **Camera Node (new):**
   - Lens type: standard, wide, ultra-wide, fisheye 180°, telephoto, anamorphic, tilt-shift
   - Depth of field: deep, shallow, very shallow

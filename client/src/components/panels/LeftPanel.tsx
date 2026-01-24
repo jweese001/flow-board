@@ -16,9 +16,13 @@ import {
   CAMERA_POSITION_LABELS,
   ERA_PRESET_LABELS,
   ERA_AUTO_NEGATIVES,
+  EASING_LABELS,
+  FPS_OPTIONS,
   type NodeType,
   type PageLayout,
   type EraPreset,
+  type EasingType,
+  type TimelineFPS,
 } from '@/types/nodes';
 import {
   UserIcon,
@@ -47,6 +51,7 @@ import {
   TransformIcon,
   LayersIcon,
   CalendarClockIcon,
+  TimelineIcon,
 } from '@/components/ui/Icons';
 import { ProjectSection } from './ProjectSection';
 import { SettingsSection } from './SettingsSection';
@@ -186,6 +191,22 @@ const NODE_CONFIGS: NodeTypeConfig[] = [
         fore: { scale: 1, offsetX: 0, offsetY: 0, rotation: 0, flipH: false, flipV: false, opacity: 100 },
         ext: { scale: 1, offsetX: 0, offsetY: 0, rotation: 0, flipH: false, flipV: false, opacity: 100 },
       },
+    },
+  },
+  // Animation Node
+  {
+    type: 'timeline',
+    icon: <TimelineIcon size={14} />,
+    defaultData: {
+      label: 'Timeline',
+      name: 'Timeline',
+      fps: 24,
+      duration: 2,
+      keyframes: [],
+      loop: true,
+      easing: 'ease-in-out',
+      currentTime: 0,
+      isPlaying: false,
     },
   },
 ];
@@ -970,6 +991,47 @@ function renderNodeFields(
           <div className="text-xs text-muted mt-2 leading-relaxed">
             Connect images to layer inputs:<br />
             <span className="text-secondary">Ext</span> (top) → <span className="text-secondary">Back</span> (bottom)
+          </div>
+        </div>
+      );
+
+    case 'timeline':
+      return (
+        <div className="space-y-5">
+          <FieldInput
+            label="Name"
+            value={data.name || ''}
+            onChange={(v) => onChange('name', v)}
+            placeholder="Timeline"
+          />
+          <FieldSelect
+            label="FPS"
+            value={String(data.fps || 24)}
+            options={FPS_OPTIONS.map((f) => ({ value: String(f), label: `${f} fps` }))}
+            onChange={(v) => onChange('fps', parseInt(v, 10) as TimelineFPS)}
+          />
+          <FieldSlider
+            label="Duration (sec)"
+            value={data.duration ?? 2}
+            min={0.1}
+            max={30}
+            step={0.1}
+            onChange={(v) => onChange('duration', v)}
+          />
+          <FieldSelect
+            label="Default Easing"
+            value={data.easing || 'ease-in-out'}
+            options={Object.entries(EASING_LABELS).map(([value, label]) => ({ value, label }))}
+            onChange={(v) => onChange('easing', v as EasingType)}
+          />
+          <FieldCheckbox
+            label="Loop Animation"
+            checked={data.loop ?? true}
+            onChange={(v) => onChange('loop', v as unknown as number)}
+          />
+          <div className="text-xs text-muted leading-relaxed">
+            <span className="text-secondary">{data.keyframes?.length || 0}</span> keyframes •{' '}
+            <span className="text-secondary">{Math.ceil((data.fps || 24) * (data.duration || 2))}</span> frames
           </div>
         </div>
       );
