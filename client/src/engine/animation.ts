@@ -47,11 +47,11 @@ function lerpTransforms(
   t: number
 ): KeyframeTransforms {
   return {
-    scale: lerp(from.scale, to.scale, t),
-    offsetX: lerp(from.offsetX, to.offsetX, t),
-    offsetY: lerp(from.offsetY, to.offsetY, t),
-    rotation: lerpRotation(from.rotation, to.rotation, t),
-    opacity: lerp(from.opacity, to.opacity, t),
+    scale: lerp(from?.scale ?? 1, to?.scale ?? 1, t),
+    offsetX: lerp(from?.offsetX ?? 0, to?.offsetX ?? 0, t),
+    offsetY: lerp(from?.offsetY ?? 0, to?.offsetY ?? 0, t),
+    rotation: lerpRotation(from?.rotation ?? 0, to?.rotation ?? 0, t),
+    opacity: lerp(from?.opacity ?? 100, to?.opacity ?? 100, t),
   };
 }
 
@@ -125,12 +125,14 @@ export function interpolateTransforms(
   time: number,
   defaultEasing: EasingType = 'ease-in-out'
 ): KeyframeTransforms {
-  if (keyframes.length === 0) {
+  if (!keyframes || keyframes.length === 0) {
     return { ...DEFAULT_TRANSFORMS };
   }
 
   if (keyframes.length === 1) {
-    return { ...keyframes[0].transforms };
+    const transforms = keyframes[0]?.transforms;
+    if (!transforms) return { ...DEFAULT_TRANSFORMS };
+    return { ...DEFAULT_TRANSFORMS, ...transforms };
   }
 
   const { before, after } = findSurroundingKeyframes(keyframes, time);
@@ -139,9 +141,13 @@ export function interpolateTransforms(
     return { ...DEFAULT_TRANSFORMS };
   }
 
+  // Ensure transforms exist
+  const beforeTransforms = before.transforms || DEFAULT_TRANSFORMS;
+  const afterTransforms = after.transforms || DEFAULT_TRANSFORMS;
+
   // Same keyframe or time before first/after last
   if (before === after || before.time === after.time) {
-    return { ...before.transforms };
+    return { ...DEFAULT_TRANSFORMS, ...beforeTransforms };
   }
 
   // Calculate normalized time between keyframes
@@ -151,7 +157,7 @@ export function interpolateTransforms(
   const easing = after.easing || defaultEasing;
   const easedT = applyEasing(t, easing);
 
-  return lerpTransforms(before.transforms, after.transforms, easedT);
+  return lerpTransforms(beforeTransforms, afterTransforms, easedT);
 }
 
 /**

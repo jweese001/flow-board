@@ -12,6 +12,7 @@ import { NegativeNode } from './NegativeNode';
 import { ParametersNode } from './ParametersNode';
 import { TimePeriodNode } from './TimePeriodNode';
 import { EditNode } from './EditNode';
+import { InterceptNode } from './InterceptNode';
 import { ReferenceNode } from './ReferenceNode';
 import { OutputNode } from './OutputNode';
 import { PageNode } from './PageNode';
@@ -38,6 +39,7 @@ export const nodeTypes: NodeTypes = {
   parameters: ParametersNode,
   timeperiod: TimePeriodNode,
   edit: EditNode,
+  intercept: InterceptNode,
   reference: ReferenceNode,
   // Terminal Nodes
   output: OutputNode,
@@ -65,6 +67,7 @@ export { NegativeNode } from './NegativeNode';
 export { ParametersNode } from './ParametersNode';
 export { TimePeriodNode } from './TimePeriodNode';
 export { EditNode } from './EditNode';
+export { InterceptNode } from './InterceptNode';
 export { ReferenceNode } from './ReferenceNode';
 export { OutputNode } from './OutputNode';
 export { PageNode } from './PageNode';

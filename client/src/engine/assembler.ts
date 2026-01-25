@@ -14,6 +14,7 @@ import type {
   ParametersNodeData,
   TimePeriodNodeData,
   EditNodeData,
+  InterceptNodeData,
   ReferenceNodeData,
   OutputNodeData,
   ReferenceImageType,
@@ -94,16 +95,33 @@ export function assemblePrompt(
   const edits: EditNodeData[] = [];
   const negatives: NegativeNodeData[] = [];
   const standaloneReferences: ReferenceNodeData[] = [];
+  const interceptPrompts: string[] = []; // Raw prompts from Intercept nodes
+  const interceptNegatives: string[] = []; // Raw negatives from Intercept nodes
   let shot: ShotNodeData | null = null;
   let camera: CameraNodeData | null = null;
   let parameters: ParametersNodeData | null = null;
   let timePeriod: TimePeriodNodeData | null = null;
 
-  // Build map of reference nodes connected to asset nodes (via "reference" handle)
+  // Build map of reference nodes connected to asset nodes
   const referenceToAsset = new Map<string, string>(); // referenceNodeId -> assetNodeId
+  // Build map of outfit nodes connected to character nodes
+  const outfitToCharacter = new Map<string, string>(); // outfitNodeId -> characterNodeId
+
   for (const edge of edges) {
-    if (edge.targetHandle === 'reference') {
-      referenceToAsset.set(edge.source, edge.target);
+    const sourceNode = nodes.find((n) => n.id === edge.source);
+    const targetNode = nodes.find((n) => n.id === edge.target);
+    if (!sourceNode || !targetNode) continue;
+
+    // Reference -> any asset node
+    if (sourceNode.type === 'reference' || sourceNode.type === 'output') {
+      if (['character', 'setting', 'prop', 'style'].includes(targetNode.type || '')) {
+        referenceToAsset.set(edge.source, edge.target);
+      }
+    }
+
+    // Outfit -> Character
+    if (sourceNode.type === 'outfit' && targetNode.type === 'character') {
+      outfitToCharacter.set(edge.source, edge.target);
     }
   }
 
@@ -148,6 +166,41 @@ export function assemblePrompt(
     }
   }
 
+  // Helper to collect config and reference nodes from a given node's handles
+  const collectConfigAndReferenceFromNode = (nodeId: string) => {
+    for (const edge of edges) {
+      if (edge.target === nodeId && edge.targetHandle === 'config') {
+        const node = nodes.find((n) => n.id === edge.source);
+        if (!node) continue;
+
+        if (node.type === 'parameters') {
+          if (!parameters) {
+            parameters = node.data as ParametersNodeData;
+          }
+        } else if (node.type === 'negative') {
+          const negData = node.data as NegativeNodeData;
+          if (!negatives.some(n => n.content === negData.content)) {
+            negatives.push(negData);
+          }
+        } else if (node.type === 'timeperiod') {
+          if (!timePeriod) {
+            timePeriod = node.data as TimePeriodNodeData;
+          }
+        }
+      }
+
+      if (edge.target === nodeId && edge.targetHandle === 'reference') {
+        const node = nodes.find((n) => n.id === edge.source);
+        if (node?.type === 'reference') {
+          const refData = node.data as ReferenceNodeData;
+          if (refData.imageUrl && !directOutputReferences.some(r => r.imageUrl === refData.imageUrl)) {
+            directOutputReferences.push(refData);
+          }
+        }
+      }
+    }
+  };
+
   // Recursive traversal function for prompt content
   function traverse(nodeId: string) {
     if (visited.has(nodeId)) return;
@@ -174,7 +227,10 @@ export function assemblePrompt(
         extras.push(node.data as ExtrasNodeData);
         break;
       case 'outfit':
-        outfits.push(node.data as OutfitNodeData);
+        // Only add as standalone outfit if not connected to a character
+        if (!outfitToCharacter.has(node.id)) {
+          outfits.push(node.data as OutfitNodeData);
+        }
         break;
       case 'action':
         actions.push(node.data as ActionNodeData);
@@ -207,6 +263,27 @@ export function assemblePrompt(
           parameters = node.data as ParametersNodeData;
         }
         break;
+      case 'intercept':
+        // Only act as boundary if this is NOT the starting node
+        // (allows Intercept to assemble from itself without blocking)
+        if (nodeId !== outputNodeId) {
+          const interceptData = node.data as InterceptNodeData;
+          const promptToUse = interceptData.editedPrompt || interceptData.assembledPrompt || '';
+          if (promptToUse) {
+            interceptPrompts.push(promptToUse);
+          }
+          // Also capture the negative prompt
+          const negativeToUse = interceptData.editedNegative || interceptData.assembledNegative || '';
+          if (negativeToUse) {
+            interceptNegatives.push(negativeToUse);
+          }
+          // Also collect config and reference nodes connected to this Intercept
+          collectConfigAndReferenceFromNode(nodeId);
+          // Don't traverse upstream - intercept "captures" everything above it
+          return;
+        }
+        // If this IS the starting node, fall through and traverse upstream
+        break;
     }
 
     // Traverse upstream nodes
@@ -226,16 +303,32 @@ export function assemblePrompt(
   // Store time period data (cast needed because TS doesn't track mutations in closures)
   const timePeriodData = timePeriod as TimePeriodNodeData | null;
 
+  // Helper to get outfit connected to a character
+  const getCharacterOutfit = (characterId: string): OutfitNodeData | null => {
+    for (const [outfitId, charId] of outfitToCharacter.entries()) {
+      if (charId === characterId) {
+        const outfitNode = nodes.find((n) => n.id === outfitId);
+        if (outfitNode?.type === 'outfit') {
+          return outfitNode.data as OutfitNodeData;
+        }
+      }
+    }
+    return null;
+  };
+
   // Format the prompt parts
   const parts: AssembledPrompt['parts'] = {
     timePeriod: timePeriodData ? formatTimePeriod(timePeriodData) : undefined,
     shot: shot ? formatShot(shot) : undefined,
     camera: camera ? formatCamera(camera) : undefined,
-    characters: characters.map((c) => formatCharacter(c.data)),
+    characters: characters.map((c) => {
+      const outfit = getCharacterOutfit(c.id);
+      return formatCharacterWithOutfit(c.data, outfit);
+    }),
     props: props.map((p) => formatProp(p.data)),
     settings: settings.map((s) => formatSetting(s.data)),
     extras: extras.map(formatExtras),
-    outfits: outfits.map(formatOutfit),
+    outfits: outfits.map(formatOutfit), // Only standalone outfits
     actions: actions.map(formatAction),
     styles: styles.map((s) => formatStyle(s.data)),
     edits: edits.map(formatEdit),
@@ -278,6 +371,9 @@ export function assemblePrompt(
 
   promptParts.push(...parts.styles);
   promptParts.push(...parts.edits);
+
+  // Add raw prompts from Intercept nodes (already assembled content)
+  promptParts.push(...interceptPrompts);
 
   // Extract parameters with defaults from settings store
   const resolvedParams = parameters as ParametersNodeData | null;
@@ -381,7 +477,7 @@ export function assemblePrompt(
     });
   }
 
-  // Collect all negatives (time period auto-negatives + explicit negative nodes)
+  // Collect all negatives (time period auto-negatives + explicit negative nodes + intercept negatives)
   const allNegatives: string[] = [];
 
   // Add time period auto-negatives first
@@ -391,6 +487,9 @@ export function assemblePrompt(
 
   // Add explicit negative nodes
   allNegatives.push(...negatives.map((n) => n.content));
+
+  // Add negatives from Intercept nodes
+  allNegatives.push(...interceptNegatives);
 
   return {
     prompt: promptParts.join(' '),
@@ -459,7 +558,10 @@ function formatCamera(data: CameraNodeData): string {
   return parts.join(', ') + '.';
 }
 
-function formatCharacter(data: CharacterNodeData): string {
+function formatCharacterWithOutfit(data: CharacterNodeData, outfit: OutfitNodeData | null): string {
+  if (outfit) {
+    return `${data.name}, ${data.description}, wearing ${outfit.description}.`;
+  }
   return `${data.name}, ${data.description}.`;
 }
 

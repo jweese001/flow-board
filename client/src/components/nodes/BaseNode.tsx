@@ -83,12 +83,12 @@ export function BaseNode({
           className="flex items-center gap-3"
           style={{
             background: `${color}14`,
-            padding: '12px 16px',
+            padding: '14px 16px',
           }}
         >
           {/* Icon */}
           <div
-            className="w-6 h-6 rounded-md flex items-center justify-center"
+            className="w-7 h-7 rounded-lg flex items-center justify-center"
             style={{
               background: `${color}33`,
               color: color,
@@ -100,12 +100,12 @@ export function BaseNode({
           {/* Title */}
           <div className="flex-1 min-w-0">
             <div
-              className="text-[10px] font-semibold uppercase tracking-wide"
+              className="text-[10px] font-semibold uppercase tracking-wide leading-tight"
               style={{ color: color }}
             >
               {label}
             </div>
-            <div className="text-xs font-semibold text-primary truncate">
+            <div className="text-[13px] font-semibold text-primary truncate mt-0.5">
               {name}
             </div>
           </div>
@@ -113,7 +113,7 @@ export function BaseNode({
           {/* Collapse Toggle */}
           <button
             onClick={handleCollapseClick}
-            className="w-6 h-6 rounded-md flex items-center justify-center transition-colors"
+            className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
             style={{
               color: 'var(--color-text-muted)',
               background: 'transparent',
@@ -139,7 +139,7 @@ export function BaseNode({
           <div
             style={{
               borderTop: '1px solid var(--color-border-subtle)',
-              padding: '16px',
+              padding: '14px 16px 16px',
             }}
           >
             {children}

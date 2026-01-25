@@ -8,7 +8,7 @@
  */
 
 export interface FileOpenResult {
-  handle: FileSystemFileHandle;
+  handle: FileSystemFileHandleExt;
   content: string;
   fileName: string;
   lastModified: number;
@@ -67,7 +67,7 @@ export async function openFile(): Promise<FileOpenResult | null> {
  * Save content to an existing file handle
  */
 export async function saveToFile(
-  handle: FileSystemFileHandle,
+  handle: FileSystemFileHandleExt,
   content: string
 ): Promise<{ success: boolean; lastModified: number }> {
   try {
@@ -100,7 +100,7 @@ export async function saveToFile(
 export async function saveAsFile(
   content: string,
   suggestedName: string
-): Promise<{ handle: FileSystemFileHandle; lastModified: number } | null> {
+): Promise<{ handle: FileSystemFileHandleExt; lastModified: number } | null> {
   if (!isFileSystemAccessSupported()) {
     console.warn('File System Access API not supported');
     return null;
@@ -141,7 +141,7 @@ export async function saveAsFile(
  * Check if file was modified externally since last known modification
  */
 export async function checkFileModified(
-  handle: FileSystemFileHandle,
+  handle: FileSystemFileHandleExt,
   lastKnownModified: number
 ): Promise<boolean> {
   try {
@@ -156,7 +156,7 @@ export async function checkFileModified(
 /**
  * Re-read file content from handle
  */
-export async function readFile(handle: FileSystemFileHandle): Promise<string> {
+export async function readFile(handle: FileSystemFileHandleExt): Promise<string> {
   const file = await handle.getFile();
   return file.text();
 }
@@ -164,7 +164,7 @@ export async function readFile(handle: FileSystemFileHandle): Promise<string> {
 /**
  * Get the current file name from a handle
  */
-export async function getFileName(handle: FileSystemFileHandle): Promise<string> {
+export async function getFileName(handle: FileSystemFileHandleExt): Promise<string> {
   const file = await handle.getFile();
   return file.name;
 }

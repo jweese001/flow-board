@@ -62,8 +62,8 @@ export function CompNode({ id, data, selected }: NodeProps<CompNodeType>) {
 
     if (node.type === 'transform') {
       const transformData = node.data as TransformNodeData;
-      // Find what's connected to this transform's input
-      const upstreamEdge = edges.find((e) => e.target === nodeId);
+      // Find what's connected to this transform's main input (not timeline-in)
+      const upstreamEdge = edges.find((e) => e.target === nodeId && e.targetHandle !== 'timeline-in');
       if (upstreamEdge) {
         const upstream = getImageFromNode(upstreamEdge.source);
         return {
@@ -315,49 +315,47 @@ export function CompNode({ id, data, selected }: NodeProps<CompNodeType>) {
         width: '100%',
         height: '100%',
         objectFit: 'contain',
+        objectPosition: 'center center',
       };
     }
 
     const { scale, offsetX, offsetY, rotation, flipH, flipV, alignment, opacity } = transform;
 
+    // Calculate object-position based on alignment
+    let objectPosX = '50%';
+    let objectPosY = '50%';
+
+    if (alignment.includes('left')) objectPosX = '0%';
+    else if (alignment.includes('right')) objectPosX = '100%';
+
+    if (alignment.includes('top')) objectPosY = '0%';
+    else if (alignment.includes('bottom')) objectPosY = '100%';
+
+    // Calculate transform-origin to match alignment
+    const transformOrigin = `${objectPosX} ${objectPosY}`;
+
+    // Build transform string
     const transforms: string[] = [];
 
-    // Calculate translate based on alignment
-    let translateX = -50;
-    let translateY = -50;
+    // Apply offset as percentage translation
+    if (offsetX !== 0 || offsetY !== 0) {
+      transforms.push(`translate(${-offsetX}%, ${-offsetY}%)`);
+    }
 
-    if (alignment.includes('left')) translateX = 0;
-    else if (alignment.includes('right')) translateX = -100;
-
-    if (alignment.includes('top')) translateY = 0;
-    else if (alignment.includes('bottom')) translateY = -100;
-
-    translateX -= offsetX;
-    translateY -= offsetY;
-
-    transforms.push(`translate(${translateX}%, ${translateY}%)`);
-    transforms.push(`scale(${scale})`);
+    if (scale !== 1) transforms.push(`scale(${scale})`);
     if (rotation !== 0) transforms.push(`rotate(${rotation}deg)`);
     if (flipH || flipV) transforms.push(`scale(${flipH ? -1 : 1}, ${flipV ? -1 : 1})`);
 
-    let top: string | number = '50%';
-    let left: string | number = '50%';
-
-    if (alignment.includes('top')) top = 0;
-    else if (alignment.includes('bottom')) top = '100%';
-
-    if (alignment.includes('left')) left = 0;
-    else if (alignment.includes('right')) left = '100%';
-
     return {
       position: 'absolute',
-      top,
-      left,
+      top: 0,
+      left: 0,
       width: '100%',
       height: '100%',
       objectFit: 'contain',
-      transform: transforms.join(' '),
-      transformOrigin: 'center center',
+      objectPosition: `${objectPosX} ${objectPosY}`,
+      transform: transforms.length > 0 ? transforms.join(' ') : undefined,
+      transformOrigin,
       opacity: opacity / 100,
     };
   };

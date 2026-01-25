@@ -53,13 +53,15 @@ export async function saveProject(project: Project): Promise<void> {
         }
 
         // Return node with image references instead of data
-        const { generatedImageUrl, generatedImages, ...restData } = outputData;
+        // Preserve existing _imageRefs if no new images were stored
+        const { generatedImageUrl, generatedImages, _imageRefs: existingRefs, _hasImages: existingHasImages, ...restData } = outputData as typeof outputData & { _imageRefs?: string[]; _hasImages?: boolean };
+        const finalRefs = imageRefs.length > 0 ? imageRefs : existingRefs;
         return {
           ...node,
           data: {
             ...restData,
-            _imageRefs: imageRefs.length > 0 ? imageRefs : undefined,
-            _hasImages: imageRefs.length > 0,
+            _imageRefs: finalRefs,
+            _hasImages: finalRefs && finalRefs.length > 0,
           },
         };
       }
@@ -67,6 +69,7 @@ export async function saveProject(project: Project): Promise<void> {
       if (node.type === 'page' && node.data) {
         const pageData = node.data as {
           panelImages?: (string | null)[];
+          _panelImageRefs?: (string | null)[];
           [key: string]: unknown;
         };
 
@@ -84,12 +87,14 @@ export async function saveProject(project: Project): Promise<void> {
           }
         }
 
-        const { panelImages, ...restData } = pageData;
+        // Preserve existing refs if no new images were stored
+        const { panelImages, _panelImageRefs: existingPanelRefs, ...restData } = pageData;
+        const finalPanelRefs = imageRefs.length > 0 ? imageRefs : existingPanelRefs;
         return {
           ...node,
           data: {
             ...restData,
-            _panelImageRefs: imageRefs.length > 0 ? imageRefs : undefined,
+            _panelImageRefs: finalPanelRefs,
           },
         };
       }
@@ -98,6 +103,7 @@ export async function saveProject(project: Project): Promise<void> {
       if (node.type === 'reference' && node.data) {
         const refData = node.data as {
           imageUrl?: string;
+          _imageRef?: string;
           [key: string]: unknown;
         };
 
@@ -412,12 +418,40 @@ export async function exportProjectAsJson(project: Project): Promise<string> {
 }
 
 export async function importProjectFromJson(json: string): Promise<Project | null> {
+  console.log('[importProjectFromJson] Starting, json length:', json.length);
   try {
-    const data = JSON.parse(json) as ProjectExport;
+    let data: ProjectExport;
 
-    if (!data.project || !data.project.id || !data.project.nodes) {
-      console.error('Import validation failed');
+    try {
+      data = JSON.parse(json) as ProjectExport;
+      console.log('[importProjectFromJson] JSON parsed successfully');
+    } catch (parseError) {
+      console.error('[importProjectFromJson] JSON parse error:', parseError);
       return null;
+    }
+
+    // Handle both wrapped format ({ project: ... }) and raw format ({ id, nodes, ... })
+    if (!data.project && (data as unknown as Project).id && (data as unknown as Project).nodes) {
+      // Raw project format - wrap it
+      data = {
+        version: PROJECT_VERSION,
+        project: data as unknown as Project,
+        exportedAt: Date.now(),
+      };
+    }
+
+    if (!data.project || !data.project.nodes) {
+      console.error('Import validation failed - missing project or nodes', {
+        hasProject: !!data.project,
+        hasNodes: !!data.project?.nodes,
+        keys: Object.keys(data)
+      });
+      return null;
+    }
+
+    // Ensure project has an ID
+    if (!data.project.id) {
+      data.project.id = generateProjectId();
     }
 
     // Generate new project ID
@@ -449,11 +483,12 @@ export async function importProjectFromJson(json: string): Promise<Project | nul
             imageRefs.push(ref);
           }
 
-          // Return with preserved images (will be in memory) and refs for save
+          // IMPORTANT: Remove embedded image data, keep only refs
+          const { generatedImageUrl, generatedImages, ...restOutputData } = outputData;
           return {
             ...node,
             data: {
-              ...outputData,
+              ...restOutputData,
               status: outputData.status === 'generating' ? 'idle' : outputData.status,
               _imageRefs: imageRefs.length > 0 ? imageRefs : undefined,
             },
@@ -477,10 +512,12 @@ export async function importProjectFromJson(json: string): Promise<Project | nul
                 imageRefs.push(null);
               }
             }
+            // Remove embedded image data, keep only refs
+            const { panelImages, ...restPageData } = pageData;
             return {
               ...node,
               data: {
-                ...pageData,
+                ...restPageData,
                 _panelImageRefs: imageRefs,
               },
             };
@@ -495,10 +532,12 @@ export async function importProjectFromJson(json: string): Promise<Project | nul
 
           if (refData.imageUrl) {
             const ref = await storeImage(newProjectId, node.id, refData.imageUrl, 0);
+            // Remove embedded image data, keep only ref
+            const { imageUrl, ...restRefData } = refData;
             return {
               ...node,
               data: {
-                ...refData,
+                ...restRefData,
                 _imageRef: ref,
               },
             };
@@ -528,26 +567,62 @@ export async function importProjectFromJson(json: string): Promise<Project | nul
  * Used for File System Access API workflow where you work directly with a file
  */
 export async function openProjectFromFile(json: string): Promise<Project | null> {
+  console.log('[openProjectFromFile] Starting, json length:', json.length);
   try {
-    const data = JSON.parse(json) as ProjectExport;
+    let data: ProjectExport;
 
-    if (!data.project || !data.project.id || !data.project.nodes) {
-      console.error('Open validation failed');
+    try {
+      data = JSON.parse(json) as ProjectExport;
+      console.log('[openProjectFromFile] JSON parsed successfully');
+    } catch (parseError) {
+      console.error('[openProjectFromFile] JSON parse error:', parseError);
       return null;
+    }
+
+    // Handle both wrapped format ({ project: ... }) and raw format ({ id, nodes, ... })
+    if (!data.project && (data as unknown as Project).nodes) {
+      const rawProject = data as unknown as Project;
+      data = {
+        version: PROJECT_VERSION,
+        project: rawProject,
+        exportedAt: Date.now(),
+      };
+    }
+
+    console.log('[openProjectFromFile] Checking data structure:', {
+      hasProject: !!data.project,
+      hasNodes: !!data.project?.nodes,
+      nodeCount: data.project?.nodes?.length,
+      keys: Object.keys(data)
+    });
+
+    if (!data.project || !data.project.nodes) {
+      console.error('[openProjectFromFile] Validation failed - missing project or nodes');
+      return null;
+    }
+
+    // Ensure project has an ID (generate one if missing)
+    if (!data.project.id) {
+      data.project.id = generateProjectId();
     }
 
     // Use original project ID (key difference from import)
     const projectId = data.project.id;
+    console.log('[openProjectFromFile] Project ID:', projectId, 'Name:', data.project.name);
 
     // Check if project with this ID already exists and delete its images
     const existingProject = loadProjectSync(projectId);
     if (existingProject) {
+      console.log('[openProjectFromFile] Deleting existing project images');
       await deleteProjectImages(projectId);
     }
 
     // Process nodes - store any embedded images in IndexedDB
+    console.log('[openProjectFromFile] Starting to process', data.project.nodes.length, 'nodes');
     const processedNodes = await Promise.all(
-      data.project.nodes.map(async (node) => {
+      data.project.nodes.map(async (node, nodeIndex) => {
+        try {
+          console.log(`[openProjectFromFile] Processing node ${nodeIndex}/${data.project.nodes.length}: type=${node.type}, id=${node.id}`);
         if (node.type === 'output' && node.data) {
           const outputData = node.data as {
             generatedImages?: { imageUrl: string; seed?: number }[];
@@ -571,10 +646,12 @@ export async function openProjectFromFile(json: string): Promise<Project | null>
             imageRefs.push(ref);
           }
 
+          // IMPORTANT: Remove embedded image data, keep only refs
+          const { generatedImageUrl, generatedImages, ...restOutputData } = outputData;
           return {
             ...node,
             data: {
-              ...outputData,
+              ...restOutputData,
               status: outputData.status === 'generating' ? 'idle' : outputData.status,
               _imageRefs: imageRefs.length > 0 ? imageRefs : undefined,
             },
@@ -598,10 +675,12 @@ export async function openProjectFromFile(json: string): Promise<Project | null>
                 imageRefs.push(null);
               }
             }
+            // Remove embedded image data, keep only refs
+            const { panelImages, ...restPageData } = pageData;
             return {
               ...node,
               data: {
-                ...pageData,
+                ...restPageData,
                 _panelImageRefs: imageRefs,
               },
             };
@@ -616,10 +695,12 @@ export async function openProjectFromFile(json: string): Promise<Project | null>
 
           if (refData.imageUrl) {
             const ref = await storeImage(projectId, node.id, refData.imageUrl, 0);
+            // Remove embedded image data, keep only ref
+            const { imageUrl, ...restRefData } = refData;
             return {
               ...node,
               data: {
-                ...refData,
+                ...restRefData,
                 _imageRef: ref,
               },
             };
@@ -627,11 +708,17 @@ export async function openProjectFromFile(json: string): Promise<Project | null>
         }
 
         return node;
+        } catch (nodeError) {
+          console.error(`[openProjectFromFile] Error processing node ${nodeIndex}:`, nodeError);
+          return node; // Return unprocessed node on error
+        }
       })
     );
 
+    console.log('[openProjectFromFile] Processed', processedNodes.length, 'nodes successfully');
+
     // Preserve original name (no "(Imported)" suffix)
-    return {
+    const result = {
       ...data.project,
       id: projectId,
       nodes: processedNodes as typeof data.project.nodes,
@@ -639,8 +726,10 @@ export async function openProjectFromFile(json: string): Promise<Project | null>
       createdAt: data.project.createdAt || Date.now(),
       updatedAt: Date.now(),
     };
+    console.log('[openProjectFromFile] Returning project:', result.name, 'with', result.nodes.length, 'nodes');
+    return result;
   } catch (e) {
-    console.error('Open failed:', e);
+    console.error('[openProjectFromFile] Open failed:', e);
     return null;
   }
 }

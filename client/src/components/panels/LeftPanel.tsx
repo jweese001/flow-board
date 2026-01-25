@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useReactFlow } from '@xyflow/react';
 import { useFlowStore, generateNodeId } from '@/stores/flowStore';
 import { useUIStore } from '@/stores/uiStore';
@@ -151,6 +151,20 @@ const NODE_CONFIGS: NodeTypeConfig[] = [
     type: 'edit',
     icon: <PencilIcon size={14} />,
     defaultData: { label: 'Edit', refinement: 'Make the colors more vibrant...' },
+  },
+  {
+    type: 'intercept',
+    icon: <SlidersIcon size={14} />,
+    defaultData: {
+      label: 'Intercept',
+      name: 'Intercept',
+      assembledPrompt: '',
+      editedPrompt: '',
+      isEdited: false,
+      assembledNegative: '',
+      editedNegative: '',
+      isNegativeEdited: false,
+    },
   },
   {
     type: 'reference',
@@ -311,7 +325,7 @@ export function LeftPanel() {
     >
       {/* Header */}
       <div
-        className="flex items-center justify-between px-5 py-3"
+        className="flex items-center justify-between px-5 py-4"
         style={{ borderBottom: '1px solid var(--color-border-subtle)' }}
       >
         <span className="text-sm font-semibold text-secondary">FlowBoard</span>
@@ -342,10 +356,10 @@ export function LeftPanel() {
           isExpanded={expandedSections.has('nodes')}
           onToggle={() => toggleSection('nodes')}
         >
-          <div className="px-5 pb-4">
+          <div className="px-4 pb-5">
             {/* Search */}
             <div
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg mb-3"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg mb-4"
               style={{
                 background: 'var(--color-bg-elevated)',
                 border: '1px solid var(--color-border-subtle)',
@@ -361,29 +375,52 @@ export function LeftPanel() {
               />
             </div>
 
-            {/* Node List */}
-            <div className="space-y-1">
-              {filteredConfigs.map((config) => (
-                <button
-                  key={config.type}
-                  onClick={() => handleAddNode(config)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors hover:bg-bg-hover text-left"
-                >
-                  <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{
-                      background: `${NODE_COLORS[config.type]}20`,
-                      color: NODE_COLORS[config.type],
-                    }}
-                  >
-                    {config.icon}
-                  </div>
-                  <span className="text-sm font-medium text-primary flex-1">
-                    {NODE_LABELS[config.type]}
-                  </span>
-                  <PlusIcon size={14} className="text-muted" />
-                </button>
-              ))}
+            {/* Node List - Grouped by Category */}
+            <div className="space-y-6">
+              {/* Asset Nodes */}
+              <NodeGroup
+                label="Assets"
+                configs={filteredConfigs.filter((c) =>
+                  ['character', 'setting', 'prop', 'style', 'extras'].includes(c.type)
+                )}
+                onAddNode={handleAddNode}
+              />
+
+              {/* Modifier Nodes */}
+              <NodeGroup
+                label="Modifiers"
+                configs={filteredConfigs.filter((c) =>
+                  ['shot', 'outfit', 'camera'].includes(c.type)
+                )}
+                onAddNode={handleAddNode}
+              />
+
+              {/* Scene & Technical */}
+              <NodeGroup
+                label="Scene"
+                configs={filteredConfigs.filter((c) =>
+                  ['action', 'negative', 'parameters', 'timeperiod', 'edit', 'intercept', 'reference'].includes(c.type)
+                )}
+                onAddNode={handleAddNode}
+              />
+
+              {/* Output & Composition */}
+              <NodeGroup
+                label="Output"
+                configs={filteredConfigs.filter((c) =>
+                  ['output', 'page', 'comp'].includes(c.type)
+                )}
+                onAddNode={handleAddNode}
+              />
+
+              {/* Animation */}
+              <NodeGroup
+                label="Animation"
+                configs={filteredConfigs.filter((c) =>
+                  ['transform', 'timeline'].includes(c.type)
+                )}
+                onAddNode={handleAddNode}
+              />
             </div>
           </div>
         </AccordionSection>
@@ -398,7 +435,7 @@ export function LeftPanel() {
             onToggle={() => toggleSection('properties')}
             onClose={() => selectNode(null)}
           >
-            <div className="px-5 pb-4">
+            <div className="px-4 pb-5">
               {renderNodeFields(selectedNode.type as NodeType, selectedNode.data as any, handleChange)}
             </div>
           </AccordionSection>
@@ -454,7 +491,7 @@ function AccordionSection({
     <div style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
       <button
         onClick={onToggle}
-        className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-bg-hover transition-colors text-left"
+        className="w-full flex items-center gap-3 px-5 py-4 hover:bg-bg-hover transition-colors text-left"
       >
         <ChevronDownIcon
           size={14}
@@ -474,18 +511,76 @@ function AccordionSection({
           </span>
         )}
         {onClose && (
-          <button
+          <span
+            role="button"
+            tabIndex={0}
             onClick={(e) => {
               e.stopPropagation();
               onClose();
             }}
-            className="w-6 h-6 rounded-md flex items-center justify-center text-muted hover:text-primary hover:bg-bg-hover"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.stopPropagation();
+                onClose();
+              }
+            }}
+            className="w-6 h-6 rounded-md flex items-center justify-center text-muted hover:text-primary hover:bg-bg-hover cursor-pointer"
           >
             <XIcon size={14} />
-          </button>
+          </span>
         )}
       </button>
       {isExpanded && children}
+    </div>
+  );
+}
+
+// Node Group Component for categorized node lists
+interface NodeGroupProps {
+  label: string;
+  configs: NodeTypeConfig[];
+  onAddNode: (config: NodeTypeConfig) => void;
+}
+
+function NodeGroup({ label, configs, onAddNode }: NodeGroupProps) {
+  if (configs.length === 0) return null;
+
+  return (
+    <div>
+      {/* Category Label */}
+      <div
+        className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-3"
+        style={{ paddingLeft: '4px' }}
+      >
+        {label}
+      </div>
+      {/* Nodes with gaps */}
+      <div className="space-y-2">
+        {configs.map((config) => (
+          <button
+            key={config.type}
+            onClick={() => onAddNode(config)}
+            className="w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors hover:bg-bg-hover text-left"
+            style={{
+              background: 'rgba(255,255,255,0.02)',
+            }}
+          >
+            <div
+              className="w-8 h-8 rounded-md flex items-center justify-center"
+              style={{
+                background: `${NODE_COLORS[config.type]}20`,
+                color: NODE_COLORS[config.type],
+              }}
+            >
+              {config.icon}
+            </div>
+            <span className="text-sm font-medium text-primary flex-1">
+              {NODE_LABELS[config.type]}
+            </span>
+            <PlusIcon size={12} className="text-muted opacity-50" />
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -503,7 +598,7 @@ function renderNodeFields(
     case 'style':
     case 'extras':
       return (
-        <div className="space-y-5">
+        <div className="space-y-6">
           <FieldInput label="Name" value={data.name || ''} onChange={(v) => onChange('name', v)} />
           <FieldTextarea
             label="Description"
@@ -516,7 +611,7 @@ function renderNodeFields(
 
     case 'shot':
       return (
-        <div className="space-y-5">
+        <div className="space-y-6">
           <FieldInput label="Name" value={data.name || ''} onChange={(v) => onChange('name', v)} />
           <FieldSelect
             label="Shot Type"
@@ -547,7 +642,7 @@ function renderNodeFields(
 
     case 'outfit':
       return (
-        <div className="space-y-5">
+        <div className="space-y-6">
           <FieldInput label="Name" value={data.name || ''} onChange={(v) => onChange('name', v)} />
           <FieldTextarea
             label="Description"
@@ -560,7 +655,7 @@ function renderNodeFields(
 
     case 'camera':
       return (
-        <div className="space-y-5">
+        <div className="space-y-6">
           <FieldInput label="Name" value={data.name || ''} onChange={(v) => onChange('name', v)} />
           <FieldSelect
             label="Lens Type"
@@ -609,7 +704,7 @@ function renderNodeFields(
 
     case 'negative':
       return (
-        <div className="space-y-5">
+        <div className="space-y-6">
           <FieldInput label="Name" value={data.name || ''} onChange={(v) => onChange('name', v)} />
           <FieldTextarea
             label="Negative Prompts"
@@ -623,7 +718,7 @@ function renderNodeFields(
 
     case 'parameters':
       return (
-        <div className="space-y-5">
+        <div className="space-y-6">
           <FieldSelect
             label="Model"
             value={data.model || 'mock'}
@@ -706,7 +801,7 @@ function renderNodeFields(
 
     case 'timeperiod':
       return (
-        <div className="space-y-5">
+        <div className="space-y-6">
           <FieldInput
             label="Name"
             value={data.name || ''}
@@ -773,7 +868,7 @@ function renderNodeFields(
 
     case 'reference':
       return (
-        <div className="space-y-5">
+        <div className="space-y-6">
           <FieldInput
             label="Name"
             value={data.name || ''}
@@ -812,7 +907,7 @@ function renderNodeFields(
 
     case 'page':
       return (
-        <div className="space-y-5">
+        <div className="space-y-6">
           <FieldInput
             label="Name"
             value={data.name || ''}
@@ -880,7 +975,7 @@ function renderNodeFields(
 
     case 'transform':
       return (
-        <div className="space-y-5">
+        <div className="space-y-6">
           <FieldInput
             label="Name"
             value={data.name || ''}
@@ -962,7 +1057,7 @@ function renderNodeFields(
 
     case 'comp':
       return (
-        <div className="space-y-5">
+        <div className="space-y-6">
           <FieldInput
             label="Name"
             value={data.name || ''}
@@ -998,7 +1093,7 @@ function renderNodeFields(
 
     case 'timeline':
       return (
-        <div className="space-y-5">
+        <div className="space-y-6">
           <FieldInput
             label="Name"
             value={data.name || ''}
@@ -1055,7 +1150,7 @@ function FieldInput({ label, value, onChange, placeholder }: FieldInputProps) {
     <div>
       <label
         className="block text-xs font-semibold uppercase tracking-wide text-muted"
-        style={{ marginBottom: '10px', marginLeft: '12px', marginRight: '12px' }}
+        style={{ marginBottom: '10px', marginLeft: '4px' }}
       >
         {label}
       </label>
@@ -1068,7 +1163,7 @@ function FieldInput({ label, value, onChange, placeholder }: FieldInputProps) {
         style={{
           background: 'var(--color-bg-elevated)',
           border: '1px solid var(--color-border-subtle)',
-          padding: '12px 16px',
+          padding: '14px 16px',
         }}
       />
     </div>
@@ -1088,7 +1183,7 @@ function FieldTextarea({ label, value, onChange, placeholder, rows = 3 }: FieldT
     <div>
       <label
         className="block text-xs font-semibold uppercase tracking-wide text-muted"
-        style={{ marginBottom: '10px', marginLeft: '12px', marginRight: '12px' }}
+        style={{ marginBottom: '10px', marginLeft: '4px' }}
       >
         {label}
       </label>
@@ -1101,7 +1196,7 @@ function FieldTextarea({ label, value, onChange, placeholder, rows = 3 }: FieldT
         style={{
           background: 'var(--color-bg-elevated)',
           border: '1px solid var(--color-border-subtle)',
-          padding: '12px 16px',
+          padding: '14px 16px',
           lineHeight: 1.6,
         }}
       />
@@ -1121,7 +1216,7 @@ function FieldSelect({ label, value, options, onChange }: FieldSelectProps) {
     <div>
       <label
         className="block text-xs font-semibold uppercase tracking-wide text-muted"
-        style={{ marginBottom: '10px', marginLeft: '12px', marginRight: '12px' }}
+        style={{ marginBottom: '10px', marginLeft: '4px' }}
       >
         {label}
       </label>
@@ -1132,7 +1227,7 @@ function FieldSelect({ label, value, options, onChange }: FieldSelectProps) {
         style={{
           background: 'var(--color-bg-elevated)',
           border: '1px solid var(--color-border-subtle)',
-          padding: '12px 16px',
+          padding: '14px 16px',
           paddingRight: '44px',
           backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
           backgroundRepeat: 'no-repeat',
@@ -1161,11 +1256,32 @@ interface FieldSliderProps {
 
 function FieldSlider({ label, value, min, max, step, onChange, showHints = false }: FieldSliderProps) {
   const [isShiftHeld, setIsShiftHeld] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const percentage = ((value - min) / (max - min)) * 100;
   const fineStep = step / 10;
   const currentStep = isShiftHeld ? fineStep : step;
 
-  // Track shift key state
+  // Track shift key globally when focused
+  useEffect(() => {
+    if (!isFocused) return;
+
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') setIsShiftHeld(true);
+    };
+    const handleGlobalKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') setIsShiftHeld(false);
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    window.addEventListener('keyup', handleGlobalKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleGlobalKeyDown);
+      window.removeEventListener('keyup', handleGlobalKeyUp);
+    };
+  }, [isFocused]);
+
+  // Track shift key state (fallback for direct key events)
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Shift') setIsShiftHeld(true);
   };
@@ -1177,7 +1293,7 @@ function FieldSlider({ label, value, min, max, step, onChange, showHints = false
     <div>
       <div
         className="flex items-center justify-between"
-        style={{ marginBottom: '10px', marginLeft: '12px', marginRight: '12px' }}
+        style={{ marginBottom: '12px', marginLeft: '4px', marginRight: '4px' }}
       >
         <label className="text-xs font-semibold uppercase tracking-wide text-muted">
           {label}
@@ -1186,8 +1302,8 @@ function FieldSlider({ label, value, min, max, step, onChange, showHints = false
         <span className="text-xs font-mono text-secondary">{value.toFixed(isShiftHeld ? 2 : 1)}</span>
       </div>
       <div
-        className="relative h-8 flex items-center"
-        style={{ marginLeft: '12px', marginRight: '12px' }}
+        className="relative h-10 flex items-center"
+        style={{ marginLeft: '4px', marginRight: '4px' }}
       >
         {/* Track background */}
         <div
@@ -1212,22 +1328,11 @@ function FieldSlider({ label, value, min, max, step, onChange, showHints = false
           onChange={(e) => onChange(parseFloat(e.target.value))}
           onKeyDown={handleKeyDown}
           onKeyUp={handleKeyUp}
-          onFocus={() => {
-            // Listen for shift globally while focused
-            const handleGlobalKeyDown = (e: KeyboardEvent) => {
-              if (e.key === 'Shift') setIsShiftHeld(true);
-            };
-            const handleGlobalKeyUp = (e: KeyboardEvent) => {
-              if (e.key === 'Shift') setIsShiftHeld(false);
-            };
-            window.addEventListener('keydown', handleGlobalKeyDown);
-            window.addEventListener('keyup', handleGlobalKeyUp);
-            return () => {
-              window.removeEventListener('keydown', handleGlobalKeyDown);
-              window.removeEventListener('keyup', handleGlobalKeyUp);
-            };
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => {
+            setIsFocused(false);
+            setIsShiftHeld(false);
           }}
-          onBlur={() => setIsShiftHeld(false)}
           className="absolute w-full h-8 opacity-0 cursor-pointer"
           style={{ zIndex: 2 }}
         />
@@ -1244,8 +1349,8 @@ function FieldSlider({ label, value, min, max, step, onChange, showHints = false
       </div>
       {showHints && (
         <div
-          className="flex justify-between text-[10px] text-muted mt-1"
-          style={{ marginLeft: '12px', marginRight: '12px' }}
+          className="flex justify-between text-[10px] text-muted"
+          style={{ marginTop: '8px', marginLeft: '4px', marginRight: '4px' }}
         >
           <span>Precise</span>
           <span>Creative</span>
@@ -1269,7 +1374,7 @@ function FieldCheckbox({ label, checked, onChange }: FieldCheckboxProps) {
         style={{
           background: checked ? 'rgba(14, 165, 233, 0.15)' : 'var(--color-bg-elevated)',
           border: `1px solid ${checked ? 'var(--color-node-page)' : 'var(--color-border-subtle)'}`,
-          padding: '12px 16px',
+          padding: '14px 16px',
         }}
         onClick={() => onChange(!checked)}
       >

@@ -2,7 +2,7 @@
  * Zustand store for File System Access API state
  * Tracks the current file handle for Open/Save workflow
  *
- * Note: FileSystemFileHandle cannot be serialized to localStorage,
+ * Note: FileSystemFileHandleExt cannot be serialized to localStorage,
  * so file handles are lost on page refresh. This is by design for security.
  */
 
@@ -10,7 +10,7 @@ import { create } from 'zustand';
 
 interface FileState {
   // Current file handle (null if working in browser-only mode)
-  fileHandle: FileSystemFileHandle | null;
+  fileHandle: FileSystemFileHandleExt | null;
 
   // Display name for UI (e.g., "my-project.flowboard.json")
   fileName: string | null;
@@ -26,7 +26,7 @@ interface FileState {
 
   // Actions
   setFileHandle: (
-    handle: FileSystemFileHandle,
+    handle: FileSystemFileHandleExt,
     fileName: string,
     lastModified: number
   ) => void;

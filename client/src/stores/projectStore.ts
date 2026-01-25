@@ -223,16 +223,21 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
 
   openFromFile: async () => {
     const result = await openFile();
-    if (!result) return null;
+    if (!result) return null; // User cancelled
 
     set({ isLoading: true });
 
     try {
+      console.log('Opening file:', result.fileName, 'size:', result.content.length);
+
       const project = await storageOpenProjectFromFile(result.content);
       if (!project) {
         set({ isLoading: false });
+        alert('Failed to parse project file. Make sure this is a valid FlowBoard project file.');
         return null;
       }
+
+      console.log('Parsed project:', project.id, 'nodes:', project.nodes.length);
 
       // Save to localStorage as backup
       await storageSaveProject(project);
@@ -241,11 +246,21 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
       const fileStore = useFileStore.getState();
       fileStore.setFileHandle(result.handle, result.fileName, result.lastModified);
 
+      // Load with hydration from IndexedDB (to get actual image data)
+      const hydratedProject = await storageLoadProject(project.id);
+      if (!hydratedProject) {
+        throw new Error('Failed to hydrate project after saving');
+      }
+
       // Load into flow
       const flowStore = useFlowStore.getState();
-      flowStore.setNodes(project.nodes);
-      flowStore.setEdges(project.edges);
+      flowStore.setNodes(hydratedProject.nodes);
+      flowStore.setEdges(hydratedProject.edges);
       flowStore.setDirty(false);
+
+      // Restore groups if present
+      const groupStore = useGroupStore.getState();
+      groupStore.setGroups(hydratedProject.groups || []);
 
       setCurrentProjectId(project.id);
 
@@ -259,6 +274,7 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
     } catch (e) {
       console.error('Failed to open from file:', e);
       set({ isLoading: false });
+      alert(`Failed to open file: ${e instanceof Error ? e.message : 'Unknown error'}`);
       return null;
     }
   },

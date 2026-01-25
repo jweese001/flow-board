@@ -340,6 +340,16 @@ export interface EditNodeData extends BaseNodeData {
   refinement: string;
 }
 
+export interface InterceptNodeData extends BaseNodeData {
+  name: string;
+  assembledPrompt: string; // Auto-assembled from upstream nodes
+  editedPrompt: string; // User's edited version
+  isEdited: boolean; // True if user has modified the assembled prompt
+  assembledNegative: string; // Auto-assembled negative prompt
+  editedNegative: string; // User's edited negative
+  isNegativeEdited: boolean; // True if user has modified the negative
+}
+
 export type ReferenceImageType = 'image' | 'character' | 'setting' | 'prop' | 'style' | 'scene' | 'mood';
 
 export interface ReferenceNodeData extends BaseNodeData {
@@ -516,6 +526,7 @@ export type NodeType =
   | 'parameters'
   | 'timeperiod'
   | 'edit'
+  | 'intercept'
   | 'reference'
   | 'output'
   | 'page'
@@ -537,6 +548,7 @@ export type AppNodeData =
   | ParametersNodeData
   | TimePeriodNodeData
   | EditNodeData
+  | InterceptNodeData
   | ReferenceNodeData
   | OutputNodeData
   | PageNodeData
@@ -558,6 +570,7 @@ export type NegativeNode = Node<NegativeNodeData, 'negative'>;
 export type ParametersNode = Node<ParametersNodeData, 'parameters'>;
 export type TimePeriodNode = Node<TimePeriodNodeData, 'timeperiod'>;
 export type EditNode = Node<EditNodeData, 'edit'>;
+export type InterceptNode = Node<InterceptNodeData, 'intercept'>;
 export type ReferenceNode = Node<ReferenceNodeData, 'reference'>;
 export type OutputNode = Node<OutputNodeData, 'output'>;
 export type PageNode = Node<PageNodeData, 'page'>;
@@ -579,6 +592,7 @@ export type AppNode =
   | ParametersNode
   | TimePeriodNode
   | EditNode
+  | InterceptNode
   | ReferenceNode
   | OutputNode
   | PageNode
@@ -602,6 +616,7 @@ export const NODE_COLORS: Record<NodeType, string> = {
   parameters: '#14b8a6',
   timeperiod: '#eab308', // Yellow/gold for time period
   edit: '#6b7280',
+  intercept: '#f59e0b', // Amber/orange - intercept/warning color
   reference: '#8b5cf6',
   output: '#ef4444',
   page: '#0ea5e9',      // Sky blue for page layout
@@ -626,6 +641,7 @@ export const NODE_LABELS: Record<NodeType, string> = {
   parameters: 'Parameters',
   timeperiod: 'Time Period',
   edit: 'Edit',
+  intercept: 'Intercept',
   reference: 'Reference',
   output: 'Output',
   page: 'Page',

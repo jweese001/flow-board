@@ -211,8 +211,11 @@ export const useFlowStore = create<FlowState>()(
           'shot', 'outfit', 'camera', 'action',
         ];
 
-        // Connection validation for Output node handles
-        if (targetNode.type === 'output') {
+        // Nodes that have config and reference handles (Output and Intercept)
+        const multiHandleNodes = ['output', 'intercept'];
+
+        // Connection validation for Output/Intercept node handles
+        if (multiHandleNodes.includes(targetNode.type as string)) {
           const requestedHandle = connection.targetHandle;
 
           // Reject content nodes trying to connect to reference or config handles
@@ -238,20 +241,20 @@ export const useFlowStore = create<FlowState>()(
           }
         }
 
-        // Auto-route parameters, negative, and timeperiod nodes to the config handle on output nodes
+        // Auto-route parameters, negative, and timeperiod nodes to the config handle
         if (
           configNodes.includes(sourceNode.type as string) &&
-          targetNode.type === 'output'
+          multiHandleNodes.includes(targetNode.type as string)
         ) {
           targetHandle = 'config';
         }
 
         // Auto-route reference nodes and output nodes to the reference handle
         if (referenceSourceNodes.includes(sourceNode.type as string)) {
-          const assetTypes = ['character', 'setting', 'prop', 'style', 'output'];
-          if (assetTypes.includes(targetNode.type as string)) {
+          if (multiHandleNodes.includes(targetNode.type as string)) {
             targetHandle = 'reference';
           }
+          // For other nodes (character, setting, prop, style), use default handle
         }
 
         state.edges = addEdge(

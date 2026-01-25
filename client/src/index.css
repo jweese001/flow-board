@@ -54,6 +54,15 @@
   --node-width: 220px;
   --node-width-lg: 280px;
 
+  /* ----- SPACING SCALE ----- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
   /* ----- SHADOWS ----- */
   --shadow-node: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.1);
   --shadow-panel: 0 0 40px rgba(0, 0, 0, 0.5);
@@ -200,4 +209,18 @@ body {
 
 .animate-spin {
   animation: spin 1s linear infinite;
+}
+
+/* ============================================
+   FORM UTILITIES
+   ============================================ */
+
+/* Hide number input spinners */
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.no-spinner {
+  -moz-appearance: textfield;
 }

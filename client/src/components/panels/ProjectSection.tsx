@@ -73,9 +73,18 @@ export function ProjectSection() {
         return;
       }
     }
-    const projectId = await openFromFile();
-    if (projectId) {
-      console.log('Opened project from file:', projectId);
+    try {
+      const projectId = await openFromFile();
+      if (projectId) {
+        console.log('Opened project from file:', projectId);
+      } else {
+        // User cancelled or file failed to parse
+        // openFromFile returns null on cancel (no error), so check console for details
+        console.log('Open returned null - user may have cancelled or file parse failed');
+      }
+    } catch (err) {
+      console.error('Error opening file:', err);
+      alert(`Failed to open file: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
@@ -112,8 +121,18 @@ export function ProjectSection() {
     // Reset input so same file can be selected again
     e.target.value = '';
 
-    const json = await file.text();
-    console.log('Importing project, file size:', json.length);
+    console.log('Importing file:', file.name, 'size:', file.size);
+
+    let json: string;
+    try {
+      json = await file.text();
+    } catch (readErr) {
+      console.error('Failed to read file:', readErr);
+      alert('Failed to read file');
+      return;
+    }
+
+    console.log('File content length:', json.length);
 
     try {
       const projectId = await importProject(json);
@@ -123,14 +142,14 @@ export function ProjectSection() {
         const loaded = await loadProject(projectId);
         console.log('Load result:', loaded);
         if (!loaded) {
-          alert('Failed to load imported project');
+          alert('Project imported but failed to load. Check browser console for details.');
         }
       } else {
-        alert('Invalid project file - could not parse');
+        alert('Invalid project file format. Make sure this is a FlowBoard project file.');
       }
     } catch (err) {
       console.error('Import error:', err);
-      alert('Failed to import project');
+      alert(`Import failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
@@ -159,11 +178,11 @@ export function ProjectSection() {
   const fileSystemSupported = isFileSystemSupported();
 
   return (
-    <div className="px-5 pb-4 space-y-3">
+    <div className="px-4 pt-2 pb-5 space-y-5">
       {/* File Indicator (when file-backed) */}
       {isFileBacked && fileName && (
         <div
-          className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs"
+          className="flex items-center gap-2 px-3 py-3 rounded-lg text-xs"
           style={{
             background: 'var(--color-bg-elevated)',
             border: '1px solid var(--color-node-setting)',
@@ -176,80 +195,54 @@ export function ProjectSection() {
         </div>
       )}
 
-      {/* Action Buttons - Row 1: New, Save, Save As */}
-      <div className="flex gap-2">
+      {/* Icon Toolbar */}
+      <div className="flex items-center justify-start gap-1">
         <button
           onClick={handleCreateProject}
-          className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors"
-          style={{
-            background: 'var(--color-bg-elevated)',
-            border: '1px solid var(--color-border-subtle)',
-            color: 'var(--color-text-primary)',
-          }}
+          className="w-8 h-8 flex items-center justify-center rounded-md text-muted hover:text-primary hover:bg-white/5 transition-colors"
+          title="New empty project"
         >
-          <PlusIcon size={14} />
-          New
+          <PlusIcon size={18} />
         </button>
+
+        {/* Separator */}
+        <div className="w-px h-5 bg-white/10 mx-1" />
+
+        {fileSystemSupported && (
+          <button
+            onClick={handleOpenFile}
+            className="w-8 h-8 flex items-center justify-center rounded-md text-muted hover:text-primary hover:bg-white/5 transition-colors"
+            title="Open file (⌘O) - load and link to file on disk"
+          >
+            <FolderOpenIcon size={18} />
+          </button>
+        )}
         <button
           onClick={handleSaveProject}
           disabled={!isDirty}
-          className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
+          className="w-8 h-8 flex items-center justify-center rounded-md transition-colors disabled:opacity-30"
           style={{
-            background: isDirty ? 'var(--color-node-setting)' : 'var(--color-bg-elevated)',
-            border: '1px solid var(--color-border-subtle)',
-            color: isDirty ? 'white' : 'var(--color-text-primary)',
+            color: isDirty ? 'var(--color-node-setting)' : 'var(--color-text-muted)',
           }}
-          title={isFileBacked ? 'Save to file (Cmd+S)' : 'Save to browser (Cmd+S)'}
+          title={isFileBacked ? 'Save to file (⌘S)' : 'Save to browser (⌘S)'}
         >
-          <SaveIcon size={14} />
-          Save
+          <SaveIcon size={18} />
         </button>
         {fileSystemSupported && (
           <button
             onClick={handleSaveAs}
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors"
-            style={{
-              background: 'var(--color-bg-elevated)',
-              border: '1px solid var(--color-border-subtle)',
-              color: 'var(--color-text-primary)',
-            }}
-            title="Save As new file (Cmd+Shift+S)"
+            className="w-8 h-8 flex items-center justify-center rounded-md text-muted hover:text-primary hover:bg-white/5 transition-colors"
+            title="Save As (⌘⇧S) - save to new file on disk"
           >
-            <SaveAsIcon size={14} />
-            Save As
-          </button>
-        )}
-      </div>
-
-      {/* Action Buttons - Row 2: Open, Import */}
-      <div className="flex gap-2 mt-1">
-        {fileSystemSupported && (
-          <button
-            onClick={handleOpenFile}
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors"
-            style={{
-              background: 'var(--color-bg-elevated)',
-              border: '1px solid var(--color-border-subtle)',
-              color: 'var(--color-text-primary)',
-            }}
-            title="Open project file (Cmd+O)"
-          >
-            <FolderOpenIcon size={14} />
-            Open
+            <SaveAsIcon size={18} />
           </button>
         )}
         <button
           onClick={handleImportClick}
-          className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors"
-          style={{
-            background: 'var(--color-bg-elevated)',
-            border: '1px solid var(--color-border-subtle)',
-            color: 'var(--color-text-primary)',
-          }}
-          title="Import project (creates copy)"
+          className="w-8 h-8 flex items-center justify-center rounded-md text-muted hover:text-primary hover:bg-white/5 transition-colors"
+          title="Import - load copy from .json file"
         >
-          <UploadIcon size={14} />
-          Import
+          <UploadIcon size={18} />
         </button>
       </div>
 
@@ -274,7 +267,7 @@ export function ProjectSection() {
               <div
                 key={project.id}
                 onClick={() => handleLoadProject(project.id)}
-                className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors cursor-pointer ${
+                className={`group flex items-center gap-3 px-3 py-3 rounded-lg transition-colors cursor-pointer ${
                   currentProjectId === project.id
                     ? 'bg-bg-hover'
                     : 'hover:bg-bg-hover'
@@ -291,7 +284,7 @@ export function ProjectSection() {
                   className={currentProjectId === project.id ? 'text-primary' : 'text-muted'}
                 />
 
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 py-2">
                   {editingId === project.id ? (
                     <input
                       type="text"
