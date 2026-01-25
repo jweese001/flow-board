@@ -148,6 +148,33 @@ export const useFlowStore = create<FlowState>()(
 - Processing: `animate-pulse`
 - Error: `ring-2 ring-red-500`
 
+**UI Spacing for Dropdowns, Menus, and Popovers:**
+
+Text must have breathing room from container edges. Use this pattern:
+
+```tsx
+// Container: padding around all edges
+<div className="p-2" style={{ background: '...', border: '...' }}>
+
+  // Menu items: internal padding + rounded hover states
+  <button
+    className="w-full rounded-md hover:bg-bg-hover"
+    style={{ padding: '10px 14px' }}
+  >
+    <span>Label</span>
+    <span className="text-muted ml-8">Shortcut</span>
+  </button>
+
+</div>
+```
+
+Key principles:
+- Container gets `p-2` (8px) padding to create visual margin from border
+- Menu items get internal padding (`10px 14px`) for click targets
+- Hover states use `rounded-md` to look clean within container padding
+- Minimum 14-16px horizontal padding on interactive items
+- Never let text touch the edges of a bordered container
+
 ### File Naming
 
 - Components: PascalCase (`TextNode.tsx`)

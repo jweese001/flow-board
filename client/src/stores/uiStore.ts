@@ -6,6 +6,7 @@ interface UIState {
   sidebarOpen: boolean;
   propertiesPanelOpen: boolean;
   collapsedNodes: Record<string, boolean>;
+  showMinimap: boolean;
 
   // Actions
   selectNode: (nodeId: string | null) => void;
@@ -15,6 +16,7 @@ interface UIState {
   setPropertiesPanelOpen: (open: boolean) => void;
   toggleNodeCollapsed: (nodeId: string) => void;
   isNodeCollapsed: (nodeId: string) => boolean;
+  toggleMinimap: () => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -23,6 +25,7 @@ export const useUIStore = create<UIState>()(
     sidebarOpen: true,
     propertiesPanelOpen: true,
     collapsedNodes: {},
+    showMinimap: true,
 
     selectNode: (nodeId) => {
       set((state) => {
@@ -65,6 +68,12 @@ export const useUIStore = create<UIState>()(
 
     isNodeCollapsed: (nodeId) => {
       return !!get().collapsedNodes[nodeId];
+    },
+
+    toggleMinimap: () => {
+      set((state) => {
+        state.showMinimap = !state.showMinimap;
+      });
     },
   }))
 );

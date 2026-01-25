@@ -100,11 +100,11 @@
 ### Phase 3: Polish & Enhancements
 
 #### UI Refinements
-- [ ] Keyboard shortcuts (delete, duplicate, undo)
-- [ ] Minimap toggle
-- [ ] Context menu (right-click on nodes)
+- [x] Keyboard shortcuts (delete, duplicate) — Backspace/Delete to delete, Cmd+D to duplicate
+- [x] Minimap toggle — Cmd+M or click button near controls
+- [x] Context menu (right-click on nodes) — Copy, Duplicate, Delete options
 - [ ] Undo/redo support
-- [ ] Node icons in drag palette
+- [ ] Node icons in drag palette (already implemented in LeftPanel)
 
 #### Library Sidebar
 - [ ] Display saved assets by category (Characters, Settings, Props, Styles, etc.)

@@ -239,17 +239,26 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
 
       console.log('Parsed project:', project.id, 'nodes:', project.nodes.length);
 
-      // Save to localStorage as backup
-      await storageSaveProject(project);
+      // Save to localStorage as backup (skip if it would exceed quota)
+      try {
+        await storageSaveProject(project);
+      } catch (saveError) {
+        console.warn('Could not save to localStorage (quota exceeded?), continuing with file-only mode:', saveError);
+        // Continue - the file is the source of truth, localStorage is just a backup
+      }
 
       // Track the file handle
       const fileStore = useFileStore.getState();
       fileStore.setFileHandle(result.handle, result.fileName, result.lastModified);
 
       // Load with hydration from IndexedDB (to get actual image data)
-      const hydratedProject = await storageLoadProject(project.id);
+      // Try localStorage first, fall back to direct hydration if that fails
+      let hydratedProject = await storageLoadProject(project.id);
       if (!hydratedProject) {
-        throw new Error('Failed to hydrate project after saving');
+        console.log('localStorage load failed, hydrating directly from IndexedDB');
+        // Import the hydration function to do it directly
+        const { hydrateProjectImages } = await import('@/services/storage');
+        hydratedProject = await hydrateProjectImages(project);
       }
 
       // Load into flow
@@ -260,7 +269,7 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
 
       // Restore groups if present
       const groupStore = useGroupStore.getState();
-      groupStore.setGroups(hydratedProject.groups || []);
+      groupStore.setGroups(hydratedProject.groups || project.groups || []);
 
       setCurrentProjectId(project.id);
 

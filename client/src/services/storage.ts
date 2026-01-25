@@ -270,6 +270,111 @@ export function loadProjectSync(projectId: string): Project | null {
   return projects.find((p) => p.id === projectId) || null;
 }
 
+/**
+ * Hydrate a project's images from IndexedDB (used when localStorage is unavailable)
+ */
+export async function hydrateProjectImages(project: Project): Promise<Project> {
+  const hydratedNodes = await Promise.all(
+    project.nodes.map(async (node) => {
+      if (node.type === 'output' && node.data) {
+        const outputData = node.data as {
+          _imageRefs?: string[];
+          _hasImages?: boolean;
+          status?: string;
+          [key: string]: unknown;
+        };
+
+        if (outputData._imageRefs && outputData._imageRefs.length > 0) {
+          const images: { imageUrl: string; seed?: number }[] = [];
+          for (const ref of outputData._imageRefs) {
+            const imageData = await getImage(ref);
+            if (imageData) {
+              images.push({ imageUrl: imageData });
+            }
+          }
+
+          const { _imageRefs, _hasImages, ...restData } = outputData;
+          return {
+            ...node,
+            data: {
+              ...restData,
+              generatedImages: images,
+              generatedImageUrl: images[0]?.imageUrl,
+              selectedImageIndex: 0,
+              status: images.length > 0 ? 'complete' : 'idle',
+            },
+          };
+        }
+
+        // Reset status if stuck in generating
+        if (outputData.status === 'generating') {
+          return {
+            ...node,
+            data: {
+              ...outputData,
+              status: 'idle' as const,
+            },
+          };
+        }
+      }
+
+      if (node.type === 'page' && node.data) {
+        const pageData = node.data as {
+          _panelImageRefs?: (string | null)[];
+          [key: string]: unknown;
+        };
+
+        if (pageData._panelImageRefs) {
+          const panelImages: (string | null)[] = [];
+          for (const ref of pageData._panelImageRefs) {
+            if (ref) {
+              const imageData = await getImage(ref);
+              panelImages.push(imageData);
+            } else {
+              panelImages.push(null);
+            }
+          }
+
+          const { _panelImageRefs, ...restData } = pageData;
+          return {
+            ...node,
+            data: {
+              ...restData,
+              panelImages,
+            },
+          };
+        }
+      }
+
+      if (node.type === 'reference' && node.data) {
+        const refData = node.data as {
+          _imageRef?: string;
+          [key: string]: unknown;
+        };
+
+        if (refData._imageRef) {
+          const imageData = await getImage(refData._imageRef);
+          const { _imageRef, ...restData } = refData;
+          return {
+            ...node,
+            data: {
+              ...restData,
+              imageUrl: imageData || undefined,
+            },
+          };
+        }
+      }
+
+      return node;
+    })
+  );
+
+  return {
+    ...project,
+    nodes: hydratedNodes as typeof project.nodes,
+  };
+}
+
 export async function deleteProject(projectId: string): Promise<void> {
   const projects = getAllProjectsSync().filter((p) => p.id !== projectId);
   localStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(projects));
