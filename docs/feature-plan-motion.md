@@ -298,6 +298,35 @@ Extend `.flowboard.json` to include animation data:
 
 ---
 
+## Current Tasks / Bugs
+
+### Completed
+- [x] **File handling debug** - Fixed import/export bugs with large files
+  - Strip embedded image data after storing to IndexedDB
+  - Preserve existing `_imageRefs` when saving projects without new images
+  - Hydrate images from IndexedDB after opening files
+  - Fixed localStorage quota issues (5MB limit)
+
+### In Progress
+- [ ] **Finish Intercept node** - Complete the InterceptNode implementation
+  - UI for editing assembled prompt before generation
+  - Negative prompt editing support
+  - Pass-through mode vs edit mode
+
+### Bugs to Fix
+- [ ] **Animation memory leak** - Investigate memory issues during animation playback
+- [ ] **Bad animation loops** - Fix looping behavior in Timeline node
+  - Playback direction issues
+  - Loop restart timing
+
+### Backlog
+- [ ] **Move history to IndexedDB** - History storage is bloating localStorage (was 4.7MB)
+  - Similar pattern to image storage
+  - Keep recent history in memory, persist to IndexedDB
+
+---
+
 *Created: 2025-01-24*
-*Status: Planning*
+*Updated: 2025-01-25*
+*Status: Active Development*
 *Branch: motion*
