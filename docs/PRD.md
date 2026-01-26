@@ -161,6 +161,33 @@ Describes what's happening in the scene. References characters by name.
 
 This is where the "DM narration" happens — the creative, variable part of each generation.
 
+#### Text
+Adds text elements like speech balloons, thought bubbles, captions, and sound effects to generated images. Gemini handles text rendering well, making this effective for comic-style output.
+
+| Field | Description |
+|-------|-------------|
+| Name | "Mason's Dialogue" |
+| Text Type | Speech, Thought, Caption, Title, SFX, Whisper, Shout, Sign, Subtitle |
+| Mode | Render (default) or Reserve Space |
+| Content | The actual text to display |
+| Speaker | (optional) Character name for speech/thought |
+| Position | (optional) Placement hint like "top left", "center" |
+
+**Text Types:**
+- **Speech Balloon** — Standard dialogue bubble with pointer
+- **Thought Bubble** — Cloudy bubble for internal monologue
+- **Caption Box** — Narrator text, typically rectangular
+- **Title** — Large display text
+- **SFX** — Sound effects (BOOM, CRASH, etc.)
+- **Whisper** — Small, light speech
+- **Shout** — Bold, emphasized speech
+- **Sign/Label** — Text on signs, labels in the scene
+- **Subtitle** — Bottom text overlay
+
+**Modes:**
+- **Render Text** — AI renders the actual text in the image (default, works well with Gemini)
+- **Reserve Space** — Leaves blank space for adding text in post-production
+
 ### Technical Nodes
 
 #### Time Period
@@ -227,6 +254,65 @@ The terminal node. Collects all upstream inputs, assembles the prompt, shows pre
 | Result display |
 | Save to history |
 
+### Animation Nodes
+
+#### Transform
+Controls position, scale, rotation, and opacity of images. Can be animated via Timeline.
+
+| Field | Description |
+|-------|-------------|
+| Scale | Size multiplier (1.0 = original) |
+| Offset X | Horizontal position (-100 to 100) |
+| Offset Y | Vertical position (-100 to 100) |
+| Rotation | Degrees of rotation |
+| Opacity | Transparency (0-100) |
+| Flip H/V | Mirror horizontally/vertically |
+
+**Inputs:** Image source (Output, Reference), Timeline (optional)
+**Outputs:** Transformed image
+
+#### Timeline
+Central controller for keyframe-based animation.
+
+| Field | Description |
+|-------|-------------|
+| FPS | Frame rate (24, 30, or 60) |
+| Duration | Length in seconds |
+| Easing | Interpolation curve (linear, ease-in, ease-out, ease-in-out) |
+| Loop | Whether animation repeats |
+| Tracks | Per-transform keyframe data |
+
+**Inputs:** None (controls connected Transforms)
+**Outputs:** Timeline signal to Transform nodes
+**Features:** Playback preview, keyframe editing, PNG sequence export
+
+### Layout Nodes
+
+#### Comp
+Composites up to 4 image layers with independent transforms.
+
+| Layer | Purpose |
+|-------|---------|
+| back | Background (furthest) |
+| mid | Midground |
+| fore | Foreground |
+| ext | Extension/overlay (closest) |
+
+**Inputs:** Images to layer handles (back, mid, fore, ext)
+**Outputs:** Composited image
+**Settings:** Output width, height, background color
+
+#### Reference
+Imports external images into the workflow.
+
+| Field | Description |
+|-------|-------------|
+| Image URL | Loaded image data |
+| Name | Optional label |
+
+**Inputs:** None (file upload)
+**Outputs:** Image data
+
 ---
 
 ## Node Summary
@@ -241,11 +327,17 @@ The terminal node. Collects all upstream inputs, assembles the prompt, shows pre
 | Modifier | Outfit | Character override | Cyan |
 | Modifier | Shot | Camera framing | Pink |
 | Scene | Action | What's happening | Orange |
+| Scene | Text | Dialogue & captions | Lime |
 | Technical | Time Period | Historical era | Yellow |
 | Technical | Negative | What to avoid | Rose |
 | Technical | Parameters | Generation settings | Teal |
 | Technical | Edit/Refine | Iteration | Gray |
 | Terminal | Output | Assemble + generate | Red |
+| Import | Reference | External images | Cyan |
+| Animation | Transform | Position/scale/rotate | Indigo |
+| Animation | Timeline | Keyframe controller | Violet |
+| Layout | Comp | Layer compositing | Sky |
+| Layout | Page | Comic page layouts | Emerald |
 
 ---
 
@@ -261,6 +353,7 @@ The Output node traverses upstream and assembles elements in this order:
 [Setting] — location description
 [Extras] — background elements
 [Action] — what's happening
+[Text] — dialogue, captions, sound effects
 [Style] — visual aesthetic
 [Negative] — sent separately to API as negative prompt (includes Time Period auto-negatives)
 [Parameters] — sent as API parameters, not in prompt text
@@ -456,7 +549,19 @@ Users don't think about this — they pick a model, the adapter does the rest.
 - [x] Auto-save — automatic project persistence
 - [x] History tracking — generation history with metadata
 
+### Phase 6: Animation System ✅
+- [x] Transform node — position, scale, rotation, opacity controls
+- [x] Timeline node — keyframe-based animation controller
+- [x] Multi-track support — animate multiple transforms from one timeline
+- [x] Playback preview — real-time animation preview in canvas
+- [x] PNG sequence export — frame-by-frame export with ZIP download
+- [x] 2x supersampling — high-quality frame rendering
+- [x] Easing options — linear, ease-in, ease-out, ease-in-out
+- [x] File System Access API — open/save projects directly to files
+- [x] File-backed auto-save — skip localStorage for file projects
+
 ### Future Development
+- Video export (FFmpeg integration or WebCodecs)
 - Additional authoring tools
 - Extended model support
 - Documentation and tutorials

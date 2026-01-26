@@ -8,6 +8,7 @@ import type {
   ShotNodeData,
   CameraNodeData,
   ActionNodeData,
+  TextNodeData,
   ExtrasNodeData,
   OutfitNodeData,
   NegativeNodeData,
@@ -32,6 +33,7 @@ import {
   VIGNETTE_LABELS,
   ERA_PRESET_LABELS,
   ERA_AUTO_NEGATIVES,
+  TEXT_TYPE_LABELS,
 } from '@/types/nodes';
 import { useSettingsStore } from '@/stores/settingsStore';
 
@@ -64,6 +66,7 @@ interface AssembledPrompt {
     extras: string[];
     outfits: string[];
     actions: string[];
+    texts: string[];
     styles: string[];
     edits: string[];
   };
@@ -92,6 +95,7 @@ export function assemblePrompt(
   const extras: ExtrasNodeData[] = [];
   const outfits: OutfitNodeData[] = [];
   const actions: ActionNodeData[] = [];
+  const texts: TextNodeData[] = [];
   const edits: EditNodeData[] = [];
   const negatives: NegativeNodeData[] = [];
   const standaloneReferences: ReferenceNodeData[] = [];
@@ -235,6 +239,9 @@ export function assemblePrompt(
       case 'action':
         actions.push(node.data as ActionNodeData);
         break;
+      case 'text':
+        texts.push(node.data as TextNodeData);
+        break;
       case 'shot':
         shot = node.data as ShotNodeData;
         break;
@@ -330,6 +337,7 @@ export function assemblePrompt(
     extras: extras.map(formatExtras),
     outfits: outfits.map(formatOutfit), // Only standalone outfits
     actions: actions.map(formatAction),
+    texts: texts.map(formatText),
     styles: styles.map((s) => formatStyle(s.data)),
     edits: edits.map(formatEdit),
   };
@@ -363,6 +371,7 @@ export function assemblePrompt(
   promptParts.push(...parts.settings);
   promptParts.push(...parts.extras);
   promptParts.push(...parts.actions);
+  promptParts.push(...parts.texts);
 
   // Insert camera before style if position is 'before-style'
   if (parts.camera && cameraPosition === 'before-style') {
@@ -579,6 +588,77 @@ function formatExtras(data: ExtrasNodeData): string {
 
 function formatAction(data: ActionNodeData): string {
   return data.content;
+}
+
+function formatText(data: TextNodeData): string {
+  const typeLabel = TEXT_TYPE_LABELS[data.textType];
+  const parts: string[] = [];
+
+  // Mode affects how we describe the text
+  if (data.mode === 'reserve-space') {
+    parts.push(`Leave space for ${typeLabel.toLowerCase()}`);
+    if (data.position) {
+      parts.push(`at ${data.position}`);
+    }
+    if (data.content) {
+      parts.push(`that will contain: "${data.content}"`);
+    }
+  } else {
+    // Render mode - include the actual text
+    switch (data.textType) {
+      case 'speech':
+        if (data.speaker) {
+          parts.push(`${data.speaker} saying in a speech balloon: "${data.content}"`);
+        } else {
+          parts.push(`Speech balloon with text: "${data.content}"`);
+        }
+        break;
+      case 'thought':
+        if (data.speaker) {
+          parts.push(`${data.speaker} thinking in a thought bubble: "${data.content}"`);
+        } else {
+          parts.push(`Thought bubble with text: "${data.content}"`);
+        }
+        break;
+      case 'caption':
+        parts.push(`Caption box with text: "${data.content}"`);
+        break;
+      case 'title':
+        parts.push(`Title text: "${data.content}"`);
+        break;
+      case 'sfx':
+        parts.push(`Sound effect text: "${data.content}"`);
+        break;
+      case 'whisper':
+        if (data.speaker) {
+          parts.push(`${data.speaker} whispering in a small speech balloon: "${data.content}"`);
+        } else {
+          parts.push(`Whisper balloon with text: "${data.content}"`);
+        }
+        break;
+      case 'shout':
+        if (data.speaker) {
+          parts.push(`${data.speaker} shouting in a bold speech balloon: "${data.content}"`);
+        } else {
+          parts.push(`Shout balloon with text: "${data.content}"`);
+        }
+        break;
+      case 'sign':
+        parts.push(`Sign or label reading: "${data.content}"`);
+        break;
+      case 'subtitle':
+        parts.push(`Subtitle text: "${data.content}"`);
+        break;
+      default:
+        parts.push(`Text: "${data.content}"`);
+    }
+
+    if (data.position) {
+      parts.push(`positioned ${data.position}`);
+    }
+  }
+
+  return parts.join(' ') + '.';
 }
 
 function formatStyle(data: StyleNodeData): string {

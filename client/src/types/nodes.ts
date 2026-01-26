@@ -152,6 +152,47 @@ export interface ActionNodeData extends BaseNodeData {
   content: string;
 }
 
+// ===== TEXT NODE =====
+
+export type TextType =
+  | 'speech'      // Word balloon - character dialogue
+  | 'thought'     // Thought bubble
+  | 'caption'     // Narrator/caption box
+  | 'title'       // Large title text
+  | 'sfx'         // Sound effects (BOOM, CRASH)
+  | 'whisper'     // Small, light speech
+  | 'shout'       // Large, bold speech
+  | 'sign'        // Text on signs, labels, etc.
+  | 'subtitle';   // Bottom text/subtitle
+
+export type TextMode = 'render' | 'reserve-space';
+
+export const TEXT_TYPE_LABELS: Record<TextType, string> = {
+  'speech': 'Speech Balloon',
+  'thought': 'Thought Bubble',
+  'caption': 'Caption Box',
+  'title': 'Title',
+  'sfx': 'Sound Effect',
+  'whisper': 'Whisper',
+  'shout': 'Shout',
+  'sign': 'Sign/Label',
+  'subtitle': 'Subtitle',
+};
+
+export const TEXT_MODE_LABELS: Record<TextMode, string> = {
+  'render': 'Render Text',
+  'reserve-space': 'Reserve Space',
+};
+
+export interface TextNodeData extends BaseNodeData {
+  name: string;
+  textType: TextType;
+  mode: TextMode;
+  content: string;           // The actual text to display
+  speaker?: string;          // For speech/thought - who is speaking (auto from connected Character)
+  position?: string;         // Position hint (e.g., "top left", "center")
+}
+
 // ===== TECHNICAL NODES =====
 
 // ----- Time Period Node -----
@@ -524,6 +565,7 @@ export type NodeType =
   | 'outfit'
   | 'camera'
   | 'action'
+  | 'text'
   | 'negative'
   | 'parameters'
   | 'timeperiod'
@@ -546,6 +588,7 @@ export type AppNodeData =
   | OutfitNodeData
   | CameraNodeData
   | ActionNodeData
+  | TextNodeData
   | NegativeNodeData
   | ParametersNodeData
   | TimePeriodNodeData
@@ -568,6 +611,7 @@ export type ShotNode = Node<ShotNodeData, 'shot'>;
 export type OutfitNode = Node<OutfitNodeData, 'outfit'>;
 export type CameraNode = Node<CameraNodeData, 'camera'>;
 export type ActionNode = Node<ActionNodeData, 'action'>;
+export type TextNode = Node<TextNodeData, 'text'>;
 export type NegativeNode = Node<NegativeNodeData, 'negative'>;
 export type ParametersNode = Node<ParametersNodeData, 'parameters'>;
 export type TimePeriodNode = Node<TimePeriodNodeData, 'timeperiod'>;
@@ -590,6 +634,7 @@ export type AppNode =
   | OutfitNode
   | CameraNode
   | ActionNode
+  | TextNode
   | NegativeNode
   | ParametersNode
   | TimePeriodNode
@@ -614,6 +659,7 @@ export const NODE_COLORS: Record<NodeType, string> = {
   outfit: '#06b6d4',
   camera: '#6366f1',    // Indigo for camera
   action: '#f97316',
+  text: '#84cc16',      // Lime green for text/dialogue
   negative: '#f43f5e',
   parameters: '#14b8a6',
   timeperiod: '#eab308', // Yellow/gold for time period
@@ -639,6 +685,7 @@ export const NODE_LABELS: Record<NodeType, string> = {
   outfit: 'Outfit',
   camera: 'Camera',
   action: 'Action',
+  text: 'Text',
   negative: 'Negative',
   parameters: 'Parameters',
   timeperiod: 'Time Period',

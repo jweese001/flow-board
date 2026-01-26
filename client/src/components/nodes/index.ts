@@ -8,6 +8,7 @@ import { ShotNode } from './ShotNode';
 import { OutfitNode } from './OutfitNode';
 import { CameraNode } from './CameraNode';
 import { ActionNode } from './ActionNode';
+import { TextNode } from './TextNode';
 import { NegativeNode } from './NegativeNode';
 import { ParametersNode } from './ParametersNode';
 import { TimePeriodNode } from './TimePeriodNode';
@@ -34,6 +35,7 @@ export const nodeTypes: NodeTypes = {
   camera: CameraNode,
   // Scene Nodes
   action: ActionNode,
+  text: TextNode,
   // Technical Nodes
   negative: NegativeNode,
   parameters: ParametersNode,
@@ -63,6 +65,7 @@ export { ShotNode } from './ShotNode';
 export { OutfitNode } from './OutfitNode';
 export { CameraNode } from './CameraNode';
 export { ActionNode } from './ActionNode';
+export { TextNode } from './TextNode';
 export { NegativeNode } from './NegativeNode';
 export { ParametersNode } from './ParametersNode';
 export { TimePeriodNode } from './TimePeriodNode';

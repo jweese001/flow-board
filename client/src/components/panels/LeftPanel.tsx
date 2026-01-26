@@ -18,11 +18,15 @@ import {
   ERA_AUTO_NEGATIVES,
   EASING_LABELS,
   FPS_OPTIONS,
+  TEXT_TYPE_LABELS,
+  TEXT_MODE_LABELS,
   type NodeType,
   type PageLayout,
   type EraPreset,
   type EasingType,
   type TimelineFPS,
+  type TextType,
+  type TextMode,
 } from '@/types/nodes';
 import {
   UserIcon,
@@ -52,6 +56,7 @@ import {
   LayersIcon,
   CalendarClockIcon,
   TimelineIcon,
+  MessageCircleIcon,
 } from '@/components/ui/Icons';
 import { ProjectSection } from './ProjectSection';
 import { SettingsSection } from './SettingsSection';
@@ -121,6 +126,19 @@ const NODE_CONFIGS: NodeTypeConfig[] = [
     type: 'action',
     icon: <BoltIcon size={14} />,
     defaultData: { label: 'Action', content: 'Describe the action...' },
+  },
+  {
+    type: 'text',
+    icon: <MessageCircleIcon size={14} />,
+    defaultData: {
+      label: 'Text',
+      name: 'New Text',
+      textType: 'speech',
+      mode: 'render',
+      content: '',
+      speaker: '',
+      position: '',
+    },
   },
   // Technical Nodes
   {
@@ -399,7 +417,7 @@ export function LeftPanel() {
               <NodeGroup
                 label="Scene"
                 configs={filteredConfigs.filter((c) =>
-                  ['action', 'negative', 'parameters', 'timeperiod', 'edit', 'intercept', 'reference'].includes(c.type)
+                  ['action', 'text', 'negative', 'parameters', 'timeperiod', 'edit', 'intercept', 'reference'].includes(c.type)
                 )}
                 onAddNode={handleAddNode}
               />
@@ -638,6 +656,44 @@ function renderNodeFields(
           placeholder="Describe what's happening..."
           rows={5}
         />
+      );
+
+    case 'text':
+      return (
+        <div className="space-y-6">
+          <FieldInput label="Name" value={data.name || ''} onChange={(v) => onChange('name', v)} />
+          <FieldSelect
+            label="Text Type"
+            value={data.textType || 'speech'}
+            options={Object.entries(TEXT_TYPE_LABELS).map(([value, label]) => ({ value, label }))}
+            onChange={(v) => onChange('textType', v as TextType)}
+          />
+          <FieldSelect
+            label="Mode"
+            value={data.mode || 'render'}
+            options={Object.entries(TEXT_MODE_LABELS).map(([value, label]) => ({ value, label }))}
+            onChange={(v) => onChange('mode', v as TextMode)}
+          />
+          <FieldTextarea
+            label="Content"
+            value={data.content || ''}
+            onChange={(v) => onChange('content', v)}
+            placeholder="Enter the text content..."
+            rows={4}
+          />
+          <FieldInput
+            label="Speaker (optional)"
+            value={data.speaker || ''}
+            onChange={(v) => onChange('speaker', v)}
+            placeholder="Character name..."
+          />
+          <FieldInput
+            label="Position (optional)"
+            value={data.position || ''}
+            onChange={(v) => onChange('position', v)}
+            placeholder="e.g., top left, center..."
+          />
+        </div>
       );
 
     case 'outfit':

@@ -160,26 +160,31 @@ Reference ─→ Transform ─→ Timeline ─→ Page ─→ PNG sequence
 
 ## Implementation Phases
 
-### Phase 1: Core Animation Framework
-- [ ] Timeline node with keyframe system
-- [ ] Transform interpolation engine
-- [ ] Basic playback preview in canvas
+### Phase 1: Core Animation Framework ✅
+- [x] Timeline node with keyframe system
+- [x] Transform interpolation engine
+- [x] Basic playback preview in canvas
+- [x] Multi-track support (multiple transforms per timeline)
 - [ ] Reference node sequence mode
 
-### Phase 2: PNG Sequence Export
-- [ ] Frame-by-frame render pipeline
-- [ ] Page node sequence export
-- [ ] ZIP archive generation
-- [ ] Progress indication
+### Phase 2: PNG Sequence Export ✅
+- [x] Frame-by-frame render pipeline
+- [x] Export from Timeline node (Export Frames button)
+- [x] ZIP archive generation
+- [x] Progress indication
+- [x] 2x supersampling for quality
+- [x] Pre-rendered layer caching
+- [x] ffmpeg helper script (scripts/sequence-to-video.sh)
 
-### Phase 3: FFmpeg Integration
+### Phase 3: FFmpeg Integration (Deferred)
 - [ ] Transcode node implementation
-- [ ] FFmpeg command generation
+- [x] FFmpeg command generation (via helper script)
 - [ ] Local FFmpeg detection
 - [ ] Render queue management
 - [ ] Progress streaming from FFmpeg
 
 ### Phase 4: Polish
+- [x] Easing options (linear, ease-in, ease-out, ease-in-out)
 - [ ] Easing curve editor
 - [ ] Onion skinning for keyframes
 - [ ] Copy/paste keyframes
@@ -306,6 +311,14 @@ Extend `.flowboard.json` to include animation data:
   - Preserve existing `_imageRefs` when saving projects without new images
   - Hydrate images from IndexedDB after opening files
   - Fixed localStorage quota issues (5MB limit)
+- [x] **Animation memory leak** - Fixed by throttling store updates during playback
+- [x] **Bad animation loops** - Fixed playback direction and loop restart timing
+- [x] **PNG sequence export** - Full implementation with 2x supersampling
+  - Pre-rendered layer caching for consistency
+  - Export Frames button on Timeline node
+  - ZIP download with progress indicator
+- [x] **File-backed auto-save** - Skip localStorage for file-backed projects
+  - Eliminates quota exceeded errors for large projects
 
 ### In Progress
 - [ ] **Finish Intercept node** - Complete the InterceptNode implementation
@@ -313,16 +326,17 @@ Extend `.flowboard.json` to include animation data:
   - Negative prompt editing support
   - Pass-through mode vs edit mode
 
-### Bugs to Fix
-- [ ] **Animation memory leak** - Investigate memory issues during animation playback
-- [ ] **Bad animation loops** - Fix looping behavior in Timeline node
-  - Playback direction issues
-  - Loop restart timing
+### Known Limitations
+- **Scale animation flicker** - Slight variations visible in frame-by-frame comparison during scale animations
+  - Mitigated by 2x supersampling
+  - Not noticeable at 30fps playback
+  - Inherent to canvas scaling behavior
 
 ### Backlog
 - [ ] **Move history to IndexedDB** - History storage is bloating localStorage (was 4.7MB)
   - Similar pattern to image storage
   - Keep recent history in memory, persist to IndexedDB
+- [ ] **GIF export** - Re-implement with better approach (gif.js had issues)
 
 ---
 
