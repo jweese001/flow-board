@@ -143,6 +143,11 @@ export async function saveProject(project: Project): Promise<void> {
   try {
     localStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(projects));
   } catch (e) {
+    // Check if it's a quota error
+    if (e instanceof DOMException && (e.name === 'QuotaExceededError' || e.code === 22)) {
+      console.error('localStorage quota exceeded. Consider clearing old projects or using file-based workflow.');
+      throw new Error('Storage quota exceeded - localStorage is full');
+    }
     console.error('Failed to save project:', e);
     throw new Error('Failed to save project to storage');
   }

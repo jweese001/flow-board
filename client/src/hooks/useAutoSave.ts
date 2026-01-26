@@ -16,6 +16,7 @@ export function useAutoSave() {
   const hasLoadedRef = useRef(false);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSavingRef = useRef(false);
+  const hasWarnedQuotaRef = useRef(false);
 
   // Auto-load last project on startup, or create default project
   useEffect(() => {
@@ -57,15 +58,29 @@ export function useAutoSave() {
       if (currentIsDirty && autoSaveEnabled && !isSavingRef.current) {
         isSavingRef.current = true;
         try {
-          // Always save to localStorage as backup
-          await saveCurrentProject();
-
-          // Also save to file if file-backed AND file sync enabled
-          if (isFileBacked && autoSaveToFileEnabled) {
-            await saveCurrentToFile();
-            console.log('Auto-saved to file and localStorage');
+          // For file-backed projects, ONLY save to file - skip localStorage entirely
+          if (isFileBacked) {
+            if (autoSaveToFileEnabled) {
+              try {
+                await saveCurrentToFile();
+                console.log('Auto-saved to file');
+              } catch (fileError) {
+                // Permission denied - silently skip
+                console.warn('File auto-save skipped (permission may have expired)');
+              }
+            }
+            // File is the source of truth - no localStorage needed
           } else {
-            console.log('Auto-saved to localStorage');
+            // Non-file projects: save to localStorage
+            try {
+              await saveCurrentProject();
+              console.log('Auto-saved to localStorage');
+            } catch (storageError) {
+              if (!hasWarnedQuotaRef.current) {
+                hasWarnedQuotaRef.current = true;
+                console.error('Auto-save failed - localStorage full:', storageError);
+              }
+            }
           }
         } catch (e) {
           console.error('Auto-save failed:', e);

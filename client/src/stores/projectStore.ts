@@ -199,8 +199,35 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
     const project = await importProjectFromJson(json);
     if (!project) return null;
 
-    await storageSaveProject(project);
-    set({ projectList: getProjectMetadataList() });
+    // Try to save to localStorage (non-critical - images are in IndexedDB)
+    try {
+      await storageSaveProject(project);
+      set({ projectList: getProjectMetadataList() });
+    } catch (e) {
+      console.warn('Could not save imported project to localStorage (quota exceeded). Loading directly.');
+    }
+
+    // Load the project into the flow (hydrating images from IndexedDB)
+    const flowStore = useFlowStore.getState();
+    const groupStore = useGroupStore.getState();
+
+    // Hydrate images from IndexedDB
+    const { hydrateProjectImages } = await import('@/services/storage');
+    const hydratedProject = await hydrateProjectImages(project);
+
+    console.log('[importProject] Hydrated project:', {
+      nodeCount: hydratedProject.nodes.length,
+      edgeCount: hydratedProject.edges.length,
+      groupCount: hydratedProject.groups?.length ?? 0,
+    });
+
+    flowStore.setNodes(hydratedProject.nodes);
+    flowStore.setEdges(hydratedProject.edges);
+    flowStore.setDirty(false);
+    groupStore.setGroups(hydratedProject.groups || []);
+
+    setCurrentProjectId(project.id);
+    set({ currentProjectId: project.id, isLoading: false });
 
     return project.id;
   },
@@ -314,12 +341,14 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
 
       // Get current project state
       const flowStore = useFlowStore.getState();
+      const groupStore = useGroupStore.getState();
       const existing = loadProjectSync(currentProjectId);
       const project: Project = {
         id: currentProjectId,
         name: existing?.name || 'Untitled Project',
         nodes: flowStore.nodes,
         edges: flowStore.edges,
+        groups: groupStore.groups,
         createdAt: existing?.createdAt || Date.now(),
         updatedAt: Date.now(),
       };
@@ -348,6 +377,7 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
   saveCurrentAsFile: async () => {
     const { currentProjectId } = get();
     const flowStore = useFlowStore.getState();
+    const groupStore = useGroupStore.getState();
 
     // Get or create project
     const existing = currentProjectId ? loadProjectSync(currentProjectId) : null;
@@ -356,6 +386,7 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
       name: existing?.name || 'Untitled Project',
       nodes: flowStore.nodes,
       edges: flowStore.edges,
+      groups: groupStore.groups,
       createdAt: existing?.createdAt || Date.now(),
       updatedAt: Date.now(),
     };

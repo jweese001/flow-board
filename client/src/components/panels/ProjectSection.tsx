@@ -139,11 +139,9 @@ export function ProjectSection() {
       console.log('Import result, projectId:', projectId);
 
       if (projectId) {
-        const loaded = await loadProject(projectId);
-        console.log('Load result:', loaded);
-        if (!loaded) {
-          alert('Project imported but failed to load. Check browser console for details.');
-        }
+        // importProject already loads the project into the flow store
+        // No need to call loadProject again
+        console.log('Project imported and loaded successfully');
       } else {
         alert('Invalid project file format. Make sure this is a FlowBoard project file.');
       }

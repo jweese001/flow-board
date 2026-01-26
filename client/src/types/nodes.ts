@@ -447,7 +447,9 @@ export interface TimelineNodeData extends BaseNodeData {
   name: string;
   fps: TimelineFPS;
   duration: number; // Total duration in seconds
-  keyframes: Keyframe[];
+  keyframes: Keyframe[]; // Legacy single-track keyframes (deprecated, use tracks)
+  tracks: Record<string, Keyframe[]>; // Keyframes per transform ID
+  selectedTracks: string[]; // Which transforms to keyframe on "Add Key"
   loop: boolean;
   easing: EasingType; // Default easing between keyframes
   currentTime: number; // Current playhead position (for preview)
