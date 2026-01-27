@@ -251,8 +251,9 @@ export function InterceptNode({ id, data, selected }: NodeProps<InterceptNodeTyp
             onPointerDown={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
             placeholder="Connect nodes upstream to assemble prompt..."
-            className="w-full min-h-[120px] max-h-[300px] text-[11px] font-mono leading-relaxed resize-y outline-none"
+            className="w-full min-h-[240px] max-h-[360px] text-[11px] font-mono leading-relaxed resize-y outline-none"
             style={{
+              display: 'block',
               background: 'var(--color-bg-elevated)',
               color: hasContent ? 'var(--color-text-secondary)' : 'var(--color-text-muted)',
               padding: '12px 12px 12px 16px',
@@ -273,7 +274,10 @@ export function InterceptNode({ id, data, selected }: NodeProps<InterceptNodeTyp
 
         {/* Negative Prompt Section */}
         {(hasNegative || showNegative) && (
-          <div className="space-y-2 pt-2 border-t border-white/10">
+          <div
+            className="space-y-2 border-t border-white/10"
+            style={{ marginTop: '12px', paddingTop: '10px' }}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-medium" style={{ color: negativeColor }}>
@@ -313,6 +317,7 @@ export function InterceptNode({ id, data, selected }: NodeProps<InterceptNodeTyp
                 placeholder="No negative prompt"
                 className="w-full min-h-[60px] max-h-[150px] text-[10px] font-mono leading-relaxed resize-y outline-none"
                 style={{
+                  display: 'block',
                   background: 'var(--color-bg-elevated)',
                   color: hasNegative ? 'var(--color-text-secondary)' : 'var(--color-text-muted)',
                   padding: '8px 8px 8px 16px',
