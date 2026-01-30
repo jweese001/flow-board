@@ -16,7 +16,7 @@ PromptFlow Studio is a visual tool for crafting AI-generated images with the cre
 ## Project Structure
 
 ```
-prompt-nodes/
+FlowBoard/
 ├── client/                    # React frontend
 │   ├── src/
 │   │   ├── components/        # Reusable UI components
