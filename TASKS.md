@@ -1,4 +1,4 @@
-# PromptFlow Studio — Task Tracker
+# FlowBoard — Task Tracker
 
 ## Current Phase: 3 — Polish & Enhancements
 
@@ -113,8 +113,8 @@
 - [ ] Delete asset from library
 
 #### Prompt Preview
-- [ ] Editable textarea showing assembled prompt
-- [ ] Edit before send capability
+- [x] Editable textarea showing assembled prompt (InterceptNode)
+- [x] Edit before send capability (InterceptNode)
 - [ ] Regenerate with same/different prompt
 
 #### Page Layout Enhancements
@@ -136,7 +136,7 @@
 - [ ] Batch generation across multiple Output nodes
 - [ ] Story/sequence mode for comic creation
 - [ ] **Time Period node (experimental)** — injects temporal context (1970s, Victorian era, 1800s, etc.) to give actions/settings a period-appropriate feel
-- [ ] **WebGL Scene Node** — 3D scene builder for camera angles and composition reference (potential integration with existing Three.js IDE)
+- [ ] **Scene Node** — 3D scene integration for camera angles and composition reference (spec: `docs/feature-plan-scene-node.md`)
 - [ ] **Prompt preview/edit before generation** — catch trigger words before sending
 
 ---
@@ -151,11 +151,12 @@ Full spec: `docs/feature-plan-motion.md`
 - [x] Basic playback preview in canvas
 - [x] Reference node sequence mode
 
-### Phase 2: PNG Sequence Export
-- [ ] Frame-by-frame render pipeline
-- [ ] Page node sequence export
-- [ ] ZIP archive generation
-- [ ] Progress indication
+### Phase 2: PNG Sequence Export ✅
+- [x] Frame-by-frame render pipeline
+- [x] Export from Timeline node
+- [x] ZIP archive generation
+- [x] Progress indication
+- [x] 2x supersampling for quality
 
 ### Phase 3: FFmpeg Integration
 - [ ] Transcode node implementation
@@ -173,7 +174,22 @@ Full spec: `docs/feature-plan-motion.md`
 
 ## Recent Changes (Session Log)
 
-### 2025-01-24 (Latest Session)
+### 2025-01-27 (Latest Session)
+- **Project renamed:** `prompt-nodes` → `FlowBoard`
+- **InterceptNode UI improvements:**
+  - Increased textarea height to match Output node sizing
+  - Added spacing between prompt and negative sections
+  - Fixed textarea bottom gap with `display: block`
+- **Scene Node feature spec:**
+  - Created `docs/feature-plan-scene-node.md`
+  - 3D IDE integration for compositional references
+  - Auto-description generation from scene graph
+  - Test protocol created for concept validation
+- **Documentation:**
+  - Created comprehensive roadmap (`FlowBoard_Dev/flow-board-roadmap.md`)
+  - Created test protocol (`FlowBoard_Dev/scene-node-test-protocol.md`)
+
+### 2025-01-24
 - **Page Node Flip Bug Fix:**
   - Export now correctly respects flip transforms from Transform node
   - Fixed canvas coordinate space issue in `PageNode.tsx`
