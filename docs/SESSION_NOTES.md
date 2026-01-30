@@ -1,5 +1,24 @@
 # FlowBoard Session Notes
 
+## Session: 2025-01-30
+
+### Documentation Cleanup
+- Removed stale "In Progress: InterceptNode" from `docs/feature-plan-motion.md` (feature is complete)
+- Removed completed items from TASKS.md backlog (TimePeriodNode exists, InterceptNode done)
+- Added earmark note to typography rendering features — pending AI text reliability testing
+- Updated `FlowBoard_Dev/flow-board-roadmap.md` with earmark status
+
+### Decisions Made
+- **Typography rendering layer earmarked** — Testing whether AI (Gemini/Flux) reliably renders speech bubbles/captions via TextNode prompts before building manual overlay system
+- InterceptNode confirmed complete (auto-assembly, editing, negative prompts, reset/refresh)
+
+### Notes for Next Session
+- Scene Node test protocol ready at `FlowBoard_Dev/scene-node-test-protocol.md`
+- Script integration (ScriptNode) identified as key differentiator
+- Undo/redo still pending
+
+---
+
 ## Session: 2025-01-24 (Continued)
 
 ### Completed

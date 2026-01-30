@@ -320,12 +320,6 @@ Extend `.flowboard.json` to include animation data:
 - [x] **File-backed auto-save** - Skip localStorage for file-backed projects
   - Eliminates quota exceeded errors for large projects
 
-### In Progress
-- [ ] **Finish Intercept node** - Complete the InterceptNode implementation
-  - UI for editing assembled prompt before generation
-  - Negative prompt editing support
-  - Pass-through mode vs edit mode
-
 ### Known Limitations
 - **Scale animation flicker** - Slight variations visible in frame-by-frame comparison during scale animations
   - Mitigated by 2x supersampling
@@ -341,6 +335,6 @@ Extend `.flowboard.json` to include animation data:
 ---
 
 *Created: 2025-01-24*
-*Updated: 2025-01-25*
+*Updated: 2025-01-30*
 *Status: Active Development*
 *Branch: motion*

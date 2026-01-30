@@ -120,7 +120,7 @@
 #### Page Layout Enhancements
 - [ ] More layout presets
 - [ ] Custom layout editor
-- [ ] Speech bubble overlay support
+- [ ] Speech bubble overlay support (earmarked — pending AI text rendering reliability testing)
 
 ---
 
@@ -135,9 +135,7 @@
 - [ ] Lighting node (separate from Setting)
 - [ ] Batch generation across multiple Output nodes
 - [ ] Story/sequence mode for comic creation
-- [ ] **Time Period node (experimental)** — injects temporal context (1970s, Victorian era, 1800s, etc.) to give actions/settings a period-appropriate feel
-- [ ] **Scene Node** — 3D scene integration for camera angles and composition reference (spec: `docs/feature-plan-scene-node.md`)
-- [ ] **Prompt preview/edit before generation** — catch trigger words before sending
+- [ ] **Scene Node** — 3D scene integration for camera angles and composition reference (spec: `docs/feature-plan-scene-node.md`, test protocol: `~/Documents/sandbox/FlowBoard_Dev/scene-node-test-protocol.md`)
 
 ---
 
